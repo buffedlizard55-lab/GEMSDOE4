@@ -24,5 +24,10 @@ local-assembly branch and failed at step 7, skipping steps 8–14. Since then th
 `scripts/fetch_bridge_parts.py` first, which restores the parts from the pinned mirror commit and
 verifies every sha256, so the placement step succeeds. This is the re-dispatch that proves it.
 
-last_touched_utc: 2026-09-25T20:40:00Z
-touched_by: session 27 — re-dispatch to prove the bridge-parts fetcher fixes step 7
+That first re-dispatch (run 36187101169) failed at the same step, because the fetcher resolved its
+mirror record at `data/bridge/bridge/mirror.json` — a path that cannot exist — so it always refused
+with "no mirror ref given". Fixed in PR #3, and the parts were verified against their pins out of
+band: all five match, and they reassemble to 418,912,844 B / sha256 `4371c82e…`, the whole-file pin.
+
+last_touched_utc: 2026-09-25T20:52:00Z
+touched_by: session 28 — re-dispatch after the mirror-record path fix
