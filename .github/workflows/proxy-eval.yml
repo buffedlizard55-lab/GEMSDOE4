@@ -240,7 +240,11 @@ jobs:
       - name: Score the committed submission against the proxy population
         run: |
           set -euo pipefail
-          S="data/evidence/runs/35042805806/submission.tif"
+          # The artifact this repository commits and the site ships.  This used to name run
+          # 35042805806's own submission.tif, which .gitignore keeps out of the index (one raster
+          # per run is how the tree grew to 411 MB of pinned parts), so the `-f` guard below was
+          # always false and the step emitted a warning while going green - an unmeasured claim.
+          S="data/evidence/combined/submission.tif"
           if [ -f "$S" ]; then
             python scripts/eval_proxy_catalogue.py --pred "$S" \
               --proxy data/evidence/proxy/proxy_catalogue.tif --labels data/labels.tif \

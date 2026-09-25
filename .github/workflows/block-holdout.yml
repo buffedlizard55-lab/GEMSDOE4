@@ -43,7 +43,7 @@ on:
     inputs:
       submission:
         description: "raster to score (default: the committed adopted submission)"
-        default: "data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif"
+        default: "data/evidence/combined/submission.tif"
       score_fold:
         description: "restrict the measurement to one fold's blocks ('' = all blocks)"
         default: ""
@@ -120,7 +120,7 @@ jobs:
         name: parameters (submission, folds, sweep grid)
         run: |
           set -euo pipefail
-          SUB="${{ github.event.inputs.submission || 'data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif' }}"
+          SUB="${{ github.event.inputs.submission || 'data/evidence/combined/submission.tif' }}"
           FOLD="${{ github.event.inputs.score_fold || '' }}"
           TRAIN="${{ github.event.inputs.train_folds || '' }}"
           BPX="${{ github.event.inputs.block_px || '512' }}"

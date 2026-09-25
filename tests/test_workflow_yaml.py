@@ -386,3 +386,78 @@ def test_baseline_run_id_parameter_is_a_run_id_or_empty():
         note = pf.read_text()
         assert value in note and "artifact" in note, \
             "the run id must be documented with the artifact it is expected to hold"
+
+
+# ------------------------------------------------------------------------ paths vs the index
+def _tracked_paths() -> set[str]:
+    """Every path git actually has in its index for this checkout."""
+    import subprocess
+    out = subprocess.run(["git", "ls-files"], cwd=REPO, capture_output=True, text=True, check=True)
+    return set(out.stdout.split())
+
+
+# Rasters only: a *directory* or a .json under data/evidence/ is usually where a step WRITES its
+# result, so it is legitimately absent from the index.  A .tif is the opposite - it is an input the
+# step reads before it can do anything, which is exactly the class that just broke.
+_EVIDENCE_RASTER = re.compile(r"data/evidence/[A-Za-z0-9_./-]+\.tif")
+# Paths a step produces: --out/--outdir/--proxy-out/-o targets and shell redirections.
+_WRITES = re.compile(r"(?:--out|--outdir|--proxy-out|-o)\s+([\w./-]+\.tif)|>\s*([\w./-]+\.tif)")
+
+
+def _produced_by(workflow_text: str) -> set[str]:
+    return {a or b for a, b in _WRITES.findall(workflow_text)}
+
+
+def _code_only(text: str) -> str:
+    """Drop whole-line YAML comments.
+
+    A comment that mentions a path is documentation, not a step body: `reblend.yml` explains the
+    110-byte stub that run 35042805806 once committed, and reading that as a live dependency would
+    be a false alarm.
+    """
+    return "\n".join(ln for ln in text.split("\n")
+                     if not ln.lstrip().startswith("#"))
+
+
+def test_every_evidence_raster_a_workflow_reads_is_available_to_it():
+    """A step that reads a raster must read one git has, or one an earlier step produced.
+
+    `make-submission.yml` Route A pointed at `data/evidence/runs/ens12-adopted-floor0.1-w0/
+    submission.tif`, a directory this repository deliberately does not commit (`.gitignore` ignores
+    `*.tif` by default and makes an exception only for the shipped artifact). Its `test -f "$ART"`
+    therefore failed on every run: measured, `make-submission.yml` run 36187572595 failed at that
+    step and skipped steps 9-14. The artifact GEMSDOE4 ships is
+    `data/evidence/combined/submission.tif`, which *is* tracked and which the site generates.
+
+    The other half of the rule matters just as much: `cross-catalogue.yml` *builds*
+    `data/evidence/xcat/qfaults_catalogue.tif` in an earlier step, so it is legitimately absent
+    from the index.  Flagging that would be a false alarm that trains the reader to ignore the
+    test, which is worse than no test.
+    """
+    tracked = _tracked_paths()
+    missing = []
+    for wf in WORKFLOWS:
+        text = _code_only(wf.read_text())
+        available = tracked | _produced_by(text)
+        for path in sorted(set(_EVIDENCE_RASTER.findall(text))):
+            if path not in available:
+                missing.append(f"{wf.name}: {path}")
+    assert not missing, (
+        "workflows read evidence rasters that are neither committed nor produced in the same "
+        "workflow, so those steps cannot pass:\n  " + "\n  ".join(missing))
+
+
+def test_every_scoring_workflow_defaults_to_the_committed_shipped_artifact():
+    """The one artifact every scoring workflow defaults to must be the committed one."""
+    art = "data/evidence/combined/submission.tif"
+    assert art in _tracked_paths(), f"{art} must be committed - it is what the site ships"
+    stale = []
+    for wf in WORKFLOWS:
+        text = _code_only(wf.read_text())
+        for path in set(_EVIDENCE_RASTER.findall(text)):
+            if path == art or "newfault" in path or "qfaults" in path or "proxy_catalogue" in path:
+                continue
+            stale.append(f"{wf.name}: {path}")
+    assert not stale, (
+        "a scoring workflow still names a non-shipped raster; the shipped artifact is "
+        f"{art}:\n  " + "\n  ".join(sorted(stale)))
