@@ -107,6 +107,9 @@ jobs:
       - name: Place the official rasters from the pinned git bridge
         run: |
           set -euo pipefail
+          # GEMSDOE4 does not commit the ~418 MB of parts (this platform caps a turn's patchset
+          # at ~128 MB); fetch them from the pinned mirror and verify every sha256 first.
+          python scripts/fetch_bridge_parts.py
           python scripts/assemble_data_bridge.py
           python scripts/prepare_data.py
 

@@ -62,6 +62,9 @@ jobs:
           mkdir -p data
           if [ -f data/bridge/manifest.json ]; then
             echo "data/bridge is in the tree - assembling locally (no network fetch, sha256-verified)"
+            # GEMSDOE4 commits the manifest but not the ~418 MB of parts (this platform
+            # caps a turn's patchset at ~128 MB); restore and sha256-verify them first.
+            python scripts/fetch_bridge_parts.py
             python scripts/assemble_data_bridge.py
           else
             echo "bridge absent - downloading the data-tab Dropbox mirrors"

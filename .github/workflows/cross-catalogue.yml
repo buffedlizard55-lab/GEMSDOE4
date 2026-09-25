@@ -200,6 +200,9 @@ jobs:
           mkdir -p data data/external data/evidence/xcat
           if [ -f data/bridge/manifest.json ]; then
             echo "data/bridge is in the tree - assembling locally (no network fetch, sha256-verified)"
+            # GEMSDOE4 commits the manifest but not the ~418 MB of parts (this platform
+            # caps a turn's patchset at ~128 MB); restore and sha256-verify them first.
+            python scripts/fetch_bridge_parts.py
             python scripts/assemble_data_bridge.py
           else
             dl () { curl -fL --retry 3 --retry-delay 5 -o "data/$2" "$1" && echo "OK $2 $(stat -c%s "data/$2") bytes" || { echo "FAILED $2"; exit 1; }; }
@@ -345,6 +348,9 @@ jobs:
           set -euo pipefail
           mkdir -p data data/evidence/xcat
           if [ -f data/bridge/manifest.json ]; then
+            # GEMSDOE4 commits the manifest but not the ~418 MB of parts (this platform
+            # caps a turn's patchset at ~128 MB); restore and sha256-verify them first.
+            python scripts/fetch_bridge_parts.py
             python scripts/assemble_data_bridge.py
           else
             dl () { curl -fL --retry 3 --retry-delay 5 -o "data/$2" "$1" && echo "OK $2 $(stat -c%s "data/$2") bytes" || { echo "FAILED $2"; exit 1; }; }
