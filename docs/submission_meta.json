@@ -1,0 +1,163 @@
+{
+ "artifact": {
+  "bytes": 793704,
+  "hash_matches": true,
+  "path": "data/evidence/combined/submission.tif",
+  "recorded_in": "data/evidence/combined/submission.sha256",
+  "recorded_sha256": "932c2f3069a428634f101ea2705d2624ff7ee565dba5e9aa3126a9b8e9020860",
+  "sha256": "932c2f3069a428634f101ea2705d2624ff7ee565dba5e9aa3126a9b8e9020860"
+ },
+ "blob": {
+  "bytes": 1064445,
+  "sha256": "a66b802f11cab9b6a86aa9a13fa054ac431474a81b7e5bc3896b29ab6c78a369"
+ },
+ "checks": {
+  "sample_submission": {
+   "epsg": 32611,
+   "grid": [
+    3292,
+    3730
+   ],
+   "shape_matches": true,
+   "transform": [
+    100.0,
+    0.0,
+    243350.0,
+    0.0,
+    -100.0,
+    4508550.0,
+    0.0,
+    0.0,
+    1.0
+   ],
+   "transform_matches": true
+  },
+  "validation": {
+   "lines": 17,
+   "log_sha256": "52a388a1500c25f91afc7a2e703ca7bce6a746d56756f48c87290556882d9b5f",
+   "passed": true
+  }
+ },
+ "encoding": {
+  "bytes": 1064445,
+  "codes": {
+   "0": "float32 0.0",
+   "1": "float32 1.0",
+   "2": "float32 NaN (quiet, 0x7fc00000)"
+  },
+  "expected_pixels": 12279160,
+  "file": "docs/submission_field.bin",
+  "format": "gems-rle-v1",
+  "layout": "row-major runs: uleb128(length), u8(code)",
+  "n_runs": 529453
+ },
+ "field": {
+  "float32_bytes": 49116640,
+  "float32_sha256": "72affd1a88b583d3443cc5080ce4210bbdd6a28ac338808bfb47f5b0c08b46e4",
+  "max": 1.0,
+  "min": 0.0,
+  "nan_px": 7111787,
+  "one_px": 547862,
+  "pixels": 12279160,
+  "zero_px": 4619511
+ },
+ "generated_utc": "2026-09-25T19:30:25Z",
+ "generator": "scripts/build_submission_payload.py",
+ "grid": {
+  "band_description": "fault probability",
+  "bounds": [
+   243350.0,
+   4135550.0,
+   572550.0,
+   4508550.0
+  ],
+  "count": 1,
+  "crs": "EPSG:32611",
+  "dtype": "float32",
+  "epsg": 32611,
+  "gdal_tags": {
+   "AREA_OR_POINT": "Area"
+  },
+  "height": 3730,
+  "nodata": "nan",
+  "origin": [
+   243350.0,
+   4508550.0
+  ],
+  "pixelscale": [
+   100.0,
+   100.0,
+   0.0
+  ],
+  "res": [
+   100.0,
+   100.0
+  ],
+  "source_tiff": {
+   "blockxsize": 256,
+   "blockysize": 256,
+   "compression": "lzw",
+   "driver": "GTiff",
+   "tiled": true
+  },
+  "tiepoint": [
+   0.0,
+   0.0,
+   0.0,
+   243350.0,
+   4508550.0,
+   0.0
+  ],
+  "transform": [
+   100.0,
+   0.0,
+   243350.0,
+   0.0,
+   -100.0,
+   4508550.0,
+   0.0,
+   0.0,
+   1.0
+  ],
+  "width": 3292
+ },
+ "how_this_was_made": {
+  "builder": "python scripts/build_submission_payload.py",
+  "evidence": "data/evidence/site_generator.json",
+  "parity_test": "tests/test_site_generator.py",
+  "writer": "docs/geotiff_writer.js (same code path runs under node in the test suite)"
+ },
+ "provenance": {
+  "blend_report": {
+   "kind": "detector-union",
+   "members": [
+    "deep11",
+    "classical",
+    "nff42",
+    "nff43"
+   ],
+   "policy": "union k=1 of 4 members; probability members floored at t0=0.288378 and dilated 0 px",
+   "report_schema": "combine_newfault",
+   "scores": {
+    "catalogue": 0.1977359820748084,
+    "proxy": 0.18641173089046878
+   },
+   "script": "scripts/combine_newfault.py",
+   "shaping": {
+    "dilate": 0,
+    "t0": 0.288378,
+    "vote": 1
+   }
+  },
+  "kind": "detector-union",
+  "policy": "union k=1 of 4 members; probability members floored at t0=0.288378 and dilated 0 px",
+  "script": "scripts/combine_newfault.py"
+ },
+ "purpose": "lets docs/how_to_submit.html rebuild the shippable GeoTIFF in a browser with no install and no server; every pin below is measured from the artifact",
+ "round_trip": {
+  "finite_values_match": true,
+  "float32_bytes_identical": true,
+  "nan_positions_match": true
+ },
+ "schema": 1
+}

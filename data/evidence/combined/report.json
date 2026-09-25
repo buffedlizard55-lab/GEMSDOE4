@@ -1,0 +1,564 @@
+{
+ "generated_utc": "2026-09-25T20:17:48Z",
+ "script": "scripts/combine_newfault.py",
+ "purpose": "union of structurally different detectors, with the combination rule selected on the NEW-FAULT population on geography the sweep never scored",
+ "members": [
+  {
+   "name": "deep11",
+   "path": "data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif",
+   "probability": false,
+   "sha256": "7f00890a62878d612fb5eef67a9a364a2df819433dde74b6762ce4fc0fc4fe15",
+   "provenance": {
+    "script": "scripts/blend_submission.py",
+    "held_out_fold": "none - whole-grid training",
+    "measurement_fold": null,
+    "generated_utc": "2026-09-17T22:47:58Z"
+   },
+   "own_scores": {
+    "proxy_dti": 0.09985938622937189,
+    "catalogue_dti": 0.22979915192669062,
+    "emitted_px": 172974,
+    "note": "binary field as written"
+   }
+  },
+  {
+   "name": "classical",
+   "path": "data/evidence/baseline/submission.tif",
+   "probability": false,
+   "sha256": "9f2577cff20d97717dc42afbdc08faff149bf5fcf237b3bc3daffa9d81dc1163",
+   "provenance": {
+    "script": "scripts/baseline_submission.py",
+    "held_out_fold": 0,
+    "measurement_fold": 1,
+    "generated_utc": "2026-09-20T16:55:53Z"
+   },
+   "own_scores": {
+    "proxy_dti": 0.11907096060510475,
+    "catalogue_dti": 0.061148543512767786,
+    "emitted_px": 155889,
+    "note": "binary field as written"
+   }
+  },
+  {
+   "name": "nff42",
+   "path": "data/evidence/newfault/seed42/prob_raw.tif",
+   "probability": true,
+   "sha256": "f2b2e033d09520522c55b84826ea9aa6185719498ea17f8047db63dba9afeca4",
+   "provenance": {
+    "script": "scripts/newfault_detector.py",
+    "held_out_fold": 0,
+    "measurement_fold": 1,
+    "generated_utc": "2026-09-25T19:53:14Z"
+   },
+   "own_scores": {
+    "proxy_dti": 0.13506995859990617,
+    "catalogue_dti": 0.11839877480610257,
+    "emitted_px": 217830,
+    "note": "scored at its own run's selected policy"
+   }
+  },
+  {
+   "name": "nff43",
+   "path": "data/evidence/newfault/seed43/prob_raw.tif",
+   "probability": true,
+   "sha256": "84c0b0000f00db01966ef66275e0b902003436eb56783558bd99fd9956fc6d48",
+   "provenance": {
+    "script": "scripts/newfault_detector.py",
+    "held_out_fold": 2,
+    "measurement_fold": 3,
+    "generated_utc": "2026-09-25T20:08:40Z"
+   },
+   "own_scores": {
+    "proxy_dti": 0.15532136680310116,
+    "catalogue_dti": 0.13119426566041864,
+    "emitted_px": 214920,
+    "note": "scored at its own run's selected policy"
+   }
+  }
+ ],
+ "metric": {
+  "R_pixels": 3,
+  "alpha": 0.2,
+  "beta": 0.8
+ },
+ "partition": {
+  "grid": {
+   "height": 3730,
+   "width": 3292
+  },
+  "block_px": 512,
+  "block_shape": [
+   8,
+   7
+  ],
+  "n_blocks": 56,
+  "n_folds": 4,
+  "seed": 42,
+  "buffer_px": 3,
+  "resolution_m": 100.0,
+  "block_km": 51.2,
+  "mode": "balanced",
+  "assignment": "greedy LPT: blocks dealt by descending fault mass to the fold with the smallest normalised load (fault/target + valid/target)",
+  "per_fold": [
+   {
+    "fold": 0,
+    "blocks": 8,
+    "block_ids": [
+     3,
+     4,
+     5,
+     6,
+     10,
+     15,
+     29,
+     32
+    ],
+    "valid_px": 1352377,
+    "fault_px": 14442,
+    "fault_km": 1444.2,
+    "valid_frac_of_grid": 0.110136,
+    "fault_frac_of_scored": 0.236801,
+    "collar_excluded_px": 28425
+   },
+   {
+    "fold": 1,
+    "blocks": 9,
+    "block_ids": [
+     8,
+     12,
+     17,
+     24,
+     31,
+     38,
+     46,
+     52,
+     53
+    ],
+    "valid_px": 1170054,
+    "fault_px": 16598,
+    "fault_km": 1659.8,
+    "valid_frac_of_grid": 0.095288,
+    "fault_frac_of_scored": 0.272152,
+    "collar_excluded_px": 34758
+   },
+   {
+    "fold": 2,
+    "blocks": 9,
+    "block_ids": [
+     0,
+     7,
+     11,
+     16,
+     21,
+     23,
+     30,
+     37,
+     39
+    ],
+    "valid_px": 1274570,
+    "fault_px": 15404,
+    "fault_km": 1540.4,
+    "valid_frac_of_grid": 0.103799,
+    "fault_frac_of_scored": 0.252574,
+    "collar_excluded_px": 36999
+   },
+   {
+    "fold": 3,
+    "blocks": 8,
+    "block_ids": [
+     1,
+     2,
+     9,
+     13,
+     14,
+     22,
+     44,
+     45
+    ],
+    "valid_px": 1370372,
+    "fault_px": 14544,
+    "fault_km": 1454.4,
+    "valid_frac_of_grid": 0.111601,
+    "fault_frac_of_scored": 0.238473,
+    "collar_excluded_px": 32130
+   }
+  ],
+  "balance": {
+   "fault_px_min": 14442,
+   "fault_px_max": 16598,
+   "fault_px_spread": 0.141405
+  },
+  "empty_blocks_excluded": 22
+ },
+ "selection": {
+  "fold": 0,
+  "population": "proxy (new-fault-like) pixels only",
+  "scope": "blocks of fold 0",
+  "ranking_key": "proxy_dti desc, then narrower dilation, then lower k",
+  "winner": {
+   "t0": 0.288378,
+   "dilate": 0,
+   "vote": 1,
+   "emitted_px": 547862,
+   "proxy_dti": 0.18641173089046878,
+   "catalogue_dti": 0.1977359820748084,
+   "eligible": true,
+   "eligibility_reason": "within the pre-registered support window"
+  },
+  "candidates": [
+   {
+    "t0": 0.0,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 5167373,
+    "proxy_dti": 0.05850133094693036,
+    "catalogue_dti": 0.05795496774954667,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,167,373 px = 100.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 5179002,
+    "proxy_dti": 0.05837474795718668,
+    "catalogue_dti": 0.05783065722472968,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,179,002 px = 100.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0001,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 5167373,
+    "proxy_dti": 0.05850133094693036,
+    "catalogue_dti": 0.05795496774954667,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,167,373 px = 100.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0001,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 5179002,
+    "proxy_dti": 0.05837474795718668,
+    "catalogue_dti": 0.05783065722472968,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,179,002 px = 100.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00031209,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 5167373,
+    "proxy_dti": 0.05850133094693036,
+    "catalogue_dti": 0.05795496774954667,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,167,373 px = 100.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00031209,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 5179002,
+    "proxy_dti": 0.05837474795718668,
+    "catalogue_dti": 0.05783065722472968,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,179,002 px = 100.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.000974004,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 5166764,
+    "proxy_dti": 0.05850809173427373,
+    "catalogue_dti": 0.05796167638978835,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,166,764 px = 100.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.000974004,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 5178588,
+    "proxy_dti": 0.05837932392249685,
+    "catalogue_dti": 0.05783519806578417,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,178,588 px = 100.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00303977,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 5133320,
+    "proxy_dti": 0.058881783395119965,
+    "catalogue_dti": 0.05833248966136895,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,133,320 px = 99.3% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00303977,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 5153805,
+    "proxy_dti": 0.05865456487884428,
+    "catalogue_dti": 0.058108328497498044,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,153,805 px = 99.7% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00948683,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 4849700,
+    "proxy_dti": 0.062229434258618405,
+    "catalogue_dti": 0.06157323806478329,
+    "eligible": false,
+    "eligibility_reason": "emitted 4,849,700 px = 93.9% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00948683,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 4928668,
+    "proxy_dti": 0.06126733072280339,
+    "catalogue_dti": 0.06064949863427245,
+    "eligible": false,
+    "eligibility_reason": "emitted 4,928,668 px = 95.4% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0296075,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 3877977,
+    "proxy_dti": 0.07685715722367198,
+    "catalogue_dti": 0.07407784457102386,
+    "eligible": false,
+    "eligibility_reason": "emitted 3,877,977 px = 75.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0296075,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 4067315,
+    "proxy_dti": 0.07356709207058844,
+    "catalogue_dti": 0.07148159941579527,
+    "eligible": false,
+    "eligibility_reason": "emitted 4,067,315 px = 78.7% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0924021,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 2373035,
+    "proxy_dti": 0.11352720832657737,
+    "catalogue_dti": 0.10002725888057457,
+    "eligible": false,
+    "eligibility_reason": "emitted 2,373,035 px = 45.9% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0924021,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 2675271,
+    "proxy_dti": 0.10400571248997999,
+    "catalogue_dti": 0.0930822138391174,
+    "eligible": false,
+    "eligibility_reason": "emitted 2,675,271 px = 51.8% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.288378,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 547862,
+    "proxy_dti": 0.18641173089046878,
+    "catalogue_dti": 0.1977359820748084,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.288378,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 665171,
+    "proxy_dti": 0.18127082177795714,
+    "catalogue_dti": 0.1855583571790422,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.9,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 325165,
+    "proxy_dti": 0.14785022334531403,
+    "catalogue_dti": 0.19396717750318127,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.9,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 325165,
+    "proxy_dti": 0.14785022334531403,
+    "catalogue_dti": 0.19396717750318127,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   }
+  ]
+ },
+ "measurement": {
+  "fold": 1,
+  "scope": "blocks of fold 1: never used by the sweep",
+  "by_scope": {
+   "selection": {
+    "proxy": {
+     "dti": 0.22314944437104106,
+     "TP_w": 9617.795613786573,
+     "FP_w": 125119.42691608667,
+     "FN_w": 10573.204386213427,
+     "n_gt": 20191,
+     "pred_px": 141119,
+     "pred_mass": 141119.0,
+     "scoreable": true
+    },
+    "catalogue": {
+     "dti": 0.20049866794985147,
+     "TP_w": 7723.941767113904,
+     "FP_w": 127126.33959288392,
+     "FN_w": 6718.058232886096,
+     "n_gt": 14442,
+     "pred_px": 141119,
+     "pred_mass": 141119.0,
+     "scoreable": true
+    }
+   },
+   "measurement": {
+    "proxy": {
+     "dti": 0.17468739169658906,
+     "TP_w": 6257.371079325416,
+     "FP_w": 116376.59554045918,
+     "FN_w": 7859.628920674584,
+     "n_gt": 14117,
+     "pred_px": 128086,
+     "pred_mass": 128086.0,
+     "scoreable": true
+    },
+    "catalogue": {
+     "dti": 0.2222415397179077,
+     "TP_w": 8379.88559313387,
+     "FP_w": 113759.15148814887,
+     "FN_w": 8218.11440686613,
+     "n_gt": 16598,
+     "pred_px": 128086,
+     "pred_mass": 128086.0,
+     "scoreable": true
+    }
+   },
+   "whole grid": {
+    "proxy": {
+     "dti": 0.18641173089046878,
+     "TP_w": 28796.76698450017,
+     "FP_w": 496944.08934322314,
+     "FN_w": 32867.233015499834,
+     "n_gt": 61664,
+     "pred_px": 547862,
+     "pred_mass": 547862.0,
+     "scoreable": true
+    },
+    "catalogue": {
+     "dti": 0.1977359820748084,
+     "TP_w": 30412.598913939906,
+     "FP_w": 494655.7532446849,
+     "FN_w": 30575.401086060094,
+     "n_gt": 60988,
+     "pred_px": 547862,
+     "pred_mass": 547862.0,
+     "scoreable": true
+    }
+   }
+  }
+ },
+ "conform": {
+  "pixels": 12279160,
+  "template_valid_px": 5167373,
+  "filled_inside": 0,
+  "masked_outside": 7111787,
+  "clipped": 0,
+  "unchanged": 5167373
+ },
+ "submission": {
+  "sanitize_evidence": "data/evidence/combined/sanitize.json",
+  "path": "data/evidence/combined/submission.tif",
+  "bytes": 793704,
+  "sha256": "932c2f3069a428634f101ea2705d2624ff7ee565dba5e9aa3126a9b8e9020860",
+  "width": 3292,
+  "height": 3730,
+  "count": 1,
+  "dtype": "float32",
+  "crs": "EPSG:32611",
+  "transform": [
+   100.0,
+   0.0,
+   243350.0,
+   0.0,
+   -100.0,
+   4508550.0
+  ],
+  "finite_px": 5167373,
+  "total_px": 12279160,
+  "nan_px": 7111787,
+  "nonzero_px": 547862,
+  "policy": "union k=1 of 4 members; probability members floored at t0=0.288378 and dilated 0 px",
+  "suggested_note": "nff-union-4 \u00b7 union k=1 of 4 members (t0=0.288, w=0)",
+  "global_scores": {
+   "proxy": 0.18641173089046878,
+   "catalogue": 0.1977359820748084
+  },
+  "writer": {
+   "path": "data/evidence/combined/submission.tif",
+   "bytes": 793704,
+   "sha256": "932c2f3069a428634f101ea2705d2624ff7ee565dba5e9aa3126a9b8e9020860",
+   "width": 3292,
+   "height": 3730,
+   "count": 1,
+   "dtype": "float32",
+   "crs": "EPSG:32611",
+   "res": [
+    100.0,
+    100.0
+   ],
+   "transform": [
+    100.0,
+    0.0,
+    243350.0,
+    0.0,
+    -100.0,
+    4508550.0,
+    0.0,
+    0.0,
+    1.0
+   ],
+   "nodata": NaN,
+   "tiled": true,
+   "block_shapes": [
+    [
+     256,
+     256
+    ]
+   ],
+   "finite_px": 5167373,
+   "total_px": 12279160,
+   "nan_px": 7111787,
+   "nonzero_px": 547862,
+   "prob_mass": 547862.0
+  }
+ },
+ "caveats": [
+  "OUT-OF-SAMPLE STATUS IS PER MEMBER, not per union: the deep-ensemble member was trained over the whole grid (so its contribution to a held-out fold is NOT out-of-sample), while each NFF member holds out its own folds - recorded per member under 'members' above, read from that member's own report.json.  A fold on which a member is in-sample is disclosed here rather than described as held out.",
+  "The union is therefore an ensemble of differently-biased detectors, not a set of independent out-of-sample measurements; the only per-member out-of-sample numbers in this repository are the ones in each member's own report.",
+  "The proxy population is a stand-in for the private expert labels, not the scored set.  The public leaderboard is the only unbiased test of the transfer.",
+  "The catalogue DTI is reported for context only - rules SS1.1/SS3.2 score the new faults in both prize phases."
+ ]
+}

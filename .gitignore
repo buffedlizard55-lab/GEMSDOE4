@@ -1,0 +1,57 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.log
+.env
+.venv
+venv/
+data/*
+!data/README.md
+# audit trail stays in git (small text/json only - never the rasters)
+!data/dem_links.json
+!data/evidence/
+!data/evidence/**
+!data/reconstructed/
+!data/reconstructed/provenance.json
+# small REAL-data dev fixture (few MB, int16-quantised) - see scripts/make_dev_fixture.py
+!data/fixture/
+!data/fixture/**
+# official competition rasters, runner-downloaded and sha256-pinned (git bridge;
+# the 418,912,844 B feature stack is committed as ~90 MiB parts because GitHub
+# rejects blobs >= 100 MB) - see scripts/assemble_data_bridge.py
+!data/bridge/
+!data/bridge/**
+!data/*.md
+outputs/
+outputs_recon/
+outputs_*/
+*.tif
+*.tiff
+!data/fixture/*.tif
+!data/bridge/*.tif
+# GEMSDOE4 new-fault-first line (2026-09-25): the NFF probability fields and the union artifact are
+# the *inputs* scripts/combine_newfault.py reads back to reproduce
+# data/evidence/combined/submission.tif byte for byte, so they are evidence, not scratch output.
+!data/evidence/newfault/*/prob_raw.tif
+!data/evidence/newfault/*/submission.tif
+!data/evidence/combined/submission.tif
+*.zip
+*.gdb
+*.grd
+*.csv
+!docs/data_catalog.csv
+!data/evidence/*.csv
+*.pt
+*.pth
+.ipynb_checkpoints/
+.DS_Store
+.idea/
+.vscode/
+.venv/
+.venv/
