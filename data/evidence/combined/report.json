@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-09-25T20:13:22Z",
+ "generated_utc": "2026-09-25T20:17:48Z",
  "script": "scripts/combine_newfault.py",
  "purpose": "union of structurally different detectors, with the combination rule selected on the NEW-FAULT population on geography the sweep never scored",
  "members": [
@@ -51,9 +51,9 @@
     "generated_utc": "2026-09-25T19:53:14Z"
    },
    "own_scores": {
-    "proxy_dti": 0.13482032005236613,
-    "catalogue_dti": 0.11818681672122058,
-    "emitted_px": 218688,
+    "proxy_dti": 0.13506995859990617,
+    "catalogue_dti": 0.11839877480610257,
+    "emitted_px": 217830,
     "note": "scored at its own run's selected policy"
    }
   },
@@ -69,9 +69,9 @@
     "generated_utc": "2026-09-25T20:08:40Z"
    },
    "own_scores": {
-    "proxy_dti": 0.15514534777201566,
-    "catalogue_dti": 0.13104841323174132,
-    "emitted_px": 215449,
+    "proxy_dti": 0.15532136680310116,
+    "catalogue_dti": 0.13119426566041864,
+    "emitted_px": 214920,
     "note": "scored at its own run's selected policy"
    }
   }

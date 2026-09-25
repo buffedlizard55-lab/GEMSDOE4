@@ -29,8 +29,8 @@ population that does not count. Everything below was executed and measured in th
    `data/evidence/proxy/proxy_catalogue.tif`), trained only outside both held-out folds (R = 3 px
    collars), with the emission policy selected on the **new-fault (proxy) population** and measured
    on a second fold the sweep never scored. Two runs committed:
-   `data/evidence/newfault/seed42` (seed 42, folds 0/1 held out, proxy DTI **0.1348**) and
-   `data/evidence/newfault/seed43` (seed 43, folds 2/3 held out, proxy DTI **0.1551**) — between
+   `data/evidence/newfault/seed42` (seed 42, folds 0/1 held out, proxy DTI **0.1351**) and
+   `data/evidence/newfault/seed43` (seed 43, folds 2/3 held out, proxy DTI **0.1553**) — between
    them they hold out the whole grid, so every pixel is out-of-sample for at least one of them.
    The catalogue-only ablation is a flag (`--no-proxy-labels`), not an assumption.
 3. **`scripts/combine_newfault.py` (new)** — unions structurally different detectors and selects
@@ -41,8 +41,8 @@ population that does not count. Everything below was executed and measured in th
    |---|---|---|---|
    | 11-fold deep ensemble (the previous shipped artifact) | 0.0999 | **0.2298** | 172,974 |
    | classical raw-band GBM | 0.1191 | 0.0611 | 155,889 |
-   | lineament NFF seed42 | 0.1348 | 0.1182 | 218,688 |
-   | lineament NFF seed43 | 0.1551 | 0.1310 | 215,449 |
+   | lineament NFF seed42 | 0.1351 | 0.1184 | 218,688 |
+   | lineament NFF seed43 | 0.1553 | 0.1312 | 215,449 |
    | **shipped union (k = 1 of 4)** | **0.1864** | 0.1977 | 547,862 |
 
    The deep ensemble is the *best* catalogue detector in this repository and the *worst* new-fault

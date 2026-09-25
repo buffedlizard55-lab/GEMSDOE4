@@ -426,8 +426,8 @@ independent SGMC-derived proxy compilation in `data/evidence/proxy/proxy_catalog
 |---|---|---|---|
 | 11-fold deep ensemble (previous artifact) | 0.0999 | **0.2298** | 172,974 |
 | classical raw-band GBM | 0.1191 | 0.0611 | 155,889 |
-| lineament NFF, seed 42 (folds 0/1 held out) | 0.1348 | 0.1182 | 218,688 |
-| lineament NFF, seed 43 (folds 2/3 held out) | 0.1551 | 0.1310 | 215,449 |
+| lineament NFF, seed 42 (folds 0/1 held out) | 0.1351 | 0.1184 | 218,688 |
+| lineament NFF, seed 43 (folds 2/3 held out) | 0.1553 | 0.1312 | 215,449 |
 | **shipped union (k = 1 of 4)** | **0.1864** | 0.1977 | 547,862 |
 
 The deep ensemble is the best *catalogue* detector here and the worst *new-fault* detector — that

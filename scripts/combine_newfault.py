@@ -197,9 +197,16 @@ def main(argv=None) -> int:
             q = floor_sharpen(f, t0=t0, hard=True)
             if dil:
                 q = dilate_mask(q, radius=dil)
-            f = (q > 0).astype(np.float32)
+            # Score the member the way it is actually SUBMITTED - with the template's NaN mask
+            # outside the survey footprint.  `GtContext.score` is not mask-invariant: a field that
+            # is 0.0 outside scores 0.13482 where the same field with NaN outside scores 0.13507,
+            # because the credit map's neighbourhood max propagates NaN from outside the footprint
+            # into the boundary pixels' credit.  Conforming first makes a member's row equal to the
+            # number its own report quotes, instead of a near-miss from a different code path.
+            q = conform_to_template((q > 0).astype(np.float32), template)[0]
+            f = q
         else:
-            f = (f > 0).astype(np.float32)
+            f = conform_to_template((f > 0).astype(np.float32), template)[0]
         member_scores[m["name"]] = dict(
             proxy_dti=ctx["proxy"].score(f), catalogue_dti=ctx["catalogue"].score(f),
             emitted_px=int((f > 0).sum()),
