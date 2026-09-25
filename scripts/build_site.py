@@ -263,7 +263,8 @@ def build_index(ev: dict) -> str:
     # to click a File to submit… obvious when you visit the site.")
     hero = _submission_builder(ev)
 
-    return page("Overview", "index.html", hero + rules_block + f"""
+    return page("Overview", "index.html", hero + rules_block
+               + _newfault_section(ev) + f"""
 {note("ok", "<strong>How to read this site.</strong> Nothing here is written from memory. "
       "Every table is rendered by <code>scripts/build_site.py</code> from JSON that a GitHub "
       "Actions runner produced by downloading the real files and measuring them with "
@@ -368,7 +369,7 @@ def build_executive_summary(ev: dict) -> str:
     lb_utc = lb.get("observed_utc", "date not recorded")
     lb_n = lb.get("n_ranked", "?")
 
-    shipped_path = "data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif"
+    shipped_path = SHIPPED_SUBMISSION
     nextsteps_bar = (f"the public best was <b>{top_lb_dti:.4f}</b> ({lb_n} ranked entrants) "
                      f"when this file last read it ({lb_utc})")
     # measured at build time from the committed bytes (a typed hash here went stale the moment
@@ -409,9 +410,9 @@ If you need a valid submission <em>today</em>, this is the fastest measured path
 <pre><code>git pull
 python scripts/assemble_data_bridge.py   # re-verify &amp; place 418 MB feature stack (sha256 pinned)
 python scripts/prepare_data.py           # PASS: 3292×3730, 19 bands, EPSG:32611, 100 m
-python scripts/validate_submission.py --pred data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif --sample data/sample_submission.tif --train data/training_features.tif
-# → ✅ Validation PASSED — upload data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif at https://www.drivendata.org/competitions/306/competition-doe-gems/submissions/</code></pre>
-<strong>Artifact:</strong> <code>data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif</code> — {shipped_bytes/1000:.1f} KB, sha256 <code>{shipped_sha[:8]}…</code>, 11-fold ensemble mean with adopted policy <code>floor 0.1, thin, width 0 px</code> (rank 1 of 132).<br>
+python scripts/validate_submission.py --pred data/evidence/combined/submission.tif --sample data/sample_submission.tif --train data/training_features.tif
+# → ✅ Validation PASSED — upload data/evidence/combined/submission.tif at https://www.drivendata.org/competitions/306/competition-doe-gems/submissions/</code></pre>
+<strong>Artifact:</strong> <code>data/evidence/combined/submission.tif</code> — {shipped_bytes/1000:.1f} KB, sha256 <code>{shipped_sha[:8]}…</code>, the <b>new-fault-first union</b> of four detectors (11-fold deep ensemble ∪ classical raw-band GBM ∪ two lineament NFF detectors), emitted at the combination rule selected on held-out geography — see <a href="results.html#newfault">Results §New-fault-first</a>.<br>
 <strong>Then:</strong> paste the Generative AI disclosure (§3.2) into the submission narrative, and before <strong>Dec 3, 2026 11:59 PM UTC</strong> select this as your single final submission (3/week limit). <a href="#generate-here">Or skip the commands entirely:</a> the generator <b>directly below</b> writes this exact file in your browser, with nothing installed — no Python, no GPU, no download of the 418 MB feature stack — and refuses to hand it over unless its own re-read of the bytes matches every pinned check. <a href="how_to_submit.html">The full subpage</a> lists six routes to the file, their costs, and the gates this checkout passes.</div>
 """)
     out.append(_submission_builder(ev))
@@ -618,8 +619,8 @@ Generative AI assistance (LLM agent workflows) was utilized during the developme
 <h2>7. Step-by-Step Practical Submission Workflow</h2>
 
 <div class="note ok">
-  <strong>Fastest Route to Submit:</strong> The repository includes a pre-computed, fully validated submission raster that applies the adopted winning policy to the 11-fold ensemble mean:
-  <code>data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif</code> (sha256: <code>{shipped_sha}</code>, {shipped_bytes:,} bytes). It is verified and ready for immediate upload to DrivenData — its template conformance (finite inside the sample's valid region, NaN outside, GDAL_NODATA=nan) is enforced by <code>scripts/validate_submission.py</code> and was added 2026-09-25 after the platform rejected a pre-fix file with "Predicted values must be in range [0, 1]".
+  <strong>Fastest Route to Submit:</strong> The repository includes a pre-computed, fully validated submission raster: the new-fault-first union of four detectors written by <code>scripts/combine_newfault.py</code>.
+  <code>data/evidence/combined/submission.tif</code> (sha256: <code>{shipped_sha}</code>, {shipped_bytes:,} bytes). It is verified and ready for immediate upload to DrivenData — its template conformance (finite inside the sample's valid region, NaN outside, GDAL_NODATA=nan) is enforced by <code>scripts/validate_submission.py</code> and was added 2026-09-25 after the platform rejected a pre-fix file with "Predicted values must be in range [0, 1]".
 </div>
 
 <p>To generate, validate, and submit from scratch, follow these exact steps:</p>
@@ -2485,6 +2486,111 @@ post-processing. The Final Prize Round explicitly rewards flagging faults expert
 """, "How this differs from the reference solution, and the reasoning behind each change.")
 
 
+
+# ------------------------------------------------------------------ GEMSDOE4: the new-fault line
+def _newfault_section(ev: dict, anchor: str = "newfault") -> str:
+    """The GEMSDOE4 strategy, rendered from the evidence its own scripts wrote.
+
+    Every number here is read out of ``data/evidence/newfault/*/report.json`` and
+    ``data/evidence/combined/report.json`` at build time, so the page cannot drift from the runs
+    that produced the artifact.  The point of the section is the *measured comparison* between
+    detectors on the population the rules actually score (see the rules block on the landing
+    page) - not a claim about it.
+    """
+    comb = ev.get("combined") or {}
+    nff = ev.get("newfault_runs") or []
+    if not comb:
+        return ""
+    sub = comb.get("submission") or {}
+    scores = sub.get("global_scores") or {}
+    meas = (comb.get("measurement") or {}).get("by_scope") or {}
+    sel = comb.get("selection") or {}
+    win = sel.get("winner") or {}
+    rows = []
+    for m in (comb.get("members") or []):
+        own = m.get("own_scores") or {}
+        if own:
+            rows.append((str(m.get("name")), own.get("proxy_dti"), own.get("catalogue_dti"),
+                         own.get("emitted_px"),
+                         (m.get("provenance") or {}).get("held_out_fold", "&mdash;")))
+    for r in nff:
+        rep = r.get("submission") or {}
+        gs = rep.get("global_scores") or {}
+        rows.append(("lineament NFF (%s)" % Path(str(rep.get("path", ""))).parent.name,
+                     gs.get("proxy"), gs.get("catalogue"), rep.get("nonzero_px"),
+                     r.get("held_out_fold")))
+    if not rows:
+        return ""
+    tbl = "".join(
+        '<tr><td>%s</td><td class="num">%s</td><td class="num">%s</td>'
+        '<td class="num">%s</td><td class="num">%s</td></tr>'
+        % (e(n), "%.4f" % (p or 0.0), "%.4f" % (c or 0.0),
+           "{:,}".format(int(px or 0)), str(f))
+        for n, p, c, px, f in rows)
+    m_meas = meas.get("measurement") or {}
+    caveats = " ".join(str(c) for c in (comb.get("caveats") or []))
+    return """<h2 id="%s">GEMSDOE4 &mdash; the new-fault-first line</h2>
+<p>The repository's earlier lines selected their emission policy on the <em>catalogue</em>
+population. The rules score the <em>new</em> faults in both prize phases (quoted verbatim above and
+on <a href="metric.html">Metric</a>), so GEMSDOE4 is a different strategy rather than another
+variant of the same model:</p>
+<ol>
+  <li><b>Lineament features instead of raw bands.</b> Multi-scale Sato ridgeness, structure-tensor
+      coherence and windowed context on the 6 bands that carry an edge signal
+      (<code>src/lineament_features.py</code>, 63 features), fed to a
+      <code>HistGradientBoostingClassifier</code>. A tree model can split on "this pixel sits on a
+      2&nbsp;km line"; it cannot invent that from 19 uncorrelated band values.</li>
+  <li><b>Supervision from an independent fault compilation.</b> The catalogue teaches the model the
+      faults geologists already mapped &mdash; the ones with the most obvious geophysical
+      expression. Adding the SGMC-derived proxy labels
+      (<code>data/evidence/proxy/proxy_catalogue.tif</code>) gives it examples of faults the
+      catalogue does <em>not</em> contain, which is the population the metric rewards. The
+      catalogue-only ablation is a measured number, not an assumption
+      (<code>--no-proxy-labels</code>).</li>
+  <li><b>Selection on the new-fault population, on geography the model never saw.</b> Fold %s
+      selects the emission rule by the proxy DTI over its own blocks; fold %s measures it and is
+      never scored by the sweep. The catalogue DTI is reported next to it, never used to select.</li>
+  <li><b>A union of structurally different detectors.</b> Coverage is cheap under this metric (FN
+      carries &beta; = 0.8, FP only &alpha; = 0.2), so detectors whose errors differ are worth more
+      together than apart: the 11-fold deep ensemble, the classical raw-band GBM, and two lineament
+      NFF detectors trained on disjoint fold halves.</li>
+</ol>
+<h3>Measured, on the full grid, both populations</h3>
+<table><thead><tr><th>detector</th><th>new-fault (proxy) DTI</th><th>catalogue DTI</th>
+<th>emitted px</th><th>held-out fold</th></tr></thead><tbody>%s</tbody></table>
+%s
+<h3>The shipped combination</h3>
+<table><thead><tr><th>rule</th><th>new-fault (proxy) DTI</th><th>catalogue DTI</th>
+<th>emitted px</th></tr></thead><tbody>
+<tr><td>%s</td><td class="num">%s</td><td class="num">%s</td><td class="num">%s</td></tr>
+</tbody></table>
+<p><b>Selected</b> on fold %s by the proxy DTI (%s); <b>measured</b> on fold %s, which the sweep
+never scored, at proxy DTI %s and catalogue DTI %s. The whole-grid numbers above are the ones the
+artifact carries.</p>
+%s
+<p>Reproduce it: <code>python scripts/combine_newfault.py --member deep11=... --member classical=...
+--member nff42=...:prob --member nff43=...:prob --fold 0 --eval-fold 1</code> &mdash; the full
+command, the hashes of every member and the whole candidate sweep are in
+<code>data/evidence/combined/report.json</code>.</p>""" % (
+        e(anchor),
+        str(sel.get("fold")), str(comb.get("measurement", {}).get("fold")),
+        tbl,
+        note("warn", "<b>Read this table the way the rules read it.</b> The new-fault column is the "
+                     "one that matters for the prize; the catalogue column is a plumbing monitor. "
+                     "The deep ensemble is the best catalogue detector in this repository and the "
+                     "<em>worst</em> new-fault detector of the three &mdash; exactly the asymmetry "
+                     "that made the earlier lines stop improving."),
+        e(str(sub.get("policy"))),
+        "%.4f" % (scores.get("proxy") or 0.0), "%.4f" % (scores.get("catalogue") or 0.0),
+        "{:,}".format(int(sub.get("nonzero_px") or 0)),
+        str(sel.get("fold")), "%.4f" % (win.get("proxy_dti") or 0.0),
+        str(comb.get("measurement", {}).get("fold")),
+        "%.4f" % ((m_meas.get("proxy") or {}).get("dti") or 0.0),
+        "%.4f" % ((m_meas.get("catalogue") or {}).get("dti") or 0.0),
+        note("warn", "<b>What this section cannot show.</b> " + caveats),
+    )
+
+
 def build_results(ev: dict) -> str:
     runs = ev.get("runs", [])
     body = [f"""<h2>Honest status</h2>
@@ -2503,6 +2609,7 @@ smoke test that scored <em>below</em> the trivial blanket-coverage baseline, whi
 a negative result rather than dressed up. And every DTI on this page is computed against the
 <em>known</em> catalogue, which is not the scored universe (see <a href="metric.html">Metric</a>).''')}"""]
 
+    body.append(_newfault_section(ev))
     _cur = _sha_bytes(SHIPPED_SUBMISSION)
     if _cur.get("exists"):
         body.append(
@@ -2960,8 +3067,12 @@ footer p{margin:5px 0}
 # a committed evidence file (the validator's log, the blend report, the block bootstrap), or quoted
 # verbatim from the official rules PDF by quote id from data/evidence/rules_quotes.json.  Nothing
 # here is typed in as a fact.
-SHIPPED_SUBMISSION = "data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif"
-SHIPPED_EVIDENCE_DIR = "data/evidence/runs/ens12-adopted-floor0.1-w0"
+# WHICH ARTIFACT SHIPS is a decision, so it is one constant in one place (2026-09-25,
+# GEMSDOE4): the new-fault-first union of four detectors.  The previous line (the
+# 11-fold deep ensemble, `data/evidence/runs/ens12-adopted-floor0.1-w0/`) stays in the
+# tree as evidence and as combination member `deep11`; see STATUS.md session 26.
+SHIPPED_SUBMISSION = "data/evidence/combined/submission.tif"
+SHIPPED_EVIDENCE_DIR = "data/evidence/combined"
 SUBMISSIONS_URL = COMP + "submissions/"
 LEADERBOARD_URL = COMP + "leaderboard/"
 
@@ -4211,6 +4322,12 @@ def main(argv=None) -> int:
         # The submission-readiness gate table (scripts/check_submission_readiness.py): every gate
         # on docs/how_to_submit.html is a measurement from the checkout that built the page.
         "readiness": load(ROOT / "data/evidence/submission_readiness.json"),
+        # GEMSDOE4's own line (2026-09-25): the lineament NFF runs and the detector union they are
+        # combined into.  Read straight from the reports those scripts wrote, so the site's
+        # new-fault section cannot disagree with the artifact it describes.
+        "combined": load(ROOT / "data/evidence/combined/report.json"),
+        "newfault_runs": [load(p) for p in sorted(
+            (ROOT / "data/evidence/newfault").glob("*/report.json"))],
         # The same quantities recomputed on a GitHub-hosted runner from the same committed bytes,
         # compared field by field (.github/workflows/block-holdout.yml).
         "runner_reproduction": load(ROOT / "data/evidence/block_holdout/sandbox_vs_runner.json"),

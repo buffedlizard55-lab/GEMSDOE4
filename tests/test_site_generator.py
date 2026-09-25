@@ -43,7 +43,7 @@ BLOB = ROOT / "docs" / "submission_field.bin"
 WRITER = ROOT / "docs" / "geotiff_writer.js"
 GLUE = ROOT / "docs" / "generate_submission.js"
 HARNESS = ROOT / "tests" / "support" / "generator_ui_harness.js"
-ARTIFACT = ROOT / "data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif"
+ARTIFACT = ROOT / "data/evidence/combined/submission.tif"
 SAMPLE = ROOT / "data/sample_submission.tif"
 
 

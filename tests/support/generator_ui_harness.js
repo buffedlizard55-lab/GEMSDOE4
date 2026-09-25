@@ -107,8 +107,14 @@ function assert(name, cond, detail) {
   assert('glue did not invent a second payload path',
     fetchLog.every((f) => ['submission_meta.json', 'submission_field.bin'].includes(f)),
     fetchLog.join(','));
+  // The panel must name the artifact it reproduces.  Read that path out of the manifest the glue
+  // itself fetched instead of hard-coding a directory name: the artifact this repo ships is a
+  // decision (GEMSDOE4 re-pointed it at the new-fault-first union on 2026-09-25), and a test that
+  // pins the old directory would fail for the wrong reason - the panel being fine.
+  const _metaForAssert = JSON.parse(fs.readFileSync(path.join(DOCS, 'submission_meta.json'), 'utf8'));
+  const _artPath = String((_metaForAssert.artifact || {}).path || '');
   assert('provenance table names the artifact it reproduces',
-    texts.includes('ens12-adopted-floor0.1-w0'), 'artifact path rendered');
+    _artPath !== '' && texts.includes(_artPath), 'artifact path rendered: ' + _artPath);
 
   // 3. click "Build submission.tif" (or the zip variant) and wait for the status line
   const btnTif = mount.children.find((c) => c.tag === 'div' && c.className === 'gen-actions');

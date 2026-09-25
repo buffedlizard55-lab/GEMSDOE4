@@ -29,7 +29,14 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 PROXY_DIR = ROOT / "data" / "evidence" / "proxy"
-SHIPPED_SUBMISSION = ROOT / "data" / "evidence" / "runs" / "ens12-adopted-floor0.1-w0" / "submission.tif"
+# The FIELD axis this rule governs is the *deep-ensemble mean* axis (mean12 vs the alternatives a
+# reblend can produce).  The detector-union axis that GEMSDOE4 added on 2026-09-25
+# (data/evidence/combined/submission.tif) has its own pre-registered rule inside
+# scripts/combine_newfault.py - select on the new-fault population, on held-out geography, inside a
+# support window - and is pinned by tests/test_combine_newfault.py.  This constant therefore stays
+# on the deep-ensemble raster, which is what the rule's own evidence files were measured against.
+DEEP_ENSEMBLE_SUBMISSION = (ROOT / "data" / "evidence" / "runs"
+                            / "ens12-adopted-floor0.1-w0" / "submission.tif")
 BLOCK_REPORT = ROOT / "data" / "evidence" / "block_holdout" / "block_stratified.json"
 FIELDX = "fieldx"
 
@@ -88,7 +95,7 @@ def synthetic(tmp_path_factory) -> dict:
     for name in ("eval_sweep-mean12.json", "sweep_source-mean12.json"):
         shutil.copy(PROXY_DIR / name, proxy_dir / name)
 
-    shipped = _read(SHIPPED_SUBMISSION)
+    shipped = _read(DEEP_ENSEMBLE_SUBMISSION)
     truth = _proxy_truth()
     support = shipped > 0
     support_dil = binary_dilation(support, iterations=1)
@@ -118,7 +125,7 @@ def synthetic(tmp_path_factory) -> dict:
     proposed = shipped.copy()
     proposed[dots] = 0.45
     proposed_path = tmp / "fieldx_field.tif"
-    with rasterio.open(SHIPPED_SUBMISSION) as src:
+    with rasterio.open(DEEP_ENSEMBLE_SUBMISSION) as src:
         profile = src.profile
     with rasterio.open(proposed_path, "w", **profile) as dst:
         dst.write(proposed.astype(np.float32), 1)
@@ -235,7 +242,7 @@ def test_r3_not_measurable_blocks_adopt_even_when_everything_else_passes(synthet
 def test_adopt_path_when_r3_measured(synthetic):
     m = synthetic["cfs"]
     rep = m.evaluate(synthetic["proxy_dir"], BLOCK_REPORT,
-                     pred_shipped=SHIPPED_SUBMISSION,
+                     pred_shipped=DEEP_ENSEMBLE_SUBMISSION,
                      pred_for={FIELDX: synthetic["proposed_path"]})
     r3 = rep["fields"][FIELDX]["conditions"]["R3_block_bootstrap"]
     assert r3["status"] == "PASS", r3
@@ -244,7 +251,7 @@ def test_adopt_path_when_r3_measured(synthetic):
     assert rep["verdict"]["decision"] == f"ADOPT {FIELDX}"
     rc = m.main(["--gate", "--field", FIELDX, "--quiet",
                  "--proxy-dir", str(synthetic["proxy_dir"]),
-                 "--pred-shipped", str(SHIPPED_SUBMISSION),
+                 "--pred-shipped", str(DEEP_ENSEMBLE_SUBMISSION),
                  f"--pred={FIELDX}={synthetic['proposed_path']}",
                  "--out", str(synthetic["proxy_dir"].parent / "field_selection_test.json")])
     assert rc == 0
@@ -256,13 +263,13 @@ def test_contrast_margin_is_a_rule_constant(synthetic):
     # margin above the measured gain: R1 fails, verdict flips back to KEEP
     m.CONTRAST_MARGIN = gain + 0.001
     rep = m.evaluate(synthetic["proxy_dir"], BLOCK_REPORT,
-                     pred_shipped=SHIPPED_SUBMISSION,
+                     pred_shipped=DEEP_ENSEMBLE_SUBMISSION,
                      pred_for={FIELDX: synthetic["proposed_path"]})
     assert rep["fields"][FIELDX]["conditions"]["R1_matched_support_contrast"]["status"] == "FAIL"
     assert rep["verdict"]["decision"] == "KEEP mean12"
     # and with the pre-registered margin the same evidence passes
     m.CONTRAST_MARGIN = 0.010
     rep = m.evaluate(synthetic["proxy_dir"], BLOCK_REPORT,
-                     pred_shipped=SHIPPED_SUBMISSION,
+                     pred_shipped=DEEP_ENSEMBLE_SUBMISSION,
                      pred_for={FIELDX: synthetic["proposed_path"]})
     assert rep["verdict"]["decision"] == f"ADOPT {FIELDX}"

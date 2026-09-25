@@ -27,7 +27,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-SHIPPED = "data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif"
+SHIPPED = "data/evidence/combined/submission.tif"
 QUOTE_IDS = ("entry", "citizen", "weekly_limit", "one_final_submission", "no_private_knowledge",
              "phase2_target", "ai_disclosure", "code_assets")
 
@@ -155,7 +155,7 @@ def test_the_page_renders_the_committed_validator_output_and_the_rules_quotes():
     if not ev["rules_quotes"]:
         pytest.skip("rules evidence not in this checkout")
     html = mod.build_submission(ev)
-    log = (ROOT / "data/evidence/runs/ens12-adopted-floor0.1-w0/validation.log")
+    log = (ROOT / "data/evidence/combined/validation.log")
     if log.exists():
         rows, passed = mod._validation_rows(log.read_text())
         assert passed is True, "the committed log must be a PASS log for this artifact"

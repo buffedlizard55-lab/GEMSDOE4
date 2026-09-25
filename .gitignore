@@ -35,6 +35,12 @@ outputs_*/
 *.tiff
 !data/fixture/*.tif
 !data/bridge/*.tif
+# GEMSDOE4 new-fault-first line (2026-09-25): the NFF probability fields and the union artifact are
+# the *inputs* scripts/combine_newfault.py reads back to reproduce
+# data/evidence/combined/submission.tif byte for byte, so they are evidence, not scratch output.
+!data/evidence/newfault/*/prob_raw.tif
+!data/evidence/newfault/*/submission.tif
+!data/evidence/combined/submission.tif
 *.zip
 *.gdb
 *.grd

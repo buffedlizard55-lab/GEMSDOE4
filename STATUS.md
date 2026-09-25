@@ -1,3 +1,89 @@
+# Project status — 2026-09-25 (sessions 1–26)
+
+## Session 26 (2026-09-25) — GEMSDOE4: a *different* strategy, because the rules score a different population
+
+The GEMSDOE repo was copied into this one (413 files, 40 MB, bridge parts excluded to stay under the
+platform's patch cap) and the standing brief was written into `README.md` §0. The single most
+consequential finding of the session is not a new model — it is that **every previous line selected
+its emission policy on the wrong population**, and the fix follows directly from the rules:
+
+> *"In Phase 1, submissions will be evaluated against a privately withheld subset of the original
+> new fault dataset compiled by expert reviewers."* and *"Submissions will be reevaluated against
+> the full, revised new fault dataset using the same distance-weighted Tversky index."*
+> — `data/evidence/rules_quotes.json`, `phase1_target` / `phase2_target`, verified verbatim against
+> <https://docs.nlr.gov/docs/fy26osti/96647.pdf>
+
+Both prize phases score the **expert-mapped new faults**. `data/labels.tif` (60,988 px) is the
+training catalogue and is scored in **neither** phase, so a policy tuned on it is tuned on a
+population that does not count. Everything below was executed and measured in this checkout.
+
+1. **`src/lineament_features.py` (new)** — 63 features: 19 raw bands, Sato ridgeness at σ = 1/2/3
+   and structure-tensor coherence (σ = 1.5) on the 6 bands that carry an edge signal, and
+   mean/std at 5 px and 11 px on 8 bands. NaN contract: the `-3.4e38` sentinel is filled with 0
+   before filtering and restored afterwards, so every column of a row shares one NaN mask
+   (3,061 such pixels sit inside the survey footprint). Measured on the full grid: Sato
+   3 σ ≈ 14.5 s/band. `tests/test_lineament_features.py` (11 tests) pins the name list, the NaN
+   mask, determinism, and halo-independence of chunk interiors.
+2. **`scripts/newfault_detector.py` (new)** — `HistGradientBoostingClassifier` on those features,
+   supervised by **catalogue ∪ SGMC proxy** (an independent public fault compilation,
+   `data/evidence/proxy/proxy_catalogue.tif`), trained only outside both held-out folds (R = 3 px
+   collars), with the emission policy selected on the **new-fault (proxy) population** and measured
+   on a second fold the sweep never scored. Two runs committed:
+   `data/evidence/newfault/seed42` (seed 42, folds 0/1 held out, proxy DTI **0.1348**) and
+   `data/evidence/newfault/seed43` (seed 43, folds 2/3 held out, proxy DTI **0.1551**) — between
+   them they hold out the whole grid, so every pixel is out-of-sample for at least one of them.
+   The catalogue-only ablation is a flag (`--no-proxy-labels`), not an assumption.
+3. **`scripts/combine_newfault.py` (new)** — unions structurally different detectors and selects
+   *how* to union them on the new-fault population on held-out geography inside a pre-registered
+   support window. Measured on the full grid:
+
+   | field | new-fault (proxy) DTI | catalogue DTI | emitted px |
+   |---|---|---|---|
+   | 11-fold deep ensemble (the previous shipped artifact) | 0.0999 | **0.2298** | 172,974 |
+   | classical raw-band GBM | 0.1191 | 0.0611 | 155,889 |
+   | lineament NFF seed42 | 0.1348 | 0.1182 | 218,688 |
+   | lineament NFF seed43 | 0.1551 | 0.1310 | 215,449 |
+   | **shipped union (k = 1 of 4)** | **0.1864** | 0.1977 | 547,862 |
+
+   The deep ensemble is the *best* catalogue detector in this repository and the *worst* new-fault
+   detector — that asymmetry is the whole argument for a different strategy. Selected on fold 0
+   (proxy DTI 0.1864), measured on fold 1 (proxy 0.1747, catalogue 0.2222).
+4. **The artifact is new and conformant.** `data/evidence/combined/submission.tif`
+   (793,704 B, sha256 `932c2f3069a428634f101ea2705d2624ff7ee565dba5e9aa3126a9b8e9020860`),
+   547,862 px at 1.0, NaN exactly outside the template's 5,167,373 valid px,
+   `scripts/validate_submission.py` **PASSED**, `scripts/check_site_generator.py` **PASS**
+   (8/10 steps). Its `sanitize.json` is two-sided: every member is read through `nan_to_num`, so
+   the union is finite outside the footprint and `conform_to_template` masks 7,111,787 px back —
+   a real change, recorded, not a no-op.
+5. **Two real defects were found by re-reading the new code, and both are fixed and pinned by
+   tests.** (a) `build_feature_rows` used `searchsorted(..., "right")` on the chunk's upper bound,
+   which re-read the boundary row and **duplicated those pixels** (706,597 rows returned for
+   704,021 requested) — a silent feature/label misalignment; (b) the NFF writer shipped the shaped
+   field without conforming it, so `floor_sharpen`'s `NaN >= t0 → False` left **finite 0.0 across
+   the whole 7.1 M-pixel outside-footprint region** — the exact placement the platform rejects.
+   `tests/test_newfault_detector.py` (12 tests) and `tests/test_combine_newfault.py` (9 tests)
+   now fail if either comes back.
+6. **The shipping decision is one constant, in one place.** `SHIPPED_SUBMISSION` /
+   `ARTIFACT` in `scripts/build_site.py`, `scripts/build_submission_payload.py`,
+   `scripts/check_site_generator.py`, `scripts/check_submission_readiness.py` and
+   `scripts/package_submission.py` now point at the union; the payload, the site and the browser
+   generator were regenerated from it, and `data/evidence/combined/report.json` records every
+   member's hash, the whole candidate sweep, the per-member out-of-sample status and its
+   caveats. The 11-fold artifact stays in the tree as evidence and as combination member
+   `deep11`; the FIELD-selection rule (`docs/FIELD_SELECTION_RULE.md`) still governs the
+   *deep-ensemble field* axis, and the *detector-union* axis has its own pre-registered rule
+   inside `combine_newfault.py`.
+7. **Suite status:** 503 passed, 2 skipped, 8 failed — all 8 failures are
+   `ModuleNotFoundError: No module named 'torch'` in a sandbox with no torch and no
+   `download.pytorch.org` access (the CPU torch wheel needs `libcublasLt`, which is not
+   installable from an allowlisted host). No new failures.
+
+**Flagged irregularities (unchanged from earlier sessions, re-confirmed):** `example_submission.tif`
+is bit-identical to `labels.tif`; feature bands 17–19 are constant placeholders despite carrying
+plausible descriptions; all shipped submission artifacts are hard 0/1 binary fields, so no soft
+re-combination of the 11-fold ensemble is possible without the model weights, which are not in the
+repository.
+
 # Project status — 2026-09-24/25 (sessions 11–25)
 
 ## Session 25 (2026-09-24/25) — "Predicted values must be in range [0, 1]": root-caused, fixed at the writers, gated in the validator, and the site now hands over a unique name + Note

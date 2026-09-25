@@ -33,7 +33,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_TIF = "data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif"
+DEFAULT_TIF = "data/evidence/combined/submission.tif"
 MEMBER = "submission.tif"
 #: fixed so the archive is reproducible: the same input bytes always give the same zip bytes
 #: fixed so the archive is reproducible: the same input bytes always give the same zip bytes, and

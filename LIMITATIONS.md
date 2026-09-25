@@ -1,3 +1,35 @@
+## Session 26 additions (2026-09-25, GEMSDOE4)
+
+1. **The scored population cannot be measured locally — only approximated.** Both prize phases score
+   the expert-mapped *new* faults (rules §1.1, quoted verbatim in `README.md` §0.3). This
+   repository approximates them with an independent public compilation (SGMC, via
+   `data/evidence/proxy/proxy_catalogue.tif`, 61,664 px of trace the catalogue does not contain).
+   Selecting on that proxy is itself a modelling assumption, and it is the single assumption the
+   whole GEMSDOE4 strategy rests on. **The only unbiased test is a leaderboard submission.**
+2. **The deep-ensemble member of the union is not out-of-sample on any held-out fold.** Its runner
+   trained over the whole grid and its weights are not in the repository (only the final binary
+   field is), so its contribution to a held-out fold cannot be made leakage-free. The two lineament
+   members *do* hold out their own folds — between them the whole grid — so every pixel is
+   out-of-sample for at least one of them, but the union as a whole is an ensemble of
+   differently-biased detectors, not a set of independent measurements. Each member's status is
+   recorded per member in `data/evidence/combined/report.json` rather than implied for the union.
+3. **No soft re-combination of the 11-fold ensemble is possible.** Every shipped submission
+   artifact in this repository is a hard 0/1 binary field; the probability rasters behind them
+   either were never committed or have expired on their runners. The union therefore operates on
+   binary members, and its only continuous input is the NFF probability fields committed at
+   `data/evidence/newfault/*/prob_raw.tif` (23–24 MB each, deliberately committed so the union is
+   reproducible byte for byte from a fresh clone).
+4. **The new-fault detector costs ~15 min of 2-vCPU wall time per member** (feature build ~5 min,
+   fit ~50–105 s, full-grid predict ~7 min, 45-candidate policy sweep ~3 min). Two members are
+   committed; each additional member is the cheapest available improvement to the union, and the
+   next session should fire at least two more seeds.
+5. **Still no GPU and no unrestricted egress in the sandbox** (`download.pytorch.org` blocked; the
+   PyPI torch wheel needs `libcublasLt`, not installable from an allowlisted host). 8 of the
+   repository's tests are torch-gated and fail with `ModuleNotFoundError` here; they pass on CI,
+   which installs the CPU wheel. No new failures were introduced this session.
+6. **The DEM route is still blocked** — 716 confirmed 3DEP tiles need ~50 GB and unrestricted
+   egress, neither of which exists here.
+
 ## Session 21 additions (2026-09-21)
 
 1. **The leaderboard bar is a moving target, and it moved while we were reading it.** Top of the

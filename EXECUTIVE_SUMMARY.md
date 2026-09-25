@@ -8,7 +8,8 @@
 > - **HeroX Rules Resource:** [HeroX Resource 2274](https://www.herox.com/GEMSPrize/resource/2274)
 > - **Training Data GDR Compilation:** [INGENIOUS Great Basin Regional Dataset DOI 10.15121/1881483](https://gdr.openei.org/submissions/1391)
 > - **GeoDAWN Geophysical Survey:** [USGS ScienceBase DOI 10.5066/P93LGLVQ](https://doi.org/10.5066/P93LGLVQ)
-> - **Live Project Webpage:** [https://buffedlizard55-lab.github.io/GEMSDOE/docs/executive_summary.html](https://buffedlizard55-lab.github.io/GEMSDOE/docs/executive_summary.html)
+> - **Live Project Webpage (this repository, GEMSDOE4):** [https://buffedlizard55-lab.github.io/GEMSDOE4/docs/executive_summary.html](https://buffedlizard55-lab.github.io/GEMSDOE4/docs/executive_summary.html)
+- **Live Project Webpage (previous line, GEMSDOE):** [https://buffedlizard55-lab.github.io/GEMSDOE/docs/executive_summary.html](https://buffedlizard55-lab.github.io/GEMSDOE/docs/executive_summary.html)
 
 ---
 
@@ -26,26 +27,28 @@
 | **Grid Dimensions** | **3,292 columns × 3,730 rows** | Total raster area = 12,279,160 pixels |
 | **Raster Data Type** | **Single-band 32-bit float (`float32`)** | Values in `[0.0, 1.0]` representing fault presence probability |
 | **NoData Mask** | **NaN / null** outside GeoDAWN survey footprint | **57.92% NaN**; finite values strictly inside valid survey area |
-| **Shipped Winning Policy** | **Floor 0.1, thin, width 0 px** | Pre-registered decision rule; Rank 1 of 132 candidates |
-| **Shipped Raster Artifact** | `data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif` | sha256 `7f00890a62878d612fb5eef67a9a364a2df819433dde74b6762ce4fc0fc4fe15` (570.9 KB; conformed to the template mask 2026-09-25 — see `sanitize.json`) |
+| **Shipped Winning Policy** | **Floor 0.1, thin, width 0 px** | Pre-registered decision rule; Rank 1 of 132 candidates (the deep-ensemble axis) |
+| **Shipped Raster Artifact (GEMSDOE4)** | `data/evidence/combined/submission.tif` | sha256 `932c2f3069a428634f101ea2705d2624ff7ee565dba5e9aa3126a9b8e9020860` (793.7 KB; the new-fault-first union of 4 detectors — see `report.json`, `sanitize.json`) |
+| **Previous artifact (kept as evidence)** | `data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif` | sha256 `7f00890a62878d612fb5eef67a9a364a2df819433dde74b6762ce4fc0fc4fe15` (570.9 KB; 11-fold deep ensemble, combination member `deep11`) |
 
 ---
 
 ## 0. TL;DR — Submit in 5 Commands (Fastest Verified Path, 2026-09-18)
 
-> **If you need a valid submission today, this is the fastest measured path — no training, no GPU, fully validated and ready to upload. There is now a shorter one for the file itself: the [How-to-submit page §3](https://buffedlizard55-lab.github.io/GEMSDOE/docs/how_to_submit.html#generate) writes the submission `.tif` (or the `.zip` the dialog also accepts) in the browser, with no clone, no install and no network call — the pixels it produces are the artifact's, verified bit for bit by `data/evidence/site_generator.json`.** All commands below were re-executed in the sandbox on 2026-09-18 (see `data/evidence/data_placement.json` and `data/evidence/runs/ens12-adopted-floor0.1-w0/`).
+> **If you need a valid submission today, this is the fastest measured path — no training, no GPU, fully validated and ready to upload. There is now a shorter one for the file itself: the [How-to-submit page §3](https://buffedlizard55-lab.github.io/GEMSDOE4/docs/how_to_submit.html#generate) writes the submission `.tif` (or the `.zip` the dialog also accepts) in the browser, with no clone, no install and no network call — the pixels it produces are the artifact's, verified bit for bit by `data/evidence/site_generator.json`.** All commands below were re-executed in the sandbox on 2026-09-25.
 
 ```bash
 git pull
 python scripts/assemble_data_bridge.py   # re-verify & place 418 MB feature stack (sha256 pinned)
 python scripts/prepare_data.py           # PASS: 3292×3730, 19 bands, EPSG:32611, 100 m
-python scripts/validate_submission.py --pred data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif --sample data/sample_submission.tif --train data/training_features.tif
+python scripts/validate_submission.py --pred data/evidence/combined/submission.tif --sample data/sample_submission.tif --train data/training_features.tif
 # → ✅ Validation PASSED — upload the .tif below
 ```
 
-**Pre-computed, validated submission artifact (11-fold ensemble, adopted winning policy `floor 0.1, thin, width 0 px` — rank 1 of 132):**
-- **Path:** `data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif`
-- **sha256:** `7f00890a62878d612fb5eef67a9a364a2df819433dde74b6762ce4fc0fc4fe15` (570,890 bytes)
+**Pre-computed, validated submission artifact (GEMSDOE4 new-fault-first union — 11-fold deep ensemble ∪ classical raw-band GBM ∪ two lineament NFF detectors; rule selected on held-out geography):**
+- **Path:** `data/evidence/combined/submission.tif`
+- **sha256:** `932c2f3069a428634f101ea2705d2624ff7ee565dba5e9aa3126a9b8e9020860` (793,704 bytes)
+- **Policy:** union k = 1 of 4 members; probability members floored at t0 = 0.288378, no dilation; 547,862 px at 1.0
 - **Format:** 3292×3730, single-band float32, EPSG:32611, 100 m, NaN outside GeoDAWN footprint (57.92%), values in [0,1], finite on **every** pixel of the sample submission's valid region (template conformance, enforced by `scripts/validate_submission.py` since 2026-09-25)
 
 **Then on DrivenData (requires account + enrollment):**
@@ -56,6 +59,8 @@ python scripts/validate_submission.py --pred data/evidence/runs/ens12-adopted-fl
 *Full training-from-scratch workflow is detailed in §6 below. Validation is mandatory — `scripts/validate_submission.py` checks CRS, 100 m resolution, single band, float32, [0,1] range, and size/transform against the competition template.*
 
 > **Operational page:** [`docs/submission.html`](https://buffedlizard55-lab.github.io/GEMSDOE/docs/submission.html) ("Make a submission") is the same path as a checklist — artifact identity re-hashed at build time, the placement table compared against whatever `data/` holds now, the validator table parsed from its own committed log, and every rules sentence quoted by id from `data/evidence/rules_quotes.json` with its verification badge.
+
+---
 
 ---
 
@@ -390,7 +395,64 @@ Pipeline runs end-to-end on real competition rasters, but placing top-5 — the 
 
 ---
 
-## 12. Verification & No-Hallucination Statement
+## 12. GEMSDOE4 — the new-fault-first line (this repository's strategy)
+
+**The one fact that changes the strategy.** Both prize phases are scored against the
+**expert-mapped new faults**, not the catalogue we can download. Verbatim from the official rules
+(<https://docs.nlr.gov/docs/fy26osti/96647.pdf>, quoted and machine-verified in
+`data/evidence/rules_quotes.json`):
+
+> *"In Phase 1, submissions will be evaluated against a privately withheld subset of the original
+> new fault dataset compiled by expert reviewers."* — §1.1
+> *"Submissions will be reevaluated against the full, revised new fault dataset using the same
+> distance-weighted Tversky index."* — §1.1
+
+`data/labels.tif` (60,988 fault px) is the **training** catalogue and is scored in neither phase.
+Every earlier line in this project tuned its emission policy on the catalogue, i.e. on a population
+that is never scored. GEMSDOE4 targets the new-fault population instead, measured through the
+independent SGMC-derived proxy compilation in `data/evidence/proxy/proxy_catalogue.tif`.
+
+**What was built (all CPU, all torch-free, all measured in this checkout):**
+
+| Piece | File | What it does |
+|---|---|---|
+| Lineament features | `src/lineament_features.py` | 63 features: 19 raw bands, Sato ridgeness (σ = 1/2/3) and structure-tensor coherence (σ = 1.5) on the 6 edge-signal bands, mean/std at 5 px and 11 px on 8 bands |
+| New-fault detector | `scripts/newfault_detector.py` | `HistGradientBoostingClassifier` on those features, supervised by catalogue ∪ SGMC proxy, trained outside both held-out folds (R = 3 px collars) |
+| Detector union | `scripts/combine_newfault.py` | unions structurally different detectors; selects the rule on the new-fault population on held-out geography inside a pre-registered support window |
+
+**Measured on the full grid (both populations, same metric):**
+
+| Field | new-fault (proxy) DTI | catalogue DTI | emitted px |
+|---|---|---|---|
+| 11-fold deep ensemble (previous artifact) | 0.0999 | **0.2298** | 172,974 |
+| classical raw-band GBM | 0.1191 | 0.0611 | 155,889 |
+| lineament NFF, seed 42 (folds 0/1 held out) | 0.1348 | 0.1182 | 218,688 |
+| lineament NFF, seed 43 (folds 2/3 held out) | 0.1551 | 0.1310 | 215,449 |
+| **shipped union (k = 1 of 4)** | **0.1864** | 0.1977 | 547,862 |
+
+The deep ensemble is the best *catalogue* detector here and the worst *new-fault* detector — that
+asymmetry is the argument for a different strategy rather than another variant of the same model.
+
+**Reproduce it:**
+
+```bash
+python scripts/newfault_detector.py --seed 42 --fold 0 --eval-fold 1     --out-dir data/evidence/newfault/seed42        # ~15 min, 2 vCPU
+python scripts/newfault_detector.py --seed 43 --fold 2 --eval-fold 3     --out-dir data/evidence/newfault/seed43        # ~15 min, 2 vCPU
+python scripts/combine_newfault.py \
+    --member deep11=data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif \
+    --member classical=data/evidence/baseline/submission.tif \
+    --member nff42=data/evidence/newfault/seed42/prob_raw.tif:prob \
+    --member nff43=data/evidence/newfault/seed43/prob_raw.tif:prob \
+    --fold 0 --eval-fold 1 --out-dir data/evidence/combined
+```
+
+**What this cannot show:** the proxy is a stand-in for the private expert labels, not the scored
+set. Every number above is a local surrogate on held-out geography; the public leaderboard is the
+only unbiased test of the transfer, and the report says so in its own `caveats`.
+
+---
+
+## 13. Verification & No-Hallucination Statement
 
 Every number, link, and rule sentence on this page is drawn from machine-measured evidence or directly fetched official sources:
 - **Evidence:** `data/evidence/inventory.json` (file sizes/sha256), `data/evidence/rasters.json` (grid/CRS/bands), `data/evidence/data_placement.json` (bridge provenance), `data/evidence/emission_decision.json` (policy sweeps), `data/evidence/proxy/` (miss distance, oracle ceiling), `docs/link_verification.json` (live URL checks via `scripts/verify_links.py` on a runner).

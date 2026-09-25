@@ -1,0 +1,738 @@
+{
+ "generated_utc": "2026-09-25T19:24:09Z",
+ "script": "scripts/newfault_detector.py",
+ "purpose": "new-fault-first detector: lineament features + catalogue/independent-compilation supervision, with the emission policy selected on the NEW-FAULT population on geography the model never saw",
+ "inputs": {
+  "features": {
+   "path": "data/training_features.tif",
+   "sha256": "4371c82e3b8339b807bdffcf4ef59a225520fe2988d521be208ae33743123bc5"
+  },
+  "labels": {
+   "path": "data/labels.tif",
+   "sha256": "7ba308ccdc4418b31a178f4f1ef21aaa6e152e4028f2f6f64b01f7eb25ae4093"
+  },
+  "proxy": {
+   "path": "data/evidence/proxy/proxy_catalogue.tif",
+   "sha256": "7563e187171f7210d70295f958b0b2714c1fa504afa35f9a4688fc99b1e1122a"
+  },
+  "template": {
+   "path": "data/sample_submission.tif",
+   "sha256": "2176d08e485aa2cd2860ce8df539db4faf4d76163b38a4dd8c30a40454d35cbc"
+  }
+ },
+ "metric": {
+  "R_pixels": 3,
+  "alpha": 0.2,
+  "beta": 0.8
+ },
+ "supervision": {
+  "use_proxy_labels": true,
+  "positive_px": 139426,
+  "catalogue_px": 60988,
+  "proxy_only_px": 61664,
+  "proxy_near_px": 20491
+ },
+ "partition": {
+  "grid": {
+   "height": 3730,
+   "width": 3292
+  },
+  "block_px": 512,
+  "block_shape": [
+   8,
+   7
+  ],
+  "n_blocks": 56,
+  "n_folds": 4,
+  "seed": 43,
+  "buffer_px": 3,
+  "resolution_m": 100.0,
+  "block_km": 51.2,
+  "mode": "balanced",
+  "assignment": "greedy LPT: blocks dealt by descending fault mass to the fold with the smallest normalised load (fault/target + valid/target)",
+  "per_fold": [
+   {
+    "fold": 0,
+    "blocks": 8,
+    "block_ids": [
+     3,
+     4,
+     5,
+     6,
+     10,
+     15,
+     29,
+     32
+    ],
+    "valid_px": 1352377,
+    "fault_px": 14442,
+    "fault_km": 1444.2,
+    "valid_frac_of_grid": 0.110136,
+    "fault_frac_of_scored": 0.236801,
+    "collar_excluded_px": 28425
+   },
+   {
+    "fold": 1,
+    "blocks": 9,
+    "block_ids": [
+     8,
+     12,
+     17,
+     24,
+     31,
+     38,
+     46,
+     52,
+     53
+    ],
+    "valid_px": 1170054,
+    "fault_px": 16598,
+    "fault_km": 1659.8,
+    "valid_frac_of_grid": 0.095288,
+    "fault_frac_of_scored": 0.272152,
+    "collar_excluded_px": 34758
+   },
+   {
+    "fold": 2,
+    "blocks": 9,
+    "block_ids": [
+     0,
+     7,
+     11,
+     16,
+     21,
+     23,
+     30,
+     37,
+     39
+    ],
+    "valid_px": 1274570,
+    "fault_px": 15404,
+    "fault_km": 1540.4,
+    "valid_frac_of_grid": 0.103799,
+    "fault_frac_of_scored": 0.252574,
+    "collar_excluded_px": 36999
+   },
+   {
+    "fold": 3,
+    "blocks": 8,
+    "block_ids": [
+     1,
+     2,
+     9,
+     13,
+     14,
+     22,
+     44,
+     45
+    ],
+    "valid_px": 1370372,
+    "fault_px": 14544,
+    "fault_km": 1454.4,
+    "valid_frac_of_grid": 0.111601,
+    "fault_frac_of_scored": 0.238473,
+    "collar_excluded_px": 32130
+   }
+  ],
+  "balance": {
+   "fault_px_min": 14442,
+   "fault_px_max": 16598,
+   "fault_px_spread": 0.141405
+  },
+  "empty_blocks_excluded": 22
+ },
+ "held_out_fold": 2,
+ "measurement_fold": 3,
+ "training": {
+  "model": "HistGradientBoostingClassifier",
+  "seed": 43,
+  "max_iter": 500,
+  "learning_rate": 0.06,
+  "max_leaf_nodes": 31,
+  "min_samples_leaf": 40,
+  "l2_regularization": 1.0,
+  "n_rows": 809689,
+  "n_features": 63,
+  "n_pos": 73640,
+  "n_neg": 736400,
+  "n_neg_pool": 2420256,
+  "neg_ratio_requested": 10.0,
+  "negatives_capped": false
+ },
+ "timings_s": {
+  "fit": 105.0,
+  "predict": 337.5
+ },
+ "policy_selection": {
+  "population": "proxy (new-fault-like) pixels only - the population rules SS1.1 scores",
+  "scope": "blocks of fold 2 (spatially held out of training)",
+  "ranking_key": "proxy_dti desc, then narrower band, then fewer emitted pixels",
+  "winner": {
+   "t0": 0.288378,
+   "thin": false,
+   "dilate": 1,
+   "emitted_px": 215449,
+   "catalogue_dti": 0.13104841323174132,
+   "proxy_dti": 0.15514534777201566,
+   "scope": "fold 2 (selection)",
+   "eligible": true,
+   "eligibility_reason": "within the pre-registered support window"
+  },
+  "candidates": [
+   {
+    "t0": 0.0,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 5167373,
+    "catalogue_dti": 0.05795496774954667,
+    "proxy_dti": 0.05850133094693036,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 5,167,373 px = 100.0% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.0,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 5179002,
+    "catalogue_dti": 0.05783065722472968,
+    "proxy_dti": 0.05837474795718668,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 5,179,002 px = 100.2% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.0,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 13214,
+    "catalogue_dti": 0.012300110974091075,
+    "proxy_dti": 0.013567643077847238,
+    "scope": "fold 2 (selection)",
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.0,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 39687,
+    "catalogue_dti": 0.017554862726257572,
+    "proxy_dti": 0.019235769225990594,
+    "scope": "fold 2 (selection)",
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.0001,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 5167365,
+    "catalogue_dti": 0.057955052194588484,
+    "proxy_dti": 0.05850141974845909,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 5,167,365 px = 100.0% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.0001,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 5179002,
+    "catalogue_dti": 0.05783065722472968,
+    "proxy_dti": 0.05837474795718668,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 5,179,002 px = 100.2% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.0001,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 14572,
+    "catalogue_dti": 0.014305109739135928,
+    "proxy_dti": 0.014339185182991846,
+    "scope": "fold 2 (selection)",
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.0001,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 43745,
+    "catalogue_dti": 0.020182936808421738,
+    "proxy_dti": 0.020225636883900874,
+    "scope": "fold 2 (selection)",
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.00031209,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 5161622,
+    "catalogue_dti": 0.05801580218605769,
+    "proxy_dti": 0.058565237784633704,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 5,161,622 px = 99.9% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.00031209,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 5176030,
+    "catalogue_dti": 0.057862827440519786,
+    "proxy_dti": 0.05840761355892735,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 5,176,030 px = 100.2% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.00031209,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 31041,
+    "catalogue_dti": 0.020629037814010397,
+    "proxy_dti": 0.017236874242221065,
+    "scope": "fold 2 (selection)",
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.00031209,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 91896,
+    "catalogue_dti": 0.026207743630826598,
+    "proxy_dti": 0.021782946404771925,
+    "scope": "fold 2 (selection)",
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.000974004,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 5117843,
+    "catalogue_dti": 0.05846955964963834,
+    "proxy_dti": 0.05905628226829682,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 5,117,843 px = 99.0% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.000974004,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 5142563,
+    "catalogue_dti": 0.058209142863947023,
+    "proxy_dti": 0.058780272094277435,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 5,142,563 px = 99.5% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.000974004,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 74359,
+    "catalogue_dti": 0.037987598983415395,
+    "proxy_dti": 0.0424058632686826,
+    "scope": "fold 2 (selection)",
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.000974004,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 218267,
+    "catalogue_dti": 0.04058221601554395,
+    "proxy_dti": 0.045263046513571305,
+    "scope": "fold 2 (selection)",
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.00303977,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 4905862,
+    "catalogue_dti": 0.060544414563839265,
+    "proxy_dti": 0.06150374791034726,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 4,905,862 px = 94.9% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.00303977,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 4977166,
+    "catalogue_dti": 0.05986818183937099,
+    "proxy_dti": 0.06065774259474556,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 4,977,166 px = 96.3% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.00303977,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 187017,
+    "catalogue_dti": 0.07123896112290773,
+    "proxy_dti": 0.07198164639847861,
+    "scope": "fold 2 (selection)",
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.00303977,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 542024,
+    "catalogue_dti": 0.05992091880612043,
+    "proxy_dti": 0.06040368917884498,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 542,024 px = 10.5% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.00948683,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 4232899,
+    "catalogue_dti": 0.0663987495096369,
+    "proxy_dti": 0.07065272119401515,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 4,232,899 px = 81.9% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.00948683,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 4397894,
+    "catalogue_dti": 0.0646944793082965,
+    "proxy_dti": 0.06820612420329454,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 4,397,894 px = 85.1% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.00948683,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 278167,
+    "catalogue_dti": 0.095758752225293,
+    "proxy_dti": 0.08137453171770336,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 278,167 px = 5.4% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.00948683,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 797127,
+    "catalogue_dti": 0.07324808696645156,
+    "proxy_dti": 0.062401564270482435,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 797,127 px = 15.4% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.0296075,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 3115972,
+    "catalogue_dti": 0.07700526509672799,
+    "proxy_dti": 0.0912641808430839,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 3,115,972 px = 60.3% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.0296075,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 3335054,
+    "catalogue_dti": 0.07458747932652032,
+    "proxy_dti": 0.08658544321331238,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 3,335,054 px = 64.5% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.0296075,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 296130,
+    "catalogue_dti": 0.12340773294407623,
+    "proxy_dti": 0.1188688948590411,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 296,130 px = 5.7% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.0296075,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 844705,
+    "catalogue_dti": 0.0940580883797375,
+    "proxy_dti": 0.0906891799021044,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 844,705 px = 16.3% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.0924021,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 1502937,
+    "catalogue_dti": 0.10345794572642664,
+    "proxy_dti": 0.13743238338608615,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 1,502,937 px = 29.1% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.0924021,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 1806495,
+    "catalogue_dti": 0.0962208540710073,
+    "proxy_dti": 0.12492321515074467,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 1,806,495 px = 35.0% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.0924021,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 263288,
+    "catalogue_dti": 0.14192476407826077,
+    "proxy_dti": 0.17469687434315231,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 263,288 px = 5.1% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.0924021,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 740475,
+    "catalogue_dti": 0.11161112643658179,
+    "proxy_dti": 0.13807811043519355,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 740,475 px = 14.3% of the footprint > cap 5%"
+   },
+   {
+    "t0": 0.288378,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 135588,
+    "catalogue_dti": 0.12619676644855887,
+    "proxy_dti": 0.14641886345185942,
+    "scope": "fold 2 (selection)",
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.288378,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 215449,
+    "catalogue_dti": 0.13104841323174132,
+    "proxy_dti": 0.15514534777201566,
+    "scope": "fold 2 (selection)",
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.288378,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 39912,
+    "catalogue_dti": 0.09852563851516433,
+    "proxy_dti": 0.11898385074000976,
+    "scope": "fold 2 (selection)",
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.288378,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 120519,
+    "catalogue_dti": 0.11869258484704008,
+    "proxy_dti": 0.14384722667329813,
+    "scope": "fold 2 (selection)",
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.9,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 0,
+    "catalogue_dti": 0.0,
+    "proxy_dti": 0.0,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 0 px < floor 1,000"
+   },
+   {
+    "t0": 0.9,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 0,
+    "catalogue_dti": 0.0,
+    "proxy_dti": 0.0,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 0 px < floor 1,000"
+   },
+   {
+    "t0": 0.9,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 0,
+    "catalogue_dti": 0.0,
+    "proxy_dti": 0.0,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 0 px < floor 1,000"
+   },
+   {
+    "t0": 0.9,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 0,
+    "catalogue_dti": 0.0,
+    "proxy_dti": 0.0,
+    "scope": "fold 2 (selection)",
+    "eligible": false,
+    "eligibility_reason": "emitted 0 px < floor 1,000"
+   }
+  ]
+ },
+ "generalisation": {
+  "fold": 3,
+  "scope": "blocks of fold 3: excluded from training and never used by the policy sweep",
+  "by_scope": {
+   "selection": {
+    "catalogue": {
+     "dti": 0.04753930612096312,
+     "TP_w": 807.5682967915843,
+     "FP_w": 22513.33578127633,
+     "FN_w": 14596.431703208416,
+     "n_gt": 15404,
+     "pred_px": 24280,
+     "pred_mass": 24280.0,
+     "scoreable": true
+    },
+    "proxy": {
+     "dti": 0.07519100708854626,
+     "TP_w": 1092.3055205121186,
+     "FP_w": 21835.077539212107,
+     "FN_w": 11334.694479487882,
+     "n_gt": 12427,
+     "pred_px": 24280,
+     "pred_mass": 24280.0,
+     "scoreable": true
+    }
+   },
+   "measurement": {
+    "catalogue": {
+     "dti": 0.068762111109156,
+     "TP_w": 1218.9539285189248,
+     "FP_w": 29240.626687747153,
+     "FN_w": 13325.046071481076,
+     "n_gt": 14544,
+     "pred_px": 31981,
+     "pred_mass": 31981.0,
+     "scoreable": true
+    },
+    "proxy": {
+     "dti": 0.08907930038658812,
+     "TP_w": 1599.9086646764729,
+     "FP_w": 28486.58516521719,
+     "FN_w": 13329.091335323526,
+     "n_gt": 14929,
+     "pred_px": 31981,
+     "pred_mass": 31981.0,
+     "scoreable": true
+    }
+   },
+   "whole grid": {
+    "catalogue": {
+     "dti": 0.13104841323174132,
+     "TP_w": 11594.547633521977,
+     "FP_w": 186829.95077571442,
+     "FN_w": 49393.45236647802,
+     "n_gt": 60988,
+     "pred_px": 215449,
+     "pred_mass": 215449.0,
+     "scoreable": true
+    },
+    "proxy": {
+     "dti": 0.15514534777201566,
+     "TP_w": 13772.778397225222,
+     "FP_w": 183438.16943574007,
+     "FN_w": 47891.22160277478,
+     "n_gt": 61664,
+     "pred_px": 215449,
+     "pred_mass": 215449.0,
+     "scoreable": true
+    }
+   }
+  }
+ },
+ "submission": {
+  "path": "/tmp/nff_s43/submission.tif",
+  "bytes": 292872,
+  "sha256": "e1cf6ff5f4064cc867051df64d9192180605cf807817070e4441f9eddaa29458",
+  "width": 3292,
+  "height": 3730,
+  "count": 1,
+  "dtype": "float32",
+  "crs": "EPSG:32611",
+  "res": [
+   100.0,
+   100.0
+  ],
+  "transform": [
+   100.0,
+   0.0,
+   243350.0,
+   0.0,
+   -100.0,
+   4508550.0
+  ],
+  "finite_px": 12279160,
+  "total_px": 12279160,
+  "nan_px": 0,
+  "nonzero_px": 215449,
+  "policy": "t00.288378_thin0_w1",
+  "global_scores": {
+   "catalogue": 0.13104841323174132,
+   "proxy": 0.15514534777201566
+  }
+ },
+ "prob_raw": {
+  "path": "/tmp/nff_s43/prob_raw.tif",
+  "bytes": 24114540,
+  "sha256": "84c0b0000f00db01966ef66275e0b902003436eb56783558bd99fd9956fc6d48",
+  "finite_px": 5167373
+ },
+ "caveats": [
+  "Every number is a local surrogate on held-out geography; the real metric is the private expert-labelled new-fault set (rules SS1.1 / SS3.2).",
+  "The proxy population is an independent public compilation (SGMC), not the scored faults; it is the closest available stand-in, and selecting on it is itself a modelling assumption that the next session should re-test against the public leaderboard.",
+  "The catalogue DTI is reported for context only. Rules SS1.1/SS3.2 score the new faults, so a policy that is worse on the catalogue is not thereby disqualified."
+ ]
+}

@@ -1,4 +1,4 @@
-# FIELD-selection rule — pre-registered (v1, 2026-09-19)
+# FIELD-selection rule — pre-registered (v1, 2026-09-19) · v2 adds the detector-union axis (2026-09-25)
 
 > **This document is a pre-registration, not an analysis.** It was committed **before** the next
 > re-blend so that the field axis of the emission decision is ruled the same way the policy axis
@@ -87,3 +87,44 @@ nothing. This is the exact symmetric of the policy rule's "no candidate → keep
 - Matched support equalises the **number** of emitted pixels, not their spatial distribution.
 - The unconstrained best candidate of a field is a maximum over ~132 candidates on the judging
   population — upward biased, never a shipping recommendation.
+
+
+---
+
+## v2 (2026-09-25) — the DETECTOR-UNION axis, pre-registered inside `scripts/combine_newfault.py`
+
+v1 above governs one axis: *which ensemble-mean field* the deep-ensemble line blends and ships. Its
+reference raster is therefore the deep-ensemble artifact
+(`data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif`) and its committed verdict remains
+**KEEP mean12**. Nothing in v1 was changed.
+
+GEMSDOE4 introduced a second, structurally different axis: *which detectors are unioned, and how*.
+It is ruled separately, and the rule is code rather than prose, because the decision it governs is
+made by a script:
+
+**What is fixed in advance (not chosen after looking):**
+
+1. **The selection population is the new-fault population** — the proxy (SGMC-derived) pixels that
+   the catalogue does not contain. This is the population rules §1.1 scores in both prize phases;
+   the catalogue DTI is reported next to it and never used to select.
+2. **Selection happens on one fold's blocks, measurement on another's.** The measurement fold is
+   excluded from training and is never scored by the sweep, so the number quoted for it is not an
+   argmax over a noisy grid.
+3. **A pre-registered support window** (≤ 20 % of the survey footprint, ≥ 1,000 px). Ineligible
+   candidates stay in the report with the reason. The window is wider than v1's 5 % because a union
+   of N detectors legitimately emits more than one detector; the degenerate optimum (emit the whole
+   footprint) is still excluded by it.
+4. **The ranking key is fixed**: proxy DTI descending, then the narrower dilation, then the lower
+   agreement threshold k.
+
+**What the script must record for the rule to be auditable** (all present in
+`data/evidence/combined/report.json`): every member's path and sha256, each member's own proxy and
+catalogue DTI at matched emission, each member's held-out fold (read from that member's own
+report), the full candidate sweep with eligibility reasons, the winner, the measurement on the
+untouched fold, and the caveats — including that the deep-ensemble member is *not* out-of-sample on
+any held-out fold.
+
+**How to change the shipped artifact under this rule:** re-run `scripts/combine_newfault.py` with a
+different member set or a different (floor, dilation, k) grid; the report is the decision record.
+No hand-editing of `data/evidence/combined/` is a decision. `tests/test_combine_newfault.py` pins
+the rule's invariants, including the refusal to ship when the support window excludes everything.

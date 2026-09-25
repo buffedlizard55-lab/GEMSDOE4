@@ -35,7 +35,7 @@ def _mod():
     return mod
 
 
-SHIPPED = "data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif"
+SHIPPED = "data/evidence/combined/submission.tif"
 
 
 def _ev():

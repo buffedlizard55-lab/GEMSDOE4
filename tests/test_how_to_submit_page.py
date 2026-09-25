@@ -23,7 +23,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-SHIPPED = "data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif"
+SHIPPED = "data/evidence/combined/submission.tif"
 
 
 def _site_mod():
@@ -191,7 +191,7 @@ def test_no_repository_path_on_the_page_is_missing():
 
 def test_validation_section_shows_the_committed_validator_checks():
     mod = _site_mod()
-    log = ROOT / "data/evidence/runs/ens12-adopted-floor0.1-w0/validation.log"
+    log = ROOT / "data/evidence/combined/validation.log"
     html = mod.build_how_to_submit(_full_ev())
     if log.exists():
         assert "Validation PASSED" in log.read_text()

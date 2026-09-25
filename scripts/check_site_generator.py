@@ -40,7 +40,7 @@ ROOT = Path(__file__).resolve().parents[1]
 WRITER = "docs/geotiff_writer.js"
 META = "docs/submission_meta.json"
 BLOB = "docs/submission_field.bin"
-ARTIFACT = "data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif"
+ARTIFACT = "data/evidence/combined/submission.tif"
 SAMPLE = "data/sample_submission.tif"
 OUT_DEFAULT = "data/evidence/site_generator.json"
 

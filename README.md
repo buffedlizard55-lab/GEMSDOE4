@@ -1,3 +1,93 @@
+# GEMSDOE4 — Geologic Enhanced Mapping System (GEMS) Prize · new-fault-first submission line
+
+> **THE FILE TO SUBMIT, IN ONE CLICK → [landing page](https://buffedlizard55-lab.github.io/GEMSDOE4/docs/index.html) and [executive summary](https://buffedlizard55-lab.github.io/GEMSDOE4/docs/executive_summary.html) both open with the in-browser submission builder**: click **Build submission.tif**, the browser writes the exact single-band float32 GeoTIFF the DrivenData dialog asks for, re-reads its own bytes, and hands over the download — no install, no GPU, nothing uploaded. The download carries a **unique file name** and a suggested **Note** so two builds can never be confused.
+>
+> **Exact submission instructions → [How to submit, step by step](https://buffedlizard55-lab.github.io/GEMSDOE4/docs/how_to_submit.html)** (a subpage of the executive summary): the file, its sha256 re-hashed at build time, six routes to produce it (A–F), the validation gate, the click-by-click upload path, and the fix for the platform's `Predicted values must be in range [0, 1]` rejection.
+
+---
+
+## 0. PROJECT CHARTER — read this first, every session
+
+This section is the standing brief. It is the starting point for every work session on this
+repository: read it, check the work against it, and only then write code.
+
+### 0.1 What we are trying to do
+
+Place **top of the leaderboard** in the DOE GEMS Prize Challenge on DrivenData —
+<https://www.drivendata.org/competitions/306/competition-doe-gems/> (problem description
+<https://www.drivendata.org/competitions/306/competition-doe-gems/page/967/>, about page
+<https://www.drivendata.org/competitions/306/competition-doe-gems/page/968/>, data tab
+<https://www.drivendata.org/competitions/306/competition-doe-gems/data/>). Prize pool
+**$300,000** ($50k Phase 1, $250k Phase 2); the official rules are
+<https://docs.nlr.gov/docs/fy26osti/96647.pdf> and the reference solution is
+<https://github.com/drivendataorg/gems-prize-reference-solution>.
+
+### 0.2 Where we stand (measured, 2026-09-25)
+
+| Submission | Site | Public score |
+|---|---|---|
+| GEMSDOE (11-fold deep ensemble, `floor 0.1, thin, width 0`) | buffedlizard55-lab/GEMSDOE | **0.1563** |
+| GEMSDOE2 (dual-family union) | buffedlizard55-lab/GEMSDOE2 | 0.1560 |
+| GEMSDOE3 (pindrop nodes / catalogue-gap target / dense ridge control) | buffedlizard55-lab/GEMSDOE3 | 0.1193 / 0.0830 / 0.1152 |
+| **best on the board** | — | **0.3049** |
+
+Our best line is ~half the leading score. The task for this repository is therefore not "ship
+another variant of the same model" but **a different strategy, researched and measured, that can
+score above 0.3049**.
+
+### 0.3 The strategy this repository is built on (GEMSDOE4, "New-Fault-First")
+
+1. **Score the population the rules actually score.** Verified verbatim from the rules PDF
+   (`data/evidence/rules_quotes.json`): *"In Phase 1, submissions will be evaluated against a
+   privately withheld subset of the original new fault dataset compiled by expert reviewers"*
+   (§1.1) and *"Submissions will be reevaluated against the full, revised new fault dataset using
+   the same distance-weighted Tversky index"* (§1.1). Both prize phases score the **new faults**;
+   the public catalogue in `data/labels.tif` is the *training* set, never the test set. Every
+   earlier line in this project tuned its emission policy on the catalogue population — this
+   repository does not.
+2. **Supervise with an independent fault compilation**, so the detector sees faults the catalogue
+   does not contain (`scripts/newfault_detector.py`).
+3. **Give the classifier lineament geometry** (multi-scale ridge-ness, structure-tensor coherence,
+   windowed context) instead of raw pixel values (`src/lineament_features.py`).
+4. **Combine structurally different detectors** (deep ensemble ∪ classical GBM ∪ lineament NFF)
+   and pick the combination rule on held-out geography, on the new-fault population
+   (`scripts/combine_newfault.py`).
+5. **Select, then measure on a fold nothing touched**, with a pre-registered support window, so a
+   number quoted in this repository is not an artefact of `max()` over a noisy grid.
+
+### 0.4 Standing rules for all work here
+
+- **Core values: Maximize P(Win) and Own the Outcome.** Weigh tradeoffs, assess risk, choose the
+  path that maximises the probability of winning; own results end to end rather than waiting to be
+  assigned the next slice.
+- **Work line by line, verifying from official verified trusted sources, with links for manual
+  review.** No manual input — research, deep research, scientific-literature research and
+  organisation of that knowledge are done autonomously and re-reviewed.
+- **No hallucinations.** Every number in this repository has a measurement behind it; every rule
+  sentence is a verbatim quote checked against the rules PDF by `scripts/verify_rules_quotes.py`.
+  **Flag irregularities for review rather than silently fixing them.**
+- **The site must make a submission trivial.** One click to a valid `.tif` (or the `.zip` the dialog
+  also accepts), obvious on the first screen, with a unique file name and a short Note for the
+  submission form.
+- **Run every task through multiple passes.** Pass 1 implement and verify; pass 2 review for bugs,
+  missing requirements, wrong assumptions and edge cases; pass 3 re-check the whole implementation
+  against the original request and improve accuracy, reliability, completeness and code quality.
+- **Open a pull request and merge it**, then state plainly what work remains and which limitations
+  block a successful project.
+
+### 0.5 Known limitations of this repository (see `LIMITATIONS.md`)
+
+- No DrivenData credentials here → no automatic download from the data tab and no automatic
+  upload/leaderboard read (both are login-gated; verified).
+- No GPU and no unrestricted egress → the 418 MB feature stack arrives through the sha256-pinned
+  git bridge, the deep models were trained on GitHub runners, and every number quoted here is
+  produced on CPU.
+- The private expert labels do not exist locally → the new-fault population is measured through an
+  independent public compilation used as a surrogate, and the public leaderboard remains the only
+  unbiased test of that transfer.
+
+---
+
 # GEMSDOE — Geologic Enhanced Mapping System Prize Challenge
 
 > **The file to submit, in one click → the published site leads with the in-browser submission builder** ([landing page](https://buffedlizard55-lab.github.io/GEMSDOE/docs/index.html), [executive summary](https://buffedlizard55-lab.github.io/GEMSDOE/docs/executive_summary.html)): click **Build submission.tif**, the browser writes the exact single-band float32 GeoTIFF the DrivenData dialog asks for, re-reads its own bytes, and hands over the download — no install, no GPU, nothing uploaded (added 2026-09-24).

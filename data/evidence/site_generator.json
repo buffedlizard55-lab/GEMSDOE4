@@ -1,8 +1,8 @@
 {
- "generated_utc": "2026-09-24T22:11:01Z",
+ "generated_utc": "2026-09-25T19:32:08Z",
  "script": "scripts/check_site_generator.py",
  "purpose": "the in-browser generator on docs/how_to_submit.html is executed here under node and its output is judged by rasterio and by the repository's own validator",
- "artifact": "data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif",
+ "artifact": "data/evidence/combined/submission.tif",
  "writer": "docs/geotiff_writer.js",
  "format_template": "data/sample_submission.tif",
  "payload": {
@@ -15,7 +15,7 @@
    "status": "PASS",
    "measured": {
     "exit_code": 0,
-    "stdout": "OK \u2014 docs/submission_meta.json + docs/submission_field.bin reproduce data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif (259,495 runs, 172,974 px at 1.0, float32 bits identical after a decode round trip)",
+    "stdout": "OK \u2014 docs/submission_meta.json + docs/submission_field.bin reproduce data/evidence/combined/submission.tif (529,453 runs, 547,862 px at 1.0, float32 bits identical after a decode round trip)",
     "stderr": ""
    },
    "source": "scripts/build_submission_payload.py --check",
@@ -29,8 +29,8 @@
     "ok": true,
     "failed_checks": [],
     "self_checks": 17,
-    "bytes": 358332,
-    "sha256": "086bb0141034060e8ea4c688a31e111a537788b4516a5393e452203971970033",
+    "bytes": 608124,
+    "sha256": "aee5a0c56457c154ce3ddaa4e2faedca08e3b3d8f6ce46c633b6c1d8a23ba5de",
     "compression": "deflate (zlib-wrapped, per strip \u2014 tag 8, as GDAL writes)",
     "layout": {
      "width": 3292,
@@ -41,19 +41,19 @@
      "deflated": true,
      "ifdStart": 8,
      "ifdBytes": 222,
-     "extrasBytes": 710,
-     "dataStart": 940,
-     "totalBytes": 358332,
+     "extrasBytes": 670,
+     "dataStart": 900,
+     "totalBytes": 608124,
      "rawFieldBytes": 49116640,
-     "containerBytes": 358332,
-     "strippedBytes": 357295
+     "containerBytes": 608124,
+     "strippedBytes": 607124
     },
     "node": "v22.22.3",
     "reported_field_counts": {
-     "one_px": 172974,
-     "zero_px": 4994399,
+     "one_px": 547862,
+     "zero_px": 4619511,
      "nan_px": 7111787,
-     "runs": 259495
+     "runs": 529453
     }
    },
    "source": "docs/geotiff_writer.js (the file the page loads)",
@@ -88,7 +88,7 @@
     "tiled": false
    },
    "source": "rasterio",
-   "note": "generated 358,332 B vs artifact 570,890 B (container differs; pixels do not)"
+   "note": "generated 608,124 B vs artifact 793,704 B (container differs; pixels do not)"
   },
   {
    "name": "rasterio reads it; pixels are the artifact's",
@@ -146,7 +146,7 @@
     "float32_bits_identical": true,
     "uint32_px_differing": 0,
     "pixels": 12279160,
-    "one_px": 172974,
+    "one_px": 547862,
     "nan_px": 7111787,
     "container_note": "generated NODATA='nan', artifact NODATA='nan' (matches the template since the 2026-09-25 conformance fix)",
     "container_vs_sample": {
@@ -221,8 +221,8 @@
      "submission.tif"
     ],
     "member_equals_tif": true,
-    "zip_bytes": 358458,
-    "tif_bytes": 358332
+    "zip_bytes": 608250,
+    "tif_bytes": 608124
    },
    "source": "zipfile.testzip() + byte comparison",
    "note": ""
@@ -236,11 +236,11 @@
      "--no-deflate"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-6dhti5ok/variant_0.tif",
+    "path": "/tmp/gems-gen-94ybq088/variant_0.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
-    "bytes": 49117580,
+    "bytes": 49117540,
     "container_ok": true,
     "self_reported_ok": true
    },
@@ -257,11 +257,11 @@
      "1"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-6dhti5ok/variant_1.tif",
+    "path": "/tmp/gems-gen-94ybq088/variant_1.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
-    "bytes": 572448,
+    "bytes": 822216,
     "container_ok": true,
     "self_reported_ok": true
    },
@@ -278,11 +278,11 @@
      "3730"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-6dhti5ok/variant_2.tif",
+    "path": "/tmp/gems-gen-94ybq088/variant_2.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
-    "bytes": 355488,
+    "bytes": 605612,
     "container_ok": true,
     "self_reported_ok": true
    },
@@ -296,11 +296,11 @@
   "passed": 8,
   "failed": 0,
   "node": "v22.22.3",
-  "payload_meta_sha256": "300a19d5dac59773c0e4eff346d83f9db97f9e3b73a82f9dd47875fe6f9ae22d",
-  "payload_blob_sha256": "b966d47c7c02b1c2de0d06553363bc8cccd887c697f760e63f49db9fd99a0351",
-  "blob_bytes": 532072,
+  "payload_meta_sha256": "090c169da1ffcfd50a76dc6a8d47680cc0cb94c24b237b26bf3dc45141d1facc",
+  "payload_blob_sha256": "a66b802f11cab9b6a86aa9a13fa054ac431474a81b7e5bc3896b29ab6c78a369",
+  "blob_bytes": 1064445,
   "encoding": {
-   "bytes": 532072,
+   "bytes": 1064445,
    "codes": {
     "0": "float32 0.0",
     "1": "float32 1.0",
@@ -310,10 +310,10 @@
    "file": "docs/submission_field.bin",
    "format": "gems-rle-v1",
    "layout": "row-major runs: uleb128(length), u8(code)",
-   "n_runs": 259495
+   "n_runs": 529453
   },
-  "artifact_sha256": "7f00890a62878d612fb5eef67a9a364a2df819433dde74b6762ce4fc0fc4fe15",
-  "artifact_bytes": 570890,
+  "artifact_sha256": "932c2f3069a428634f101ea2705d2624ff7ee565dba5e9aa3126a9b8e9020860",
+  "artifact_bytes": 793704,
   "variants": [
    {
     "name": "uncompressed strips",
@@ -321,11 +321,11 @@
      "--no-deflate"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-6dhti5ok/variant_0.tif",
+    "path": "/tmp/gems-gen-94ybq088/variant_0.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
-    "bytes": 49117580,
+    "bytes": 49117540,
     "container_ok": true,
     "self_reported_ok": true
    },
@@ -336,11 +336,11 @@
      "1"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-6dhti5ok/variant_1.tif",
+    "path": "/tmp/gems-gen-94ybq088/variant_1.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
-    "bytes": 572448,
+    "bytes": 822216,
     "container_ok": true,
     "self_reported_ok": true
    },
@@ -351,15 +351,15 @@
      "3730"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-6dhti5ok/variant_2.tif",
+    "path": "/tmp/gems-gen-94ybq088/variant_2.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
-    "bytes": 355488,
+    "bytes": 605612,
     "container_ok": true,
     "self_reported_ok": true
    }
   ]
  },
- "seconds": 8.14
+ "seconds": 9.99
 }

@@ -57,10 +57,13 @@ import rasterio
 ROOT = Path(__file__).resolve().parents[1]
 
 #: the artifact the site treats as "the file to upload" - the same constant build_site.py uses
-ARTIFACT = "data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif"
-SIDECAR = "data/evidence/runs/ens12-adopted-floor0.1-w0/submission.sha256"
-BLEND_REPORT = "data/evidence/runs/ens12-adopted-floor0.1-w0/blend_report.json"
-VALIDATION_LOG = "data/evidence/runs/ens12-adopted-floor0.1-w0/validation.log"
+# WHICH ARTIFACT SHIPS (2026-09-25, GEMSDOE4): the new-fault-first union of four
+# detectors.  The 11-fold deep ensemble stays in the tree as evidence and as
+# combination member `deep11` - see STATUS.md session 26.
+ARTIFACT = "data/evidence/combined/submission.tif"
+SIDECAR = "data/evidence/combined/submission.sha256"
+BLEND_REPORT = "data/evidence/combined/report.json"
+VALIDATION_LOG = "data/evidence/combined/validation.log"
 SAMPLE = "data/sample_submission.tif"
 
 META_REL = "docs/submission_meta.json"
@@ -220,6 +223,21 @@ def build_meta(root: Path, artifact: Path, band: np.ndarray, info: dict,
         keys = ("n_folds", "folds", "usable_folds", "policy", "shaping", "dti", "scores",
                 "emission", "provenance", "weights")
         blend = {k: d[k] for k in keys if k in d}
+        # Two report schemas have shipped behind the payload builder: the blend report of the
+        # deep-ensemble line (keys above) and the combiner report of the new-fault-first union
+        # (`script`, `members`, `submission.policy`, `selection.winner`).  Carry whichever is
+        # present, and say which schema it came from, so the page's provenance row never silently
+        # degrades to "unknown" when the shipping decision changes.
+        if "script" in d or "members" in d:
+            sub = d.get("submission") or {}
+            sel = (d.get("selection") or {}).get("winner") or {}
+            blend["kind"] = "detector-union"
+            blend["script"] = d.get("script")
+            blend["members"] = [m.get("name") for m in (d.get("members") or [])]
+            blend["policy"] = sub.get("policy")
+            blend["shaping"] = dict(t0=sel.get("t0"), dilate=sel.get("dilate"), vote=sel.get("vote"))
+            blend["scores"] = sub.get("global_scores")
+            blend["report_schema"] = "combine_newfault"
     sample = None
     sp = root / SAMPLE
     if sp.exists():
@@ -264,8 +282,11 @@ def build_meta(root: Path, artifact: Path, band: np.ndarray, info: dict,
                    float32_bytes=len(raw), float32_sha256=hashlib.sha256(raw).hexdigest()),
         blob=dict(bytes=len(blob), sha256=hashlib.sha256(blob).hexdigest()),
         checks=dict(sample_submission=sample, validation=val),
-        provenance=dict(policy=info["tags"].get("policy"), kind=info["tags"].get("kind"),
-                        script=info["tags"].get("script"), blend_report=blend),
+        provenance=dict(policy=(info["tags"].get("policy")
+                                or (blend or {}).get("policy")),
+                        kind=(info["tags"].get("kind") or (blend or {}).get("kind")),
+                        script=(info["tags"].get("script") or (blend or {}).get("script")),
+                        blend_report=blend),
         how_this_was_made=dict(
             builder="python scripts/build_submission_payload.py",
             writer="docs/geotiff_writer.js (same code path runs under node in the test suite)",

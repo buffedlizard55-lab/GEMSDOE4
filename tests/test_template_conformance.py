@@ -38,7 +38,7 @@ sys.path.insert(0, str(ROOT))
 from src.submission_io import cli_validate, conformance_findings, conform_to_template  # noqa: E402
 
 SAMPLE = ROOT / "data" / "sample_submission.tif"
-SHIPPED = ROOT / "data" / "evidence" / "runs" / "ens12-adopted-floor0.1-w0" / "submission.tif"
+SHIPPED = ROOT / "data" / "evidence" / "combined" / "submission.tif"
 SANITIZE = ROOT / "scripts" / "sanitize_submission.py"
 VALIDATE = ROOT / "scripts" / "validate_submission.py"
 
@@ -203,15 +203,34 @@ def test_the_shipped_artifact_is_template_conformant():
 
 @pytest.mark.skipif(not SHIPPED.exists(), reason="shipped artifact not in this checkout")
 def test_the_sanitation_evidence_is_committed_and_two_sided():
-    """A silently mutated artifact is the failure mode this repo exists to prevent."""
+    """A silently mutated artifact is the failure mode this repo exists to prevent.
+
+    The record is two-sided for whichever artifact currently ships.  GEMSDOE4 re-pointed the
+    shipping decision at the new-fault-first union on 2026-09-25, whose conformance happens
+    inside scripts/combine_newfault.py (every member raster is read through nan_to_num, so the
+    union field is finite *outside* the template and has to be masked back) rather than as a
+    post-hoc fix on a file already on disk.  Both writers emit the same schema, so the test
+    asserts the schema's invariants - the record names the bytes on disk, it shows a before
+    state that differs from them, and its change counts agree with the artifact - instead of
+    the pixel counts of one particular artifact.
+    """
     ev_path = SHIPPED.with_name("sanitize.json")
-    assert ev_path.exists(), "the 2026-09-25 conformance fix must leave before/after evidence"
+    assert ev_path.exists(), "the shipping decision must leave before/after conformance evidence"
     ev = json.loads(ev_path.read_text())
     live = hashlib.sha256(SHIPPED.read_bytes()).hexdigest()
     assert ev["after"]["sha256"] == live, "sanitize.json must describe the bytes on disk"
-    assert ev["before"]["sha256"] != ev["after"]["sha256"], "the fix must be visible"
-    assert ev["changes"]["filled_inside"] == 3061
-    assert ev["changes"]["masked_outside"] == 1540
+    before_id = ev["before"].get("sha256") or ev["before"].get("sha256_pixels")
+    after_id = ev["after"].get("sha256") or ev["after"].get("sha256_pixels")
+    assert before_id != after_id, "the conformance step must be visible as a change"
+    changes = ev["changes"]
+    assert changes["filled_inside"] + changes["masked_outside"] + changes["clipped"] > 0, \
+        "a conformance record with zero changes documents nothing"
+    with rasterio.open(SHIPPED) as src:
+        a = src.read(1)
+    assert int(np.isnan(a).sum()) == ev["after"]["findings"]["nan_px"], \
+        "the record's after-state must equal the raster's NaN count"
+    assert int(np.isfinite(a).sum()) == changes["template_valid_px"], \
+        "the record's change counts must agree with the template's valid region"
 
 
 # --------------------------------------------------------------------------- the payload

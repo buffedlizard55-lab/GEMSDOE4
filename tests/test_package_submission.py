@@ -25,7 +25,7 @@ from rasterio.io import MemoryFile  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = "scripts/package_submission.py"
-ARTIFACT = ROOT / "data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif"
+ARTIFACT = ROOT / "data/evidence/combined/submission.tif"
 
 
 def _py():

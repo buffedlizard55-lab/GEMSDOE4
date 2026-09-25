@@ -53,7 +53,7 @@ CANONICAL = {
     "labels.tif": "existing_faults.tif",
     "sample_submission.tif": "example_submission.tif",
 }
-SHIPPED_DIR = "data/evidence/runs/ens12-adopted-floor0.1-w0"
+SHIPPED_DIR = "data/evidence/combined"
 HUMAN_STEPS = [
     ("Create the DrivenData profile and accept the competition rules", "rules §3.1 verbatim quote"),
     ("Confirm prize eligibility (citizenship / residence; rules §1.3, App. A)", "rules §1.3 verbatim quote"),
