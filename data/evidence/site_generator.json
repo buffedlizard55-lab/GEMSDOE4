@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-09-25T20:18:12Z",
+ "generated_utc": "2026-09-25T20:54:28Z",
  "script": "scripts/check_site_generator.py",
  "purpose": "the in-browser generator on docs/how_to_submit.html is executed here under node and its output is judged by rasterio and by the repository's own validator",
  "artifact": "data/evidence/combined/submission.tif",
@@ -48,7 +48,7 @@
      "containerBytes": 608124,
      "strippedBytes": 607124
     },
-    "node": "v22.22.3",
+    "node": "v22.23.2",
     "reported_field_counts": {
      "one_px": 547862,
      "zero_px": 4619511,
@@ -236,7 +236,7 @@
      "--no-deflate"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-dt2vt3c3/variant_0.tif",
+    "path": "/tmp/gems-gen-wn_wnq0m/variant_0.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
@@ -257,7 +257,7 @@
      "1"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-dt2vt3c3/variant_1.tif",
+    "path": "/tmp/gems-gen-wn_wnq0m/variant_1.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
@@ -278,7 +278,7 @@
      "3730"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-dt2vt3c3/variant_2.tif",
+    "path": "/tmp/gems-gen-wn_wnq0m/variant_2.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
@@ -295,7 +295,7 @@
   "steps": 10,
   "passed": 8,
   "failed": 0,
-  "node": "v22.22.3",
+  "node": "v22.23.2",
   "payload_meta_sha256": "090c169da1ffcfd50a76dc6a8d47680cc0cb94c24b237b26bf3dc45141d1facc",
   "payload_blob_sha256": "a66b802f11cab9b6a86aa9a13fa054ac431474a81b7e5bc3896b29ab6c78a369",
   "blob_bytes": 1064445,
@@ -321,7 +321,7 @@
      "--no-deflate"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-dt2vt3c3/variant_0.tif",
+    "path": "/tmp/gems-gen-wn_wnq0m/variant_0.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
@@ -336,7 +336,7 @@
      "1"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-dt2vt3c3/variant_1.tif",
+    "path": "/tmp/gems-gen-wn_wnq0m/variant_1.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
@@ -351,7 +351,7 @@
      "3730"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-dt2vt3c3/variant_2.tif",
+    "path": "/tmp/gems-gen-wn_wnq0m/variant_2.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
@@ -361,5 +361,5 @@
    }
   ]
  },
- "seconds": 9.32
+ "seconds": 6.66
 }

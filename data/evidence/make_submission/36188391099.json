@@ -1,0 +1,20 @@
+{
+ "run_id": "36188391099",
+ "commit": "df7649e1b60c9662114191956eb5edc53c156843",
+ "branch": "arena/01a0d9c8-gemsdoe4",
+ "generated_utc": "2026-09-25T20:54:36Z",
+ "route": "adopted",
+ "package": "both",
+ "submission_sha256": "932c2f3069a428634f101ea2705d2624ff7ee565dba5e9aa3126a9b8e9020860",
+ "submission_bytes": 793704,
+ "zip_sha256": "42bf1d4f3324724f554159cd9a8d2623b417366939a930f5f00c32790b803433",
+ "zip_bytes": 793830,
+ "baseline_sha256": null,
+ "validator_passed": true,
+ "baseline_validator_passed": null,
+ "payload_check": true,
+ "generator_check_exit": true,
+ "generator_verdict": "PASS",
+ "committed_artifact_unchanged": true,
+ "note": "evidence only: the .tif itself is delivered as the run artefact, retention 90 days; committing one raster per run is how this repository grew to 411 MB of pinned parts"
+}
