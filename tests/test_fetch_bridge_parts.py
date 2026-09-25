@@ -83,6 +83,13 @@ def test_check_fails_when_a_part_does_not_match_its_pin(tmp_path, capsys):
 
 
 # --------------------------------------------------------------------------------- the mirror ref
+class _Args:
+    """Stand-in for the parsed CLI flags, so `resolve_mirror_ref` can be tested without a fetch."""
+
+    mirror_repo = None
+    mirror_ref = None
+
+
 def test_the_mirror_ref_must_be_explicit(tmp_path):
     """A sha256-pinned artefact must not depend on a branch name that moves."""
     m = _mod()
@@ -92,13 +99,38 @@ def test_the_mirror_ref_must_be_explicit(tmp_path):
     assert "no mirror ref given" in str(exc.value)
 
 
+def test_the_recorded_mirror_is_actually_read_from_the_bridge_directory(tmp_path):
+    """The bug that made the first fix fail on the runner, measured in run 36187101169.
+
+    `MIRROR_RECORD` was resolved as `bridge / MIRROR_RECORD.split("/", 1)[1]`, i.e.
+    `data/bridge/bridge/mirror.json` - a path that can never exist.  The record was therefore
+    always invisible, so every run refused with "no mirror ref given" and step 7 failed exactly as
+    it had before the fix.  The record is looked up *relative to the bridge directory*, and this
+    test proves the lookup resolves to the committed file rather than to a doubled path.
+    """
+    m = _mod()
+    b = ROOT / "data/bridge"
+    repo, ref = m.resolve_mirror_ref(b, _Args())
+    rec = json.loads((b / "mirror.json").read_text())
+    assert (repo, ref) == (rec["repo"], rec["ref"]), (
+        "the mirror record must be read from <bridge>/mirror.json, not from a doubled path")
+    assert ref == "cceebbdcf9a7d2890bb0665defcb54dfc66ae452"
+
+
 def test_the_recorded_mirror_is_pinned_to_a_commit_sha():
     """The repo's own mirror record: a 40-hex ref, not 'main'."""
+    m = _mod()
     rec = json.loads((ROOT / "data/bridge/mirror.json").read_text())
     assert set(rec) >= {"repo", "ref"}
     assert len(rec["ref"]) == 40 and all(c in "0123456789abcdef" for c in rec["ref"]), \
         "the mirror ref must be a commit sha, or a pinned artefact depends on a moving target"
     assert rec["repo"] == "buffedlizard55-lab/GEMSDOE"
+    # the URL the fetcher would actually build must point at that repo, that commit, that part
+    url = m.RAW.format(repo=rec["repo"], ref=rec["ref"],
+                       part="gems-geodawn-numerical-features.tif.part-000")
+    assert url == ("https://raw.githubusercontent.com/buffedlizard55-lab/GEMSDOE/"
+                   "cceebbdcf9a7d2890bb0665defcb54dfc66ae452/"
+                   "data/bridge/gems-geodawn-numerical-features.tif.part-000")
 
 
 # --------------------------------------------------------------------------- the real repository
