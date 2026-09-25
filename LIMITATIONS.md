@@ -680,3 +680,43 @@ runner twice). What is *not* verified from here is one hop further out:
   the merge SHA, which is the check to run if the site looks stale after a merge.
 * **The submit dialog's wording**, unchanged from before: transcribed by a logged-in human, not
   fetchable here (rules §3.2 documents only the single-GeoTIFF form).
+
+## Session 30 (2026-09-25) — what this session's four merges cost, and what is still blocking
+
+**What was blocking, and is no longer.** The runner could not place the official rasters on this
+repository at all. Copying the GEMSDOE tree without the ~418 MB of `data/bridge/*.part-*` files (this
+platform caps a turn's patchset at ~128 MB) left the manifest present and the parts absent, and every
+workflow tested for the *manifest*. Three separate defects sat behind that one symptom, each found
+only by reading the runner's step conclusions:
+
+1. no way to restore the parts → `scripts/fetch_bridge_parts.py`, pinned to a commit sha;
+2. the fetcher resolved its record at `bridge/` + `mirror.json` inside `data/bridge/`, i.e. one
+   directory level too deep, a path that cannot exist, so it always refused — the fix was a no-op
+   until `MIRROR_RECORD` became relative to `--bridge`;
+3. Route A then failed because it scored `data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif`,
+   a directory `.gitignore` deliberately keeps out of the index, while printing that it "is committed".
+
+`make-submission.yml` run **36188417233** is green and its evidence record is real
+(`submission_sha256 932c2f30…`, `validator_passed true`, `generator_verdict PASS`,
+`committed_artifact_unchanged true`).
+
+**What is still blocking, unchanged, and cannot be fixed from here.**
+
+* **The score itself.** Both prize phases are scored by DrivenData against privately withheld
+  expert-mapped faults. Uploading needs an enrolment and a login; `drivendata.org` is not in this
+  sandbox's egress allowlist. `scripts/check_submission_readiness.py` keeps that gate labelled
+  `HUMAN`. Every DTI number in this repository is measured against a **stand-in** population (SGMC
+  for the new faults, the USGS catalogue for catalogue DTI) — a real, independent compilation, but
+  not the scored one. A submission can be produced, validated, packaged and downloaded here; it
+  cannot be scored here.
+* **Deep learning.** No GPU, and `download.pytorch.org` is blocked, so the PyPI torch wheel cannot
+  be made to import (`libcublasLt.so` missing). The 1.6 GB wheel was deleted. Everything shipped is
+  therefore CPU-only and torch-free by construction, which is also why the `torch`-gated tests fail
+  locally (8 of them) and pass on CI.
+* **~50 GB of 3DEP lidar tiles** and any GPU training must happen elsewhere.
+
+**A limitation of the measurement, not of the site.** The Pages build history alternates between
+`built` and `errored` because bot evidence commits land seconds apart and each build is superseded by
+the next push. Every `errored` entry is followed within 10–25 s by a new build, including on the
+first merge of PR #1 (`915f7ff`), long before this session's pushes. The current status is `built`;
+treat a lone `errored` with a newer build after it as noise, not as a site defect.

@@ -1,3 +1,25 @@
+## Session 30 (2026-09-25) — the open item from session 23 is closed, and what it cost to close it
+
+**Item 6 of the session-23 table is done.** `make-submission.yml` has now run on a real runner, more
+than once, and its committed evidence is real rather than null. Run **36188417233** on `main`
+@ `a16dc83` is **success**: steps 7 (place the rasters), 8 (re-hash + re-validate), 11 (site payload
+consistency), 12 (site rebuild), 13 (package) and 14 (refuse to publish nothing) all ran and passed,
+and `data/evidence/make_submission/36188417233.json` records `submission_sha256 932c2f30…`
+(793,704 B), `validator_passed true`, `payload_check true`, `generator_verdict PASS`,
+`committed_artifact_unchanged true`.
+
+Getting there took four merges, and each failure was found by *reading the runner result* rather than
+assuming green — which is the transferable lesson, not the specific bugs:
+
+| # | Suggestion | Status |
+|---|---|---|
+| 1 | **Treat a workflow's own diagnostic text as a claim to be checked, not as truth.** Route A printed `MISSING $ART (it is committed; …)` for a path `git ls-files` says is not committed. The message was wrong, and it was wrong for the same reason the step failed. | ✅ Implemented — `tests/test_workflow_yaml.py::test_every_evidence_raster_a_workflow_reads_is_available_to_it` asserts every `data/evidence/**/*.tif` a workflow reads is in git's index **or** produced by an earlier step of the same workflow. Comments are stripped and `--out`/`-o`/redirect targets count as produced, so it has no false alarms. |
+| 2 | **A guard that cannot fail is worse than no guard.** The sidecar check compared against `submission.tif.sha256`, a filename that never exists, so it silently never ran; `proxy-eval.yml` scored an uncommitted raster behind an always-false `if [ -f ]` and emitted a warning while going green. | ✅ Fixed — `${ART%.tif}.sha256`; `proxy-eval.yml` scores the shipped artifact. `committed_artifact_unchanged: true` in run 36188417233 is the first time that guard has actually executed. |
+| 3 | **Make "is the input present?" a different question from "is the manifest present?"** The workflows decided whether the bridge existed by testing for `manifest.json`, so an incomplete bridge took the local-assembly branch and failed. | ✅ Implemented — `scripts/fetch_bridge_parts.py` restores the parts from a **commit-sha-pinned** mirror and verifies every sha256; `--check` is the no-network probe that answers the real question. |
+| 4 | **Pin the artefact you download to a commit, and prove the bytes.** A branch-named mirror would make a sha256-pinned artefact depend on a moving target. | ✅ Implemented + measured — `data/bridge/mirror.json` pins `cceebbdcf9a7d2890bb0665defcb54dfc66ae452`; all five parts match their manifest pins and reassemble to 418,912,844 B / sha256 `4371c82e…`, the whole-file pin. |
+| 5 | A "Build it here" link from the site root. | ⏳ Still open, cosmetic — the generator is reachable only from `how_to_submit.html`. |
+| 6 | Run `make-submission.yml` on a real runner and read its evidence. | ✅ **Done** — four runs read, three failures root-caused and fixed, one green (36188417233). |
+
 # Suggestions and Improvements — Implemented for Top Leaderboard
 
 ## Session 26 (2026-09-25) — GEMSDOE4: target the population the rules score, then union differently-biased detectors
