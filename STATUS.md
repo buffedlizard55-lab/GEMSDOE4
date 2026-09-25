@@ -1,3 +1,50 @@
+# Project status — 2026-09-25 (sessions 1–29)
+
+## Session 29 (2026-09-25) — the fix worked, and it exposed the next gap: a workflow reading a raster the repo does not commit
+
+**Where the runner actually got to.** With the mirror-record bug fixed, `make-submission.yml` run
+**36187572595** passed step 7 (data placement) for the first time and failed at **step 8, Route A**,
+again skipping steps 9–14. Reading step 8 rather than guessing:
+
+```
+ART=data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif
+test -f "$ART" || { echo "MISSING $ART (it is committed; a shallow checkout would not have it)"; exit 1; }
+```
+
+The message claimed the artifact "is committed". It is not. `git ls-files` confirms
+`data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif` is **not tracked** — `.gitignore`
+ignores `*.tif` by default and makes exceptions only for the fixture, the bridge and the NFF inputs.
+The whole per-run directory is deliberately out of the index ("committing one raster per run is how
+this repository grew to 411 MB of pinned parts"). So Route A could never have passed on this
+repository, on any commit, since the tree was copied. It only looked like a step-7 problem because
+step 7 failed first.
+
+1. **Route A now scores the artifact GEMSDOE4 actually ships** —
+   `data/evidence/combined/submission.tif`, which *is* tracked, is what the browser generator
+   reproduces, and is what the user downloads. Measured locally: `validate_submission.py` →
+   **✅ Validation PASSED**; `python -m src.submission_io validate-conformant` →
+   `"conformant": true`; sha256 `932c2f30…` agrees with its own sidecar.
+2. **The sidecar lookup was also wrong.** `"$ART".sha256` resolves to `submission.tif.sha256`,
+   which never exists — the file is `submission.sha256` — so the "the committed artifact no longer
+   matches its own sidecar" guard silently never ran. Now `${ART%.tif}.sha256`.
+3. **The same stale default in `block-holdout.yml` and `cross-catalogue.yml`** (their
+   `--submission` input, 2 sites each) now points at the shipped artifact.
+4. **`proxy-eval.yml` scored a run artifact that is not committed either**, behind an
+   `if [ -f "$S" ]` guard that is always false — so it emitted `::warning::no committed submission to
+   score` and went green. That is the "green claim, unmeasured" antipattern this repository
+   documents against itself. It now scores the shipped artifact, so the measurement is real.
+5. **Two truth rasters that four workflows read were also untracked**, and are now committed with
+   `.gitignore` exceptions: `data/evidence/proxy/proxy_catalogue.tif` (SGMC, USGS Data Series 1052,
+   DOI 10.3133/ds1052 / 10.5066/F7WH2N65, 21,765 features) and
+   `data/evidence/xcat/qfaults_catalogue.tif` (USGS QFaults, DOI 10.5066/P9BCVRCK, 14,481
+   features). Both carry sha256-pinned inputs in their `*_stats.json` / `fetch_meta.json`.
+6. **`tests/test_workflow_yaml.py` now enforces the invariant**: every `data/evidence/**/*.tif` a
+   workflow *reads* must be either in git's index or produced by an earlier step of the same
+   workflow. It strips comments first (so `reblend.yml`'s prose about the old 110-byte stub is
+   documentation, not a dependency) and it treats `--out`/`-o`/redirection targets as produced (so
+   `cross-catalogue.yml` building its QFaults catalogue is not a false alarm). A second test pins
+   that every scoring workflow defaults to the one committed shipped artifact.
+
 # Project status — 2026-09-25 (sessions 1–28)
 
 ## Session 28 (2026-09-25) — the first fix was wrong, and the runner is what proved it

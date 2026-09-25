@@ -120,12 +120,18 @@ jobs:
           if [ "$ROUTE" = baseline ]; then
             echo "route=$ROUTE: the adopted artifact is not being shipped by this run"; exit 0
           fi
-          ART=data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif
+          # The artifact GEMSDOE4 ships and the one this repository commits (see .gitignore: *.tif
+          # is ignored by default, with the shipped artifact an explicit exception).  The deep
+          # ensemble run directory is deliberately NOT committed - one raster per run is how this
+          # repository grew to 411 MB of pinned parts - so naming it here made this step unfailable
+          # to pass.  Measured: run 36187572595 failed at exactly this `test -f`.
+          ART=data/evidence/combined/submission.tif
           test -f "$ART" || { echo "MISSING $ART (it is committed; a shallow checkout would not have it)"; exit 1; }
           cp -f "$ART" out/submission.tif
           sha256sum out/submission.tif | tee out/submission.sha256
           # the committed sidecar must agree, or the artifact changed underneath the site
-          recorded=$(awk '{print $1}' "$ART".sha256 2>/dev/null || echo "")
+          # the sidecar is <name>.sha256 (submission.sha256), not <name>.tif.sha256
+          recorded=$(awk '{print $1}' "${ART%.tif}.sha256" 2>/dev/null || echo "")
           actual=$(sha256sum "$ART" | cut -d" " -f1)
           if [ -n "$recorded" ] && [ "$recorded" != "$actual" ]; then
             echo "::error title=hash mismatch::the committed artifact no longer matches its own sidecar"; exit 1
@@ -291,7 +297,7 @@ jobs:
                   verdict = json.loads(gen.read_text()).get("verdict")
               except Exception:
                   verdict = "unparseable"
-          ev = Path("data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif")
+          ev = Path("data/evidence/combined/submission.tif")
           out = dict(
               run_id=os.environ.get("GITHUB_RUN_ID"),
               commit=os.environ.get("GITHUB_SHA"),
