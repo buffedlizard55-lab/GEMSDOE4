@@ -1,3 +1,37 @@
+# Project status — 2026-09-25 (sessions 1–30)
+
+## Session 30 (2026-09-25) — `make-submission` is green, and every number in its record is real
+
+**Measured, end to end.** `make-submission.yml` run **36188417233** on `main` @ `a16dc83`:
+**success**. Steps 7 (data placement), 8 (Route A re-hash + re-validate), 11 (site payload
+consistency), 12 (site rebuild), 13 (package the container the submit dialog accepts) and 14 (refuse
+to publish a run that produced nothing) all ran and all passed. The committed evidence
+`data/evidence/make_submission/36188417233.json` is no longer a record of nulls:
+
+| field | value |
+|---|---|
+| `submission_sha256` | `932c2f3069a428634f101ea2705d2624ff7ee565dba5e9aa3126a9b8e9020860` |
+| `submission_bytes` | 793,704 |
+| `zip_sha256` / `zip_bytes` | `42bf1d4f…` / 793,830 |
+| `validator_passed` | `true` |
+| `payload_check` | `true` |
+| `generator_verdict` / `generator_check_exit` | `PASS` / `true` |
+| `committed_artifact_unchanged` | `true` — the sidecar guard now actually executes |
+
+That last row is the one that matters for trust: the guard that compares the committed artifact to
+its own `submission.sha256` had silently never run, because the workflow looked for
+`submission.tif.sha256`. It runs now, and it agrees.
+
+**The chain that got here** (each step found by reading the runner result, not by assuming green):
+missing bridge parts → `fetch_bridge_parts.py` → a mirror-record path bug that made the fix a no-op
+→ a Route A that scored a raster the repository does not commit → green. Four PRs, all merged:
+#1 (the copied tree + new-fault-first line), #2 (the fetcher), #3 (the path bug), #4 (Route A and
+the two untracked truth rasters).
+
+**Still human-gated, unchanged:** uploading to DrivenData needs an enrolment and a login, which this
+sandbox does not have. `scripts/check_submission_readiness.py` keeps that gate labelled `HUMAN`, and
+no score is claimed anywhere in the repository.
+
 # Project status — 2026-09-25 (sessions 1–29)
 
 ## Session 29 (2026-09-25) — the fix worked, and it exposed the next gap: a workflow reading a raster the repo does not commit
