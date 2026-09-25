@@ -124,12 +124,20 @@ def main(argv=None) -> int:
         # the combiner states, per member, which geography that member never trained on, instead of
         # implying the whole union is uniformly out-of-sample.
         provenance = {}
-        rep = path.parent / "report.json"
-        if rep.exists():
+        # Each detector line names its own decision record differently (report.json here,
+        # baseline_report.json for the classical line, blend_report.json for the deep ensemble), so
+        # look for the one that exists rather than assuming a single convention.
+        rep = next((p for p in (path.parent / n for n in
+                                ("report.json", "baseline_report.json", "blend_report.json",
+                                 "run_summary.json")) if p.exists()), None)
+        if rep is not None:
             try:
                 r = json.loads(rep.read_text())
+                held = r.get("held_out_fold")
+                # The deep-ensemble artifact carries no holdout record because its runner trained
+                # over the whole grid; saying so explicitly is more honest than rendering a dash.
                 provenance = dict(script=r.get("script"),
-                                  held_out_fold=r.get("held_out_fold"),
+                                  held_out_fold=held if held is not None else "none - whole-grid training",
                                   measurement_fold=r.get("measurement_fold"),
                                   generated_utc=r.get("generated_utc"))
             except Exception:                                    # pragma: no cover
@@ -174,12 +182,29 @@ def main(argv=None) -> int:
     for m in members:
         f = fields[m["name"]]
         if m["is_prob"]:
-            f = (floor_sharpen(f, t0=0.5, hard=True) > 0).astype(np.float32)
+            # Score a probability member at the policy ITS OWN run selected (read from its report,
+            # not assumed), so "own_scores" is the number that member's report already quotes rather
+            # than an arbitrary floor that would make a strong detector look weak.
+            rep_path = m["path"].parent / "report.json"
+            t0, dil = 0.5, 0
+            if rep_path.exists():
+                try:
+                    r = json.loads(rep_path.read_text())
+                    w = ((r.get("policy_selection") or {}).get("winner")) or {}
+                    t0, dil = float(w.get("t0", 0.5)), int(w.get("dilate", 0))
+                except Exception:                                    # pragma: no cover
+                    pass
+            q = floor_sharpen(f, t0=t0, hard=True)
+            if dil:
+                q = dilate_mask(q, radius=dil)
+            f = (q > 0).astype(np.float32)
         else:
             f = (f > 0).astype(np.float32)
         member_scores[m["name"]] = dict(
             proxy_dti=ctx["proxy"].score(f), catalogue_dti=ctx["catalogue"].score(f),
-            emitted_px=int((f > 0).sum()))
+            emitted_px=int((f > 0).sum()),
+            note=("scored at its own run's selected policy" if m["is_prob"]
+                  else "binary field as written"))
     prob_members = [m["name"] for m in members if m["is_prob"]]
     binary_members = [m["name"] for m in members if not m["is_prob"]]
     t0_grid = [0.0] + [float(f"{x:.6g}") for x in

@@ -2498,7 +2498,6 @@ def _newfault_section(ev: dict, anchor: str = "newfault") -> str:
     page) - not a claim about it.
     """
     comb = ev.get("combined") or {}
-    nff = ev.get("newfault_runs") or []
     if not comb:
         return ""
     sub = comb.get("submission") or {}
@@ -2513,12 +2512,6 @@ def _newfault_section(ev: dict, anchor: str = "newfault") -> str:
             rows.append((str(m.get("name")), own.get("proxy_dti"), own.get("catalogue_dti"),
                          own.get("emitted_px"),
                          (m.get("provenance") or {}).get("held_out_fold", "&mdash;")))
-    for r in nff:
-        rep = r.get("submission") or {}
-        gs = rep.get("global_scores") or {}
-        rows.append(("lineament NFF (%s)" % Path(str(rep.get("path", ""))).parent.name,
-                     gs.get("proxy"), gs.get("catalogue"), rep.get("nonzero_px"),
-                     r.get("held_out_fold")))
     if not rows:
         return ""
     tbl = "".join(
@@ -2556,8 +2549,12 @@ variant of the same model:</p>
       NFF detectors trained on disjoint fold halves.</li>
 </ol>
 <h3>Measured, on the full grid, both populations</h3>
-<table><thead><tr><th>detector</th><th>new-fault (proxy) DTI</th><th>catalogue DTI</th>
-<th>emitted px</th><th>held-out fold</th></tr></thead><tbody>%s</tbody></table>
+<table><thead><tr><th>detector (a member of the union)</th><th>new-fault (proxy) DTI</th>
+<th>catalogue DTI</th><th>emitted px</th><th>held-out fold</th></tr></thead><tbody>%s</tbody></table>
+<p class="small">Each member is scored by <code>scripts/combine_newfault.py</code> on the same
+truth, with the same scorer, in the same run &mdash; a probability member at the policy its own run
+selected, a binary member exactly as written. That is what makes the row below a measurement rather
+than a comparison of numbers produced by different code paths.</p>
 %s
 <h3>The shipped combination</h3>
 <table><thead><tr><th>rule</th><th>new-fault (proxy) DTI</th><th>catalogue DTI</th>

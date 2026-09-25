@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-09-25T19:31:46Z",
+ "generated_utc": "2026-09-25T20:13:20Z",
  "script": "scripts/combine_newfault.py (via src/submission_io.conform_to_template)",
  "command": "python scripts/combine_newfault.py --out-dir data/evidence/combined --fold 0 --eval-fold 1",
  "why": "every member raster is read through nan_to_num, so the union field is finite (0.0) outside the template's valid region; conform_to_template masks those back to NaN before the writer sees the array - the placement rule the platform enforces with 'Predicted values must be in range [0, 1]'",

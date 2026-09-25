@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-09-25T19:31:48Z",
+ "generated_utc": "2026-09-25T20:13:22Z",
  "script": "scripts/combine_newfault.py",
  "purpose": "union of structurally different detectors, with the combination rule selected on the NEW-FAULT population on geography the sweep never scored",
  "members": [
@@ -8,14 +8,36 @@
    "path": "data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif",
    "probability": false,
    "sha256": "7f00890a62878d612fb5eef67a9a364a2df819433dde74b6762ce4fc0fc4fe15",
-   "provenance": {}
+   "provenance": {
+    "script": "scripts/blend_submission.py",
+    "held_out_fold": "none - whole-grid training",
+    "measurement_fold": null,
+    "generated_utc": "2026-09-17T22:47:58Z"
+   },
+   "own_scores": {
+    "proxy_dti": 0.09985938622937189,
+    "catalogue_dti": 0.22979915192669062,
+    "emitted_px": 172974,
+    "note": "binary field as written"
+   }
   },
   {
    "name": "classical",
    "path": "data/evidence/baseline/submission.tif",
    "probability": false,
    "sha256": "9f2577cff20d97717dc42afbdc08faff149bf5fcf237b3bc3daffa9d81dc1163",
-   "provenance": {}
+   "provenance": {
+    "script": "scripts/baseline_submission.py",
+    "held_out_fold": 0,
+    "measurement_fold": 1,
+    "generated_utc": "2026-09-20T16:55:53Z"
+   },
+   "own_scores": {
+    "proxy_dti": 0.11907096060510475,
+    "catalogue_dti": 0.061148543512767786,
+    "emitted_px": 155889,
+    "note": "binary field as written"
+   }
   },
   {
    "name": "nff42",
@@ -26,7 +48,13 @@
     "script": "scripts/newfault_detector.py",
     "held_out_fold": 0,
     "measurement_fold": 1,
-    "generated_utc": "2026-09-25T19:00:14Z"
+    "generated_utc": "2026-09-25T19:53:14Z"
+   },
+   "own_scores": {
+    "proxy_dti": 0.13482032005236613,
+    "catalogue_dti": 0.11818681672122058,
+    "emitted_px": 218688,
+    "note": "scored at its own run's selected policy"
    }
   },
   {
@@ -38,7 +66,13 @@
     "script": "scripts/newfault_detector.py",
     "held_out_fold": 2,
     "measurement_fold": 3,
-    "generated_utc": "2026-09-25T19:24:09Z"
+    "generated_utc": "2026-09-25T20:08:40Z"
+   },
+   "own_scores": {
+    "proxy_dti": 0.15514534777201566,
+    "catalogue_dti": 0.13104841323174132,
+    "emitted_px": 215449,
+    "note": "scored at its own run's selected policy"
    }
   }
  ],
@@ -477,7 +511,7 @@
   "nan_px": 7111787,
   "nonzero_px": 547862,
   "policy": "union k=1 of 4 members; probability members floored at t0=0.288378 and dilated 0 px",
-  "suggested_note": "nff-union-4",
+  "suggested_note": "nff-union-4 \u00b7 union k=1 of 4 members (t0=0.288, w=0)",
   "global_scores": {
    "proxy": 0.18641173089046878,
    "catalogue": 0.1977359820748084
