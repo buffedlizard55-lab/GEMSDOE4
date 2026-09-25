@@ -41,7 +41,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MIRROR_REPO = "buffedlizard55-lab/GEMSDOE"
-MIRROR_RECORD = "data/bridge/mirror.json"
+# The mirror record lives inside the bridge directory itself; this name is RELATIVE to `--bridge`,
+# so `bridge / MIRROR_RECORD` resolves to <bridge>/mirror.json and nothing else.
+MIRROR_RECORD = "mirror.json"
 RAW = "https://raw.githubusercontent.com/{repo}/{ref}/data/bridge/{part}"
 CHUNK = 1 << 20
 
@@ -61,15 +63,21 @@ def load_manifest(bridge: Path) -> dict:
     return json.loads(m.read_text())
 
 
-def mirror_ref(bridge: Path, args) -> tuple[str, str]:
-    """(repo, ref) for the mirror, with the ref required to be explicit and recorded."""
-    rec = bridge / MIRROR_RECORD.split("/", 1)[1]
+def resolve_mirror_ref(bridge: Path, args) -> tuple[str, str]:
+    """(repo, ref) for the mirror, with the ref required to be explicit and recorded.
+
+    Precedence is explicit flag > the record committed in the bridge directory > the default
+    repository name.  The ref is never defaulted: a branch name would make a sha256-pinned
+    artefact depend on a moving target.  Explicit flags are self-sufficient, so a caller may
+    point at a bridge directory that carries no record at all.
+    """
+    rec = bridge / MIRROR_RECORD
     recorded = {}
     if rec.exists():
         try:
             recorded = json.loads(rec.read_text())
         except Exception:                                       # pragma: no cover
-            recorded = {}
+            raise SystemExit(f"{rec} is not valid JSON - refusing to guess a pinned ref")
     repo = args.mirror_repo or recorded.get("repo") or DEFAULT_MIRROR_REPO
     ref = args.mirror_ref or recorded.get("ref")
     if not ref:
@@ -98,7 +106,7 @@ def main(argv=None) -> int:
         print("manifest lists no parts - nothing to fetch")
         return 0
 
-    repo, ref = ("", "") if args.check else mirror_ref(bridge, args)
+    repo, ref = ("", "") if args.check else resolve_mirror_ref(bridge, args)
     missing, wrong, ok = [], [], []
     for part, parent in wanted:
         p = bridge / part["name"]

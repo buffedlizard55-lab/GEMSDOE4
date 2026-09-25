@@ -1,3 +1,36 @@
+# Project status — 2026-09-25 (sessions 1–28)
+
+## Session 28 (2026-09-25) — the first fix was wrong, and the runner is what proved it
+
+**Irregularity flagged, and it is mine.** `fetch_bridge_parts.py` resolved its mirror record as
+`bridge / "data/bridge/mirror.json".split("/", 1)[1]` — i.e. `data/bridge/**bridge**/mirror.json`,
+a path that cannot exist. The record was therefore always invisible, so every run refused with
+*"no mirror ref given"* and step 7 failed **exactly as it had before the fix**. Measured: the
+re-dispatch I fired after merging PR #2, `make-submission.yml` run **36187101169**, failed at step 7
+and again skipped steps 8–14.
+
+Two things were wrong, and only one of them was the bug:
+
+1. **The bug.** `MIRROR_RECORD` is now relative to `--bridge` (`<bridge>/mirror.json`), the lookup
+   helper is renamed `resolve_mirror_ref` so it no longer shadows `args.mirror_ref`, and an
+   unparseable record is a hard failure rather than a silent empty dict. Precedence is
+   explicit flag → record → default repo name; the ref is never defaulted, and explicit flags are
+   self-sufficient so a bridge directory with no record can still be used.
+2. **The missing test.** The old suite asserted the *error message* for a missing ref, so the bug
+   produced a passing test. `test_the_recorded_mirror_is_actually_read_from_the_bridge_directory`
+   now calls `resolve_mirror_ref` against this repository's own `data/bridge/` and asserts it
+   returns the recorded pair — it fails on the old code and passes on the new. A second assertion
+   pins the exact `raw.githubusercontent.com` URL the fetcher builds, so the host, the pinned
+   commit and the part path cannot drift apart.
+
+**The bytes are now verified end to end, not assumed.** The mirror's parts were pulled at commit
+`cceebbdcf9a7d2890bb0665defcb54dfc66ae452` through the GitHub API (the same blobs
+`raw.githubusercontent.com` serves) and measured: every one of the five parts matches its manifest
+pin byte for byte, and the concatenation reassembles to **418,912,844 B / sha256
+`4371c82e…`** — exactly the whole-file pin, and exactly what `data/evidence/inventory.json`
+records for the official `training_features.tif`. So the download the runner performs is provably
+the right bytes; only the path bug stood between it and working.
+
 # Project status — 2026-09-25 (sessions 1–27)
 
 ## Session 27 (2026-09-25) — the runner-side data-placement gap this session created, found and closed
