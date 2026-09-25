@@ -1,0 +1,5 @@
+{
+ "repo": "buffedlizard55-lab/GEMSDOE",
+ "ref": "cceebbdcf9a7d2890bb0665defcb54dfc66ae452",
+ "note": "the repository the bridge was generated from (pinned to a commit sha, not a branch, because a sha256-pinned artefact must not depend on a moving target). GEMSDOE4 carries the manifest and the two small rasters but not the ~418 MB of parts - this platform caps a turn's patchset at ~128 MB. scripts/fetch_bridge_parts.py restores them and verifies every sha256 against data/bridge/manifest.json. Verified: all 5 parts and both whole-file pins."
+}

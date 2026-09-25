@@ -1,3 +1,42 @@
+# Project status — 2026-09-25 (sessions 1–27)
+
+## Session 27 (2026-09-25) — the runner-side data-placement gap this session created, found and closed
+
+**Irregularity flagged and fixed, measured not assumed.** Copying the GEMSDOE tree into GEMSDOE4
+without the ~418 MB of `data/bridge/*.part-*` files (to stay under this platform's ~128 MB
+turn-patchset cap) left `data/bridge/manifest.json` in the tree but the parts it pins absent. Every
+workflow decides whether the bridge is present by testing for **the manifest**, so on this branch
+they took the "assemble locally" branch and failed. Measured: `make-submission.yml` run
+**36186011727** failed at step 7 ("Place the official rasters from the pinned git bridge") and
+skipped steps 8–14 — re-validating the artifact, the CPU route, the payload check, the site rebuild,
+the packaging — committing an evidence record whose numbers are all `null`
+(`data/evidence/make_submission/36186011727.json`).
+
+1. **`scripts/fetch_bridge_parts.py` (new)** — restores the missing parts from the mirror repository
+   the bridge was generated from (`buffedlizard55-lab/GEMSDOE`) at a **pinned commit sha**
+   (`data/bridge/mirror.json`, ref `cceebbdcf9a7d2890bb0665defcb54dfc66ae452`), verifying every part
+   against the sha256 the manifest already records and refusing on any mismatch. It is a no-op when
+   every part is present, so it is safe to run unconditionally. `--check` is the no-network probe
+   that answers "is the bridge *complete*?" rather than "is the manifest there?".
+2. **Six workflows patched** to call it immediately before `assemble_data_bridge.py`:
+   `make-submission.yml`, `train-ensemble.yml` (2 sites), `block-holdout.yml` (2 sites),
+   `cross-catalogue.yml` (2 sites), `pseudo-label.yml`, `train-and-submit.yml`.
+   `place-competition-data.yml` is the *generating* side (Dropbox mirrors → bridge) and needs no
+   fetcher; a test asserts exactly that distinction rather than counting files.
+3. **`tests/test_fetch_bridge_parts.py` (new, 7 tests)** — pins the no-network probe's exit codes
+   (1 when parts are missing, 1 when a part mismatches its pin, 0 when all verify), the refusal to
+   run without an explicit mirror ref, that the recorded ref is a 40-hex commit sha and not a branch
+   name, that this repository's bridge really is incomplete (so the gap cannot be forgotten), and
+   that every workflow which runs the assembler calls the fetcher first.
+4. **The published site is unaffected**: GitHub Pages built successfully from `main`
+   (`gh api repos/.../pages` → `status: built`), the browser generator still reproduces
+   `data/evidence/combined/submission.tif` bit for bit, and `check_site_generator.py` is PASS.
+   The runner failure was in the *workflow's* data placement, not in the artifact or the site.
+5. **Rules re-verified on `main` by CI**: `verify(rules)` run re-checked all 29 quoted rule
+   sentences against the official PDF from its canonical URL — 29/29 exact matches,
+   `match_against_mirror.identical = true`, sha256 `50d854b1…`. The two sentences the whole
+   GEMSDOE4 strategy rests on (`phase1_target`, `phase2_target`) are among them.
+
 # Project status — 2026-09-25 (sessions 1–26)
 
 ## Session 26 (2026-09-25) — GEMSDOE4: a *different* strategy, because the rules score a different population
