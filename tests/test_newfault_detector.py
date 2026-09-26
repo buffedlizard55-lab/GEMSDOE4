@@ -166,10 +166,13 @@ def test_the_proxy_labels_are_actually_used(run):
     """The whole point of the new-fault-first line: supervision beyond the catalogue."""
     sup = run["report"]["supervision"]
     assert sup["use_proxy_labels"] is True
+    assert sup.get("mode", "union") == "union"
     assert sup["proxy_only_px"] > 0, "the fixture carries a proxy-only trace"
     assert sup["positive_px"] > sup["catalogue_px"], \
         "the catalogue union the proxy must be strictly larger than the catalogue alone"
     assert run["report"]["training"]["n_pos"] > 0
+    assert sup.get("catalogue_in_positives") is True
+    assert sup.get("proxy_only_in_positives") is True
 
 
 def test_the_catalogue_only_ablation_changes_the_model(run, tmp_path):
@@ -185,6 +188,7 @@ def test_the_catalogue_only_ablation_changes_the_model(run, tmp_path):
     assert rc == 0
     rep = json.loads((out_dir / "report.json").read_text())
     assert rep["supervision"]["use_proxy_labels"] is False
+    assert rep["supervision"]["mode"] == "catalogue"
     assert rep["supervision"]["positive_px"] == rep["supervision"]["catalogue_px"]
     assert rep["training"]["n_pos"] < run["report"]["training"]["n_pos"], \
         "dropping the proxy must reduce the training positives, or the flag did nothing"
@@ -193,6 +197,74 @@ def test_the_catalogue_only_ablation_changes_the_model(run, tmp_path):
     with rasterio.open(run["out_dir"] / "prob_raw.tif") as src:
         full = np.nan_to_num(src.read(1), nan=0.0)
     assert not np.array_equal(ablated, full), "the two supervisions must produce different fields"
+
+
+def test_proxy_only_supervision_never_sees_a_catalogue_fault(run, tmp_path):
+    """Session-32 unique angle: diversity from the *training target*, not from seeds.
+
+    A member supervised only on SGMC code-2 pixels never treats a catalogue fault as a
+    positive, so its errors are structurally anti-correlated with catalogue-trained
+    detectors.  That is the LOO finding from session 31 written as a flag rather than a
+    hope that another seed will look different.
+    """
+    pytest.importorskip("sklearn")
+    fx = run["fx"]
+    out_dir = tmp_path / "proxy_only"
+    mod = _mod()
+    rc = mod.main(["--features", str(fx["features"]), "--labels", str(fx["labels"]),
+                   "--template", str(fx["template"]), "--proxy", str(fx["proxy"]),
+                   "--out-dir", str(out_dir), "--block-px", "64", "--folds", "4",
+                   "--fold", "0", "--eval-fold", "1", "--seed", "3", "--max-iter", "25",
+                   "--max-negatives", "4000", "--supervision", "proxy_only"])
+    assert rc == 0
+    rep = json.loads((out_dir / "report.json").read_text())
+    sup = rep["supervision"]
+    assert sup["mode"] == "proxy_only"
+    assert sup["use_proxy_labels"] is True, "legacy flag stays True whenever proxy enters training"
+    assert sup["catalogue_in_positives"] is False
+    assert sup["proxy_only_in_positives"] is True
+    assert sup["positive_px"] == sup["proxy_only_px"], \
+        "proxy_only positives must equal the proxy-only pixel count exactly"
+    assert "--supervision proxy_only" in rep["reproduce"]
+    with rasterio.open(out_dir / "prob_raw.tif") as src:
+        po = np.nan_to_num(src.read(1), nan=0.0)
+    with rasterio.open(run["out_dir"] / "prob_raw.tif") as src:
+        full = np.nan_to_num(src.read(1), nan=0.0)
+    assert not np.array_equal(po, full), \
+        "proxy_only supervision must produce a different field from the union default"
+
+
+def test_build_positives_modes_are_disjoint_where_they_should_be():
+    """Unit pin on the pure function so a future edit cannot silently re-add catalogue
+    positives into the proxy_only mask."""
+    mod = _mod()
+    fault = np.zeros((4, 4), bool); fault[0, 0] = True
+    proxy = np.zeros((4, 4), bool); proxy[1, 1] = True
+    near = np.zeros((4, 4), bool); near[2, 2] = True
+    u = mod.build_positives(fault, proxy, near, "union")
+    p = mod.build_positives(fault, proxy, near, "proxy_only")
+    c = mod.build_positives(fault, proxy, near, "catalogue")
+    assert u.sum() == 3 and p.sum() == 1 and c.sum() == 1
+    assert p[0, 0] is np.False_ or p[0, 0] == False
+    assert not p[0, 0], "proxy_only must never mark a catalogue fault positive"
+    assert c[1, 1] == False and c[2, 2] == False
+    assert u[0, 0] and u[1, 1] and u[2, 2]
+
+
+def test_resolve_supervision_honours_legacy_and_refuses_conflicts():
+    mod = _mod()
+    from argparse import Namespace
+    assert mod.resolve_supervision(Namespace(supervision="union", use_proxy_labels=None)) == "union"
+    assert mod.resolve_supervision(Namespace(supervision="proxy_only", use_proxy_labels=None)) == "proxy_only"
+    assert mod.resolve_supervision(Namespace(supervision="union", use_proxy_labels=False)) == "catalogue"
+    assert mod.resolve_supervision(Namespace(supervision="union", use_proxy_labels=True)) == "union"
+    # explicit non-default mode + contradictory legacy flag must fail loudly
+    try:
+        mod.resolve_supervision(Namespace(supervision="catalogue", use_proxy_labels=True))
+        raised = False
+    except SystemExit:
+        raised = True
+    assert raised, "conflicting supervision flags must be a hard error"
 
 
 # --------------------------------------------------------------------------------------- selection

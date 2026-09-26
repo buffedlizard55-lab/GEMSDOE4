@@ -27,9 +27,10 @@
 | **Grid Dimensions** | **3,292 columns × 3,730 rows** | Total raster area = 12,279,160 pixels |
 | **Raster Data Type** | **Single-band 32-bit float (`float32`)** | Values in `[0.0, 1.0]` representing fault presence probability |
 | **NoData Mask** | **NaN / null** outside GeoDAWN survey footprint | **57.92% NaN**; finite values strictly inside valid survey area |
-| **Shipped Winning Policy** | **Floor 0.180482, k = 2 of 5, width 0 px** | Pre-registered decision rule; Rank 1 of 14 eligible candidates (76 swept) in the session-31 sweep, on the new-fault population |
-| **Shipped Raster Artifact (GEMSDOE4)** | `data/evidence/combined/submission.tif` | sha256 `19de9950ceffbdf7a7163b645984353965ab7d61dca07dfe8b9b68856edb853b` (548.8 KB; the new-fault-first union of 5 detectors, k = 2 agreement — see `report.json`, `sanitize.json`) |
-| **Previous artifacts (kept as evidence)** | 4-member union sha256 `932c2f3069a428634f101ea2705d2624ff7ee565dba5e9aa3126a9b8e9020860` (793,704 B, in git history); deep ensemble `data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif` sha256 `7f00890a62878d612fb5eef67a9a364a2df819433dde74b6762ce4fc0fc4fe15` (570.9 KB, combination member `deep11`) |
+| **Shipped Winning Policy** | **Floor 0.180482, k = 2 of 5, width 0 px** | Pre-registered decision rule (session 32); LOO drop of seed-correlated `nff42`, keep structurally different `po46` (proxy_only supervision) — see `docs/SESSION32_PROTOCOL.md` |
+| **Shipped Raster Artifact (GEMSDOE4)** | `data/evidence/combined/submission.tif` | sha256 `c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4` (547.1 KB; new-fault-first union of 5 detectors incl. proxy_only member, k = 2 — see `report.json`, `sanitize.json`) |
+| **Suggested submission Note** | `nff-po-drop-nff42 · proxy_only diversity · union k=2 of 5 (t0=0.18, w=0)` | Unique per the dialog's "clustering with k=25" example; tells this build apart from `extradr19` / prior unions |
+| **Previous artifacts (kept as evidence)** | session-31 union sha256 `19de9950ceffbdf7a7163b645984353965ab7d61dca07dfe8b9b68856edb853b` (548,834 B); 4-member union `932c2f30…` (793,704 B, in git history); deep ensemble `7f00890a…` (570.9 KB, member `deep11`) |
 
 ---
 

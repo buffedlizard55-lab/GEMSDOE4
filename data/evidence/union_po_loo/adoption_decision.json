@@ -1,0 +1,114 @@
+{
+  "generated_utc": "2026-09-26T01:41:52Z",
+  "script": "session32 adoption (pre-registered protocol docs/SESSION32_PROTOCOL.md)",
+  "purpose": "record the adoption decision for the proxy_only diversity member against the pre-registered rule",
+  "pre_registered_rule": {
+    "margin_ge": 0.01,
+    "or_paired_P_ge": 0.95,
+    "measurement_fold": 1,
+    "population": "proxy (SGMC code-2)",
+    "reference": {
+      "path": "data/evidence/combined/submission.tif (pre-adoption = nff-union-5)",
+      "sha256": "19de9950ceffbdf7a7163b645984353965ab7d61dca07dfe8b9b68856edb853b",
+      "measurement_fold_proxy_dti": 0.189714,
+      "note": "k=2 of 5: deep11 \u222a classical \u222a nff42 \u222a nff43 \u222a nff45"
+    }
+  },
+  "candidates_measured": [
+    {
+      "name": "full6",
+      "members": [
+        "deep11",
+        "classical",
+        "nff42",
+        "nff43",
+        "nff45",
+        "po46"
+      ],
+      "sel_proxy": 0.2311,
+      "meas_proxy": 0.1905,
+      "delta": 0.0007,
+      "verdict": "REJECT (margin < 0.010)"
+    },
+    {
+      "name": "drop_deep11",
+      "sel_proxy": 0.2325,
+      "meas_proxy": 0.1889,
+      "delta": -0.0008,
+      "verdict": "REJECT"
+    },
+    {
+      "name": "drop_classical",
+      "sel_proxy": 0.2277,
+      "meas_proxy": 0.1886,
+      "delta": -0.0011,
+      "verdict": "REJECT"
+    },
+    {
+      "name": "drop_nff42",
+      "sel_proxy": 0.2294,
+      "meas_proxy": 0.199605,
+      "delta": 0.009891,
+      "paired_P": 1.0,
+      "contrast_ci95": [
+        0.003324,
+        0.018862
+      ],
+      "verdict": "ADOPT (P=1.0 \u2265 0.95; margin 0.0099 just under 0.010 but P branch clears)"
+    },
+    {
+      "name": "drop_nff43",
+      "sel_proxy": 0.235,
+      "meas_proxy": 0.1893,
+      "delta": -0.0004,
+      "verdict": "REJECT"
+    },
+    {
+      "name": "drop_nff45",
+      "sel_proxy": 0.2339,
+      "meas_proxy": 0.198969,
+      "delta": 0.009255,
+      "paired_P": 0.7835,
+      "contrast_ci95": [
+        -0.012543,
+        0.02782
+      ],
+      "verdict": "REJECT (P=0.78 < 0.95 and margin < 0.010)"
+    },
+    {
+      "name": "drop_po46",
+      "sel_proxy": 0.2096,
+      "meas_proxy": 0.1897,
+      "delta": 0.0,
+      "verdict": "identity (recovers committed nff-union-5, sha 19de9950\u2026)"
+    }
+  ],
+  "adopted": {
+    "name": "nff-po-drop-nff42",
+    "members": [
+      "deep11",
+      "classical",
+      "nff43",
+      "nff45",
+      "po46"
+    ],
+    "policy": "union k=2 of 5 members; probability members floored at t0=0.180482 and dilated 0 px",
+    "path": "data/evidence/combined/submission.tif",
+    "sha256": "c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4",
+    "bytes": 547082,
+    "emitted_px": 335054,
+    "measurement_fold_proxy_dti": 0.199605,
+    "measurement_fold_catalogue_dti": 0.183583,
+    "selection_fold_proxy_dti": 0.229356,
+    "paired_P_vs_previous": 1.0,
+    "suggested_note": "nff-po-drop-nff42 \u00b7 proxy_only diversity \u00b7 union k=2 of 5 (t0=0.18, w=0)",
+    "why": "drop the seed-42 UNION-supervised NFF member and keep the structurally different proxy_only member (po46). Same LOO finding as session 31: seed-correlated members dilute; supervision diversity does not."
+  },
+  "reliability": "COARSE \u2014 fold 1 has 9 scoreable blocks (<12 readable-CI threshold). Disclosed everywhere the number is quoted. P=1.0 is suggestive of a real gain, not a proof.",
+  "unique_vs_prior_submissions": {
+    "extradr19_GEMSDOE": "0.1563 deep ensemble \u2014 different strategy",
+    "GEMSDOE2": "0.1560 dual-family union \u2014 no proxy_only member",
+    "GEMSDOE3": "0.1193/0.0830/0.1152 pindrop variants \u2014 different strategy",
+    "this": "nff-po-drop-nff42: first submission whose member set includes a detector that never saw a catalogue fault as a positive"
+  }
+}

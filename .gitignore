@@ -58,6 +58,13 @@ outputs_*/
 # at setup on every fresh checkout (CI had been running with 3 collection errors since before
 # PR #2).  It is evidence with a pin, so it travels in git like the other identity rasters.
 !data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif
+# GEMSDOE4 session 32 (2026-09-26): proxy_only diversity member + LOO re-adoption of the
+# union.  The classical baseline submission.tif is a union member (sha pin 9f2577cf…) and
+# must travel in git so combine_newfault can re-run from a fresh clone; the proxy_only
+# member and the LOO candidate rasters are the evidence the adoption decision rests on.
+!data/evidence/baseline/submission.tif
+!data/evidence/union_po/submission.tif
+!data/evidence/union_po_loo/**/submission.tif
 *.zip
 *.gdb
 *.grd

@@ -22,8 +22,20 @@ script is built around that fact:
    obvious geophysical expression.  Adding an independent public compilation
    (``data/evidence/proxy/proxy_catalogue.tif``, rasterised from the SGMC
    statewide geology) gives the model examples of faults the catalogue does NOT
-   contain, which is the population the metric rewards.  ``--no-proxy-labels``
-   turns the extra supervision off so the ablation is measurable, not asserted.
+   contain, which is the population the metric rewards.  Three supervision modes
+   are available so *member diversity* can come from the training target rather
+   than from random seeds alone (session-31 finding: same features + same truth
+   ⇒ correlated errors; extra same-target members add FP mass faster than
+   coverage):
+
+   * ``--supervision union`` (default) — catalogue ∪ proxy (code 1 near-label
+     + code 2 proxy-only).  The production default.
+   * ``--supervision proxy_only`` — ONLY the proxy-only (code 2) pixels.  The
+     member never sees a catalogue fault as a positive, so its errors are
+     structurally anti-correlated with catalogue-trained detectors.  This is
+     the GEMSDOE4 unique angle against seed-only ensembles.
+   * ``--supervision catalogue`` — catalogue only (the ``--no-proxy-labels``
+     ablation, kept as a flag synonym).
 2. **Lineament geometry as features** (``src/lineament_features.py``): multi-scale
    ridge-ness, structure-tensor coherence and windowed context, so the classifier
    can see *lines* rather than isolated pixel values.
@@ -242,15 +254,65 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--l2-regularization", type=float, default=1.0)
     ap.add_argument("--neg-ratio", type=float, default=10.0)
     ap.add_argument("--max-negatives", type=int, default=1_200_000)
-    ap.add_argument("--use-proxy-labels", action="store_true", default=True,
-                    help="train on catalogue UNION the independent proxy compilation (default)")
+    ap.add_argument("--supervision", default="union",
+                    choices=("union", "proxy_only", "catalogue"),
+                    help="positive-label population: 'union' = catalogue∪proxy (default); "
+                         "'proxy_only' = SGMC code-2 only (structurally anti-correlated with "
+                         "catalogue-trained members); 'catalogue' = labels.tif only")
+    ap.add_argument("--use-proxy-labels", action="store_true", default=None,
+                    help="deprecated synonym for --supervision union (kept for reproduce cmds)")
     ap.add_argument("--no-proxy-labels", dest="use_proxy_labels", action="store_false",
-                    help="ablation: train on the catalogue labels only")
+                    default=None,
+                    help="deprecated synonym for --supervision catalogue")
     return ap
+
+
+def resolve_supervision(args) -> str:
+    """Map the new --supervision flag and the legacy --[no-]proxy-labels flags to one mode.
+
+    Precedence: an explicit legacy flag wins only when --supervision was left at its
+    default AND the legacy flag was actually passed.  Mixing an explicit non-default
+    --supervision with a contradictory legacy flag is a hard error, not a silent pick.
+    """
+    legacy = getattr(args, "use_proxy_labels", None)
+    mode = str(getattr(args, "supervision", "union") or "union")
+    if legacy is None:
+        return mode
+    legacy_mode = "union" if legacy else "catalogue"
+    # If the caller only used the legacy flag, honour it.  If they also set --supervision
+    # to something other than the default, the two must agree.
+    if mode == "union" and legacy_mode == "catalogue":
+        return "catalogue"          # pure --no-proxy-labels path
+    if mode == "union" and legacy_mode == "union":
+        return "union"              # pure --use-proxy-labels (or default) path
+    if mode != legacy_mode and not (mode == "proxy_only"):
+        raise SystemExit(
+            f"conflicting supervision flags: --supervision={mode} vs "
+            f"--{'use' if legacy else 'no'}-proxy-labels; pick one")
+    return mode
+
+
+def build_positives(fault: np.ndarray, proxy: np.ndarray, proxy_near: np.ndarray,
+                    mode: str) -> np.ndarray:
+    """Positive mask for the requested supervision mode.
+
+    * union       — catalogue ∪ proxy-near ∪ proxy-only (production default)
+    * proxy_only  — proxy code-2 ONLY; never a catalogue fault.  This is the
+                    structurally different member the LOO finding asked for.
+    * catalogue   — catalogue only (ablation / legacy --no-proxy-labels)
+    """
+    if mode == "union":
+        return fault | proxy | proxy_near
+    if mode == "proxy_only":
+        return proxy.copy()
+    if mode == "catalogue":
+        return fault.copy()
+    raise ValueError(f"unknown supervision mode: {mode!r}")
 
 
 def main(argv=None) -> int:
     args = build_parser().parse_args(argv)
+    supervision = resolve_supervision(args)
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     rng = np.random.default_rng(args.seed)
@@ -278,7 +340,14 @@ def main(argv=None) -> int:
                                 buffer_px=DEFAULT_R_PIXELS))
     trainable = valid & ~excluded
 
-    positives = fault | (proxy | proxy_near if args.use_proxy_labels else np.zeros(shape_hw, bool))
+    positives = build_positives(fault, proxy, proxy_near, supervision)
+    # proxy_only mode still needs a non-empty positive set inside the trainable region;
+    # fail loudly rather than fitting a classifier on zero positives.
+    n_pos_trainable = int((positives & trainable).sum())
+    if n_pos_trainable < 100:
+        raise SystemExit(
+            f"supervision={supervision!r} leaves only {n_pos_trainable} trainable positives "
+            f"(need ≥100); check --proxy / --fold / --eval-fold")
     sel = choose_samples(positives, trainable, rng, args.neg_ratio, args.max_negatives)
     wanted = sel["pos"] | sel["neg"]
     y = wanted & positives
@@ -381,11 +450,20 @@ def main(argv=None) -> int:
             proxy=dict(path=args.proxy, sha256=sha256_file(Path(args.proxy))),
             template=dict(path=args.template, sha256=sha256_file(Path(args.template)))),
         metric=dict(R_pixels=DEFAULT_R_PIXELS, alpha=DEFAULT_ALPHA, beta=DEFAULT_BETA),
-        supervision=dict(use_proxy_labels=bool(args.use_proxy_labels),
+        supervision=dict(mode=supervision,
+                         # Legacy boolean kept so existing consumers of the report keep working.
+                         # True for any mode that draws positives from the proxy compilation.
+                         use_proxy_labels=(supervision in ("union", "proxy_only")),
                          positive_px=int(positives.sum()),
                          catalogue_px=int(fault.sum()),
                          proxy_only_px=int(proxy.sum()),
-                         proxy_near_px=int(proxy_near.sum())),
+                         proxy_near_px=int(proxy_near.sum()),
+                         catalogue_in_positives=bool(supervision in ("union", "catalogue")),
+                         proxy_only_in_positives=bool(supervision in ("union", "proxy_only")),
+                         note=({"union": "catalogue ∪ proxy-near ∪ proxy-only (default)",
+                                "proxy_only": ("SGMC code-2 ONLY — structurally anti-correlated "
+                                               "with catalogue-trained detectors"),
+                                "catalogue": "labels.tif only (ablation)"}[supervision])),
         partition=partition,
         held_out_fold=args.fold,
         measurement_fold=args.eval_fold,
@@ -428,7 +506,8 @@ def main(argv=None) -> int:
                    f"--labels {args.labels} --proxy {args.proxy} --template {args.template} "
                    f"--out-dir {out_dir} --fold {args.fold} --eval-fold {args.eval_fold} "
                    f"--seed {args.seed} --max-iter {args.max_iter} "
-                   f"{'' if args.use_proxy_labels else '--no-proxy-labels'}"),
+                   f"--neg-ratio {args.neg_ratio} "
+                   f"--supervision {supervision}"),
         caveats=[
             "Every number is a local surrogate on held-out geography; the real metric is the "
             "private expert-labelled new-fault set (rules SS1.1 / SS3.2).",
@@ -438,6 +517,12 @@ def main(argv=None) -> int:
             "leaderboard.",
             "The catalogue DTI is reported for context only. Rules SS1.1/SS3.2 score the new "
             "faults, so a policy that is worse on the catalogue is not thereby disqualified.",
+            ("proxy_only supervision never sees a catalogue fault as a positive: its catalogue "
+             "DTI is expected to be lower than a union-supervised member, and that is the point "
+             "- diversity of *errors*, not diversity of seeds."
+             if supervision == "proxy_only" else
+             "Default supervision is catalogue ∪ proxy; --supervision proxy_only is the "
+             "structurally different member for the union."),
         ],
     )
     (out_dir / "report.json").write_text(json.dumps(report, indent=1, default=str))

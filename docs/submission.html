@@ -21,7 +21,7 @@
 <p class="lede">Exactly how to enter the DOE GEMS Prize and upload a valid GeoTIFF — every step verified against the official rules and re-executed in this repository.</p>
 
 <div class="note ok"><strong>This is the operational page.</strong> It answers one question: <em>what exactly do I do to put a valid entry into the GEMS Prize?</em> Background, eligibility analysis and the full source catalogue live on the <a href='executive_summary.html'>executive summary</a>; the numbers behind the model live on <a href='results.html'>results</a>. Every fact below is either (a) measured from the committed bytes while this page was built, (b) copied from a committed evidence JSON, or (c) quoted verbatim from the official rules PDF by quote id.</div>
-<div class="stats"><div class="stat"><div class="k">File to upload</div><div class="v"><b class='mono' style='font-size:.9rem'>submission.tif</b></div><div class="s">548,834 bytes · single-band float32 GeoTIFF</div></div><div class="stat"><div class="k">sha256 (measured at build time)</div><div class="v"><b class='mono' style='font-size:.86rem'>19de9950ceffbdf7a7163b64…</b></div><div class="s">re-measured by scripts/build_site.py from the committed bytes</div></div><div class="stat"><div class="k">Format validation</div><div class="v"><b>PASSED</b></div><div class="s">11 checks ✓ in the committed validator log</div></div><div class="stat"><div class="k">Emission policy</div><div class="v"><b>floor 0.1 · thin · width 0 px</b></div><div class="s">rank 1 of 132 candidates · adopted by measurement</div></div><div class="stat"><div class="k">Ensemble</div><div class="v"><b>0 live folds</b></div><div class="s">runs 35042805806 + 35249562910 (mean12)</div></div><div class="stat"><div class="k">Submission quota</div><div class="v"><b>3 per week</b></div><div class="s">one final selection before the deadline (rules §3.2/§3.5)</div></div><div class="stat"><div class="k">Deadline</div><div class="v"><b>Dec 3, 2026 · 11:59 PM UTC</b></div><div class="s">the same file is scored in both prize rounds</div></div><div class="stat"><div class="k">Public leaderboard top</div><div class="v"><b>0.2854</b></div><div class="s">this repository is NOT on that leaderboard (no DrivenData account)</div></div></div>
+<div class="stats"><div class="stat"><div class="k">File to upload</div><div class="v"><b class='mono' style='font-size:.9rem'>submission.tif</b></div><div class="s">547,082 bytes · single-band float32 GeoTIFF</div></div><div class="stat"><div class="k">sha256 (measured at build time)</div><div class="v"><b class='mono' style='font-size:.86rem'>c1da7dd9c44e05382b67367a…</b></div><div class="s">re-measured by scripts/build_site.py from the committed bytes</div></div><div class="stat"><div class="k">Format validation</div><div class="v"><b>PASSED</b></div><div class="s">11 checks ✓ in the committed validator log</div></div><div class="stat"><div class="k">Emission policy</div><div class="v"><b>floor 0.1 · thin · width 0 px</b></div><div class="s">rank 1 of 132 candidates · adopted by measurement</div></div><div class="stat"><div class="k">Ensemble</div><div class="v"><b>0 live folds</b></div><div class="s">runs 35042805806 + 35249562910 (mean12)</div></div><div class="stat"><div class="k">Submission quota</div><div class="v"><b>3 per week</b></div><div class="s">one final selection before the deadline (rules §3.2/§3.5)</div></div><div class="stat"><div class="k">Deadline</div><div class="v"><b>Dec 3, 2026 · 11:59 PM UTC</b></div><div class="s">the same file is scored in both prize rounds</div></div><div class="stat"><div class="k">Public leaderboard top</div><div class="v"><b>0.2854</b></div><div class="s">this repository is NOT on that leaderboard (no DrivenData account)</div></div></div>
 
 <h2>0. The whole submission in five commands</h2>
 <p>No training, no GPU, no DrivenData credentials needed for the repository side. This is the path
@@ -101,7 +101,7 @@ ensemble ships. Current committed verdict:
 <p><a href="how_to_submit.html#generate">docs/how_to_submit.html §3</a> carries a generator that
 runs entirely in the reader's browser. <code>scripts/build_submission_payload.py</code> measured the
 artifact and wrote its pixel field into this site as a run-length stream
-(<code>docs/submission_field.bin</code>, 377,795 B for a 49,116,640 B float32 buffer);
+(<code>docs/submission_field.bin</code>, 378,964 B for a 49,116,640 B float32 buffer);
 <code>docs/geotiff_writer.js</code> rebuilds a single-band float32 GeoTIFF on the grid the platform
 asks for, then re-reads its own bytes and refuses to hand over a download unless every pinned check
 agrees — and the command-line twin of it writes nothing at all when a check fails, so a refused
@@ -135,8 +135,8 @@ for the artifact in route A:</p>
   <li>Open <a href="https://www.drivendata.org/competitions/306/competition-doe-gems/submissions/">https://www.drivendata.org/competitions/306/competition-doe-gems/submissions/</a>.</li>
   <li>Click <b>Make new submission</b>.</li>
   <li>Upload the validated <code>.tif</code> (route A: <code>data/evidence/combined/submission.tif</code>,
-      548,834 bytes
-      · sha256 <code class="small">19de9950ceffbdf7a7163b645984353965ab7d61dca07dfe8b9b68856edb853b</code>).</li>
+      547,082 bytes
+      · sha256 <code class="small">c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4</code>).</li>
   <li>In the narrative box paste the generative-AI disclosure from §6 (it is not counted in the
       word count, per the rules).</li>
   <li>Submit, then confirm on the <a href="https://www.drivendata.org/competitions/306/competition-doe-gems/leaderboard/">public leaderboard</a> that the
@@ -192,7 +192,7 @@ used; the disclosure must describe <em>your</em> submission.</p>
 
 <h2 id="state">9. What we would upload today, and what would change it</h2>
 <p><b>Today:</b> route A, <code>data/evidence/combined/submission.tif</code>
-— sha256 <code class="small">19de9950ceffbdf7a7163b645984353965ab7d61dca07dfe8b9b68856edb853b</code>, 548,834 bytes, both measured while building this page.
+— sha256 <code class="small">c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4</code>, 547,082 bytes, both measured while building this page.
 It is the only artifact in the repository whose format validation is committed and whose emission
 policy was adopted by a pre-registered rule rather than by hand.</p>
 <table><thead><tr><th>Measurement</th><th>Value</th><th>Committed evidence</th></tr></thead><tbody><tr><td>Shipped artifact on the new-fault-like surrogate</td><td>DTI <b>0.0999</b> CI95 [0.0883, 0.1119]</td><td class='small mono'>data/evidence/block_holdout/block_stratified.json (block bootstrap, reproduced digit-for-digit on a runner)</td></tr><tr><td>Generalisation gap over the committed block-holdout folds</td><td>mean <b>+0.0069</b> (min -0.0070, max +0.0139) over 4 fold(s)</td><td class='small mono'>data/evidence/block_holdout/fold_gap_summary.json</td></tr><tr><td>SGMC pseudo-labels, fold 0, held-out blocks — new-fault-like population</td><td>0.0806 → <b>0.1483</b> (+0.0677, P=0.988)</td><td class='small mono'>data/evidence/pseudo_labels/fold0_two_population_contrast.json</td></tr><tr><td>…the same change on the catalogue population (independent of the pseudo-label source)</td><td>0.2113 → <b>0.1034</b> (-0.1079, P=0.0)</td><td class='small mono'>same file — the two populations move in opposite directions</td></tr><tr><td>…and on the <b>combined</b> surrogate — the only population holding both fault kinds (held-out blocks)</td><td>0.1972 → <b>0.2285</b> (+0.0313, P=0.916, CI95 [-0.0102, +0.0822])</td><td class='small mono'>same file — the union is scored from the rasters because FP_w sums over prediction pixels and does not decompose</td></tr><tr><td>…the same union population on the blocks that fold <em>trained</em> on (the memorisation check)</td><td>0.2273 → <b>0.1898</b> (-0.0375, P=0.0025, CI95 [-0.0650, -0.0080])</td><td class='small mono'>same file, complement scope — the two scopes disagree in sign, so one fold cannot settle it</td></tr><tr><td>Shipped artifact on the combined surrogate (labels ∪ new-fault-like trace)</td><td>DTI <b>0.2074</b> CI95 [0.1929, 0.2229]</td><td class='small mono'>data/evidence/proxy/combined_truth_shipped.json</td></tr><tr><td>Public leaderboard top score (snapshot, not ours)</td><td><b>0.2854</b> over 50 ranked entrants</td><td class='small mono'>https://www.drivendata.org/competitions/306/competition-doe-gems/leaderboard/</td></tr></tbody></table>
@@ -262,7 +262,7 @@ result) is on <a href="sources.html">sources</a> and in <code>docs/data_catalog.
 
 </main>
 <footer><div class="wrap">
-  <p>Generated by <code>scripts/build_site.py</code> from the evidence JSON in this repository · 2026-09-26 00:15 UTC</p>
+  <p>Generated by <code>scripts/build_site.py</code> from the evidence JSON in this repository · 2026-09-26 01:40 UTC</p>
   <p>Unofficial working notes. Authoritative sources: <a href="https://www.drivendata.org/competitions/306/competition-doe-gems/">competition</a> ·
      <a href="https://www.drivendata.org/competitions/306/competition-doe-gems/page/967/">problem description</a> · <a href="https://docs.nlr.gov/docs/fy26osti/96647.pdf">official rules</a> ·
      <a href="https://github.com/buffedlizard55-lab/GEMSDOE">repository</a></p>

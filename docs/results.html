@@ -62,7 +62,7 @@ variant of the same model:</p>
 </ol>
 <h3>Measured, on the full grid, both populations</h3>
 <table><thead><tr><th>detector (a member of the union)</th><th>new-fault (proxy) DTI</th>
-<th>catalogue DTI</th><th>emitted px</th><th>held-out fold</th></tr></thead><tbody><tr><td>deep11</td><td class="num">0.0999</td><td class="num">0.2298</td><td class="num">172,974</td><td class="num">none - whole-grid training</td></tr><tr><td>classical</td><td class="num">0.1191</td><td class="num">0.0611</td><td class="num">155,889</td><td class="num">0</td></tr><tr><td>nff42</td><td class="num">0.1351</td><td class="num">0.1184</td><td class="num">217,830</td><td class="num">0</td></tr><tr><td>nff43</td><td class="num">0.1553</td><td class="num">0.1312</td><td class="num">214,920</td><td class="num">2</td></tr><tr><td>nff45</td><td class="num">0.1686</td><td class="num">0.1206</td><td class="num">851,822</td><td class="num">2</td></tr></tbody></table>
+<th>catalogue DTI</th><th>emitted px</th><th>held-out fold</th></tr></thead><tbody><tr><td>deep11</td><td class="num">0.0999</td><td class="num">0.2298</td><td class="num">172,974</td><td class="num">none - whole-grid training</td></tr><tr><td>classical</td><td class="num">0.1191</td><td class="num">0.0611</td><td class="num">155,889</td><td class="num">0</td></tr><tr><td>nff43</td><td class="num">0.1553</td><td class="num">0.1312</td><td class="num">214,920</td><td class="num">2</td></tr><tr><td>nff45</td><td class="num">0.1686</td><td class="num">0.1206</td><td class="num">851,822</td><td class="num">2</td></tr><tr><td>po46</td><td class="num">0.1656</td><td class="num">0.0624</td><td class="num">1,232,036</td><td class="num">0</td></tr></tbody></table>
 <p class="small">Each member is scored by <code>scripts/combine_newfault.py</code> on the same
 truth, with the same scorer, in the same run &mdash; a probability member at the policy its own run
 selected, a binary member exactly as written. That is what makes the row below a measurement rather
@@ -71,17 +71,17 @@ than a comparison of numbers produced by different code paths.</p>
 <h3>The shipped combination</h3>
 <table><thead><tr><th>rule</th><th>new-fault (proxy) DTI</th><th>catalogue DTI</th>
 <th>emitted px</th></tr></thead><tbody>
-<tr><td>union k=2 of 5 members; probability members floored at t0=0.180482 and dilated 0 px</td><td class="num">0.2096</td><td class="num">0.1713</td><td class="num">332,544</td></tr>
+<tr><td>union k=2 of 5 members; probability members floored at t0=0.180482 and dilated 0 px</td><td class="num">0.2294</td><td class="num">0.1401</td><td class="num">335,054</td></tr>
 </tbody></table>
-<p><b>Selected</b> on fold 0 by the proxy DTI (0.2096); <b>measured</b> on fold 1, which the sweep
-never scored, at proxy DTI 0.1897 and catalogue DTI 0.1920. The whole-grid numbers above are the ones the
+<p><b>Selected</b> on fold 0 by the proxy DTI (0.2294); <b>measured</b> on fold 1, which the sweep
+never scored, at proxy DTI 0.1996 and catalogue DTI 0.1836. The whole-grid numbers above are the ones the
 artifact carries.</p>
 <div class="note warn"><b>What this section cannot show.</b> OUT-OF-SAMPLE STATUS IS PER MEMBER, not per union: the deep-ensemble member was trained over the whole grid (so its contribution to a held-out fold is NOT out-of-sample), while each NFF member holds out its own folds - recorded per member under 'members' above, read from that member's own report.json.  A fold on which a member is in-sample is disclosed here rather than described as held out. The union is therefore an ensemble of differently-biased detectors, not a set of independent out-of-sample measurements; the only per-member out-of-sample numbers in this repository are the ones in each member's own report. The proxy population is a stand-in for the private expert labels, not the scored set.  The public leaderboard is the only unbiased test of the transfer. The catalogue DTI is reported for context only - rules SS1.1/SS3.2 score the new faults in both prize phases.</div>
 <p>Reproduce it: <code>python scripts/combine_newfault.py --member deep11=... --member classical=...
 --member nff42=...:prob --member nff43=...:prob --fold 0 --eval-fold 1</code> &mdash; the full
 command, the hashes of every member and the whole candidate sweep are in
 <code>data/evidence/combined/report.json</code>.</p>
-<div class="note ok"><b>Current shipped bytes, measured at build time:</b> <code>data/evidence/combined/submission.tif</code> — 536.0 KB, sha256 <span class='mono small'>19de9950ceffbdf7a7163b645984353965ab7d61dca07dfe8b9b68856edb853b</span>. The run tables below are <i>historical records</i> of what each run wrote <i>then</i>: the 2026-09-25 template-conformance sanitation re-wrote the shipped file, so pre-fix blend hashes no longer match it (the pixels it scored on are unchanged — see <a href='how_to_submit.html#rejection'>How to submit &sect;6b</a>).</div>
+<div class="note ok"><b>Current shipped bytes, measured at build time:</b> <code>data/evidence/combined/submission.tif</code> — 534.3 KB, sha256 <span class='mono small'>c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4</span>. The run tables below are <i>historical records</i> of what each run wrote <i>then</i>: the 2026-09-25 template-conformance sanitation re-wrote the shipped file, so pre-fix blend hashes no longer match it (the pixels it scored on are unchanged — see <a href='how_to_submit.html#rejection'>How to submit &sect;6b</a>).</div>
 <h3>Run <code>?</code></h3>
 <table class="kv"><tbody>
 <tr><th>Profile</th><td>—</td></tr>
@@ -323,7 +323,7 @@ number is quoted.</p>
 </ol>
 </main>
 <footer><div class="wrap">
-  <p>Generated by <code>scripts/build_site.py</code> from the evidence JSON in this repository · 2026-09-26 00:15 UTC</p>
+  <p>Generated by <code>scripts/build_site.py</code> from the evidence JSON in this repository · 2026-09-26 01:40 UTC</p>
   <p>Unofficial working notes. Authoritative sources: <a href="https://www.drivendata.org/competitions/306/competition-doe-gems/">competition</a> ·
      <a href="https://www.drivendata.org/competitions/306/competition-doe-gems/page/967/">problem description</a> · <a href="https://docs.nlr.gov/docs/fy26osti/96647.pdf">official rules</a> ·
      <a href="https://github.com/buffedlizard55-lab/GEMSDOE">repository</a></p>

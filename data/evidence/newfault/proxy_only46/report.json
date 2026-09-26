@@ -1,0 +1,749 @@
+{
+ "generated_utc": "2026-09-26T01:31:09Z",
+ "script": "scripts/newfault_detector.py (session32 finish: policy selection on committed prob_raw)",
+ "purpose": "new-fault-first detector with --supervision proxy_only: positives = SGMC code-2 ONLY, never a catalogue fault. Structurally anti-correlated with catalogue-trained members.",
+ "inputs": {
+  "features": {
+   "path": "data/training_features.tif",
+   "sha256": "4371c82e3b8339b807bdffcf4ef59a225520fe2988d521be208ae33743123bc5"
+  },
+  "labels": {
+   "path": "data/labels.tif",
+   "sha256": "7ba308ccdc4418b31a178f4f1ef21aaa6e152e4028f2f6f64b01f7eb25ae4093"
+  },
+  "proxy": {
+   "path": "data/evidence/proxy/proxy_catalogue.tif",
+   "sha256": "7563e187171f7210d70295f958b0b2714c1fa504afa35f9a4688fc99b1e1122a"
+  },
+  "template": {
+   "path": "data/sample_submission.tif",
+   "sha256": "2176d08e485aa2cd2860ce8df539db4faf4d76163b38a4dd8c30a40454d35cbc"
+  },
+  "prob_raw": {
+   "path": "data/evidence/newfault/proxy_only46/prob_raw.tif",
+   "sha256": "11bc36197649dbd4b1b3eaca26ab286f328723f96f180a850f1512463430b17e",
+   "bytes": 24286058
+  }
+ },
+ "metric": {
+  "R_pixels": 3,
+  "alpha": 0.2,
+  "beta": 0.8
+ },
+ "supervision": {
+  "mode": "proxy_only",
+  "use_proxy_labels": true,
+  "positive_px": 61664,
+  "catalogue_px": 60988,
+  "proxy_only_px": 61664,
+  "proxy_near_px": 20491,
+  "catalogue_in_positives": false,
+  "proxy_only_in_positives": true,
+  "note": "SGMC code-2 ONLY \u2014 structurally anti-correlated with catalogue-trained detectors"
+ },
+ "partition": {
+  "grid": {
+   "height": 3730,
+   "width": 3292
+  },
+  "block_px": 512,
+  "block_shape": [
+   8,
+   7
+  ],
+  "n_blocks": 56,
+  "n_folds": 4,
+  "seed": 46,
+  "buffer_px": 3,
+  "resolution_m": 100.0,
+  "block_km": 51.2,
+  "mode": "balanced",
+  "assignment": "greedy LPT: blocks dealt by descending fault mass to the fold with the smallest normalised load (fault/target + valid/target)",
+  "per_fold": [
+   {
+    "fold": 0,
+    "blocks": 8,
+    "block_ids": [
+     3,
+     4,
+     5,
+     6,
+     10,
+     15,
+     29,
+     32
+    ],
+    "valid_px": 1352377,
+    "fault_px": 14442,
+    "fault_km": 1444.2,
+    "valid_frac_of_grid": 0.110136,
+    "fault_frac_of_scored": 0.236801,
+    "collar_excluded_px": 28425
+   },
+   {
+    "fold": 1,
+    "blocks": 9,
+    "block_ids": [
+     8,
+     12,
+     17,
+     24,
+     31,
+     38,
+     46,
+     52,
+     53
+    ],
+    "valid_px": 1170054,
+    "fault_px": 16598,
+    "fault_km": 1659.8,
+    "valid_frac_of_grid": 0.095288,
+    "fault_frac_of_scored": 0.272152,
+    "collar_excluded_px": 34758
+   },
+   {
+    "fold": 2,
+    "blocks": 9,
+    "block_ids": [
+     0,
+     7,
+     11,
+     16,
+     21,
+     23,
+     30,
+     37,
+     39
+    ],
+    "valid_px": 1274570,
+    "fault_px": 15404,
+    "fault_km": 1540.4,
+    "valid_frac_of_grid": 0.103799,
+    "fault_frac_of_scored": 0.252574,
+    "collar_excluded_px": 36999
+   },
+   {
+    "fold": 3,
+    "blocks": 8,
+    "block_ids": [
+     1,
+     2,
+     9,
+     13,
+     14,
+     22,
+     44,
+     45
+    ],
+    "valid_px": 1370372,
+    "fault_px": 14544,
+    "fault_km": 1454.4,
+    "valid_frac_of_grid": 0.111601,
+    "fault_frac_of_scored": 0.238473,
+    "collar_excluded_px": 32130
+   }
+  ],
+  "balance": {
+   "fault_px_min": 14442,
+   "fault_px_max": 16598,
+   "fault_px_spread": 0.141405
+  },
+  "empty_blocks_excluded": 22
+ },
+ "held_out_fold": 0,
+ "measurement_fold": 1,
+ "training": {
+  "model": "HistGradientBoostingClassifier",
+  "seed": 46,
+  "max_iter": 300,
+  "learning_rate": 0.06,
+  "max_leaf_nodes": 31,
+  "min_samples_leaf": 40,
+  "l2_regularization": 1.0,
+  "n_rows": 296698,
+  "n_features": 63,
+  "n_pos": 26970,
+  "n_neg": 269728,
+  "neg_ratio_requested": 10.0,
+  "note": "fit completed by newfault_detector.py; policy selection finished here"
+ },
+ "timings_s": {
+  "fit": 21.8,
+  "predict": "~256 (estimated from sibling runs)",
+  "policy_selection": 284.8
+ },
+ "policy_selection": {
+  "population": "proxy (new-fault-like) pixels only - the population rules SS1.1 scores",
+  "scope": "blocks of fold 0 (spatially held out of training)",
+  "ranking_key": "proxy_dti desc, then narrower band, then fewer emitted pixels",
+  "winner": {
+   "t0": 0.0924021,
+   "thin": true,
+   "dilate": 0,
+   "emitted_px": 192481,
+   "catalogue_dti": 0.08996804197574153,
+   "proxy_dti": 0.18560554596182433,
+   "eligible": true,
+   "eligibility_reason": "within the pre-registered support window",
+   "scope": "fold 0 (selection)"
+  },
+  "candidates": [
+   {
+    "t0": 0.0,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 5167373,
+    "catalogue_dti": 0.052555666136485615,
+    "proxy_dti": 0.07280044411744334,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,167,373 px = 100.0% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.0,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 5179002,
+    "catalogue_dti": 0.05250630674398628,
+    "proxy_dti": 0.07273238190516834,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,179,002 px = 100.2% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.0,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 13214,
+    "catalogue_dti": 0.01116531242071885,
+    "proxy_dti": 0.015125106304766926,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.0,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 39687,
+    "catalogue_dti": 0.01513253446523495,
+    "proxy_dti": 0.02121887082403344,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.0001,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 5166573,
+    "catalogue_dti": 0.052555666136485615,
+    "proxy_dti": 0.07280044411744334,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,166,573 px = 100.0% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.0001,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 5178585,
+    "catalogue_dti": 0.05250630674398628,
+    "proxy_dti": 0.07273238190516834,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,178,585 px = 100.2% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.0001,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 21587,
+    "catalogue_dti": 0.012576231210335976,
+    "proxy_dti": 0.019324634385760812,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.0001,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 64601,
+    "catalogue_dti": 0.01653074211124936,
+    "proxy_dti": 0.026339591505819392,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.00031209,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 5092266,
+    "catalogue_dti": 0.05278791101768973,
+    "proxy_dti": 0.07311927150714875,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,092,266 px = 98.5% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.00031209,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 5133705,
+    "catalogue_dti": 0.052616646634481755,
+    "proxy_dti": 0.07288381693310296,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,133,705 px = 99.3% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.00031209,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 118600,
+    "catalogue_dti": 0.03270060847220449,
+    "proxy_dti": 0.05356358329671186,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.00031209,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 343377,
+    "catalogue_dti": 0.033211412033075205,
+    "proxy_dti": 0.05856554417740039,
+    "eligible": false,
+    "eligibility_reason": "emitted 343,377 px = 6.6% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.000974004,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 4483046,
+    "catalogue_dti": 0.056343982006040114,
+    "proxy_dti": 0.08095490718637907,
+    "eligible": false,
+    "eligibility_reason": "emitted 4,483,046 px = 86.8% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.000974004,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 4590084,
+    "catalogue_dti": 0.055452524976324656,
+    "proxy_dti": 0.0791031209378486,
+    "eligible": false,
+    "eligibility_reason": "emitted 4,590,084 px = 88.8% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.000974004,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 209542,
+    "catalogue_dti": 0.0879131694150912,
+    "proxy_dti": 0.08251819693776886,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.000974004,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 607996,
+    "catalogue_dti": 0.06803556138891324,
+    "proxy_dti": 0.0700943058488654,
+    "eligible": false,
+    "eligibility_reason": "emitted 607,996 px = 11.8% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.00303977,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 3830755,
+    "catalogue_dti": 0.06088371644239485,
+    "proxy_dti": 0.09523033823166559,
+    "eligible": false,
+    "eligibility_reason": "emitted 3,830,755 px = 74.1% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.00303977,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 3953348,
+    "catalogue_dti": 0.059991941205501734,
+    "proxy_dti": 0.09257625614672008,
+    "eligible": false,
+    "eligibility_reason": "emitted 3,953,348 px = 76.5% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.00303977,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 216795,
+    "catalogue_dti": 0.10223354605209929,
+    "proxy_dti": 0.1075821644020839,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.00303977,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 629371,
+    "catalogue_dti": 0.07923600465741713,
+    "proxy_dti": 0.09119383556908715,
+    "eligible": false,
+    "eligibility_reason": "emitted 629,371 px = 12.2% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.00948683,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 3132293,
+    "catalogue_dti": 0.06376081664494107,
+    "proxy_dti": 0.11217988989751154,
+    "eligible": false,
+    "eligibility_reason": "emitted 3,132,293 px = 60.6% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.00948683,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 3290852,
+    "catalogue_dti": 0.06329418436451294,
+    "proxy_dti": 0.1086426178341162,
+    "eligible": false,
+    "eligibility_reason": "emitted 3,290,852 px = 63.7% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.00948683,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 223609,
+    "catalogue_dti": 0.1086131620615514,
+    "proxy_dti": 0.13865750229462362,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.00948683,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 644173,
+    "catalogue_dti": 0.08580290642283915,
+    "proxy_dti": 0.11886843301042255,
+    "eligible": false,
+    "eligibility_reason": "emitted 644,173 px = 12.5% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.0296075,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 2317616,
+    "catalogue_dti": 0.061880192328236897,
+    "proxy_dti": 0.12979386900652884,
+    "eligible": false,
+    "eligibility_reason": "emitted 2,317,616 px = 44.9% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.0296075,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 2501292,
+    "catalogue_dti": 0.06189824313373534,
+    "proxy_dti": 0.1257271720899071,
+    "eligible": false,
+    "eligibility_reason": "emitted 2,501,292 px = 48.4% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.0296075,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 211978,
+    "catalogue_dti": 0.09197920742502717,
+    "proxy_dti": 0.14268064635365593,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.0296075,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 604135,
+    "catalogue_dti": 0.07637837453975517,
+    "proxy_dti": 0.12818404664737162,
+    "eligible": false,
+    "eligibility_reason": "emitted 604,135 px = 11.7% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.0924021,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 1232036,
+    "catalogue_dti": 0.06012068919670452,
+    "proxy_dti": 0.1590345311511476,
+    "eligible": false,
+    "eligibility_reason": "emitted 1,232,036 px = 23.8% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.0924021,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 1440135,
+    "catalogue_dti": 0.05958633465290435,
+    "proxy_dti": 0.14916815023874697,
+    "eligible": false,
+    "eligibility_reason": "emitted 1,440,135 px = 27.9% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.0924021,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 192481,
+    "catalogue_dti": 0.08996804197574153,
+    "proxy_dti": 0.18560554596182433,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.0924021,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 541407,
+    "catalogue_dti": 0.07115041140839405,
+    "proxy_dti": 0.15808267370289766,
+    "eligible": false,
+    "eligibility_reason": "emitted 541,407 px = 10.5% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.288378,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 230771,
+    "catalogue_dti": 0.04184615716790909,
+    "proxy_dti": 0.1346626854201158,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.288378,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 315603,
+    "catalogue_dti": 0.04429679507499965,
+    "proxy_dti": 0.1474847711253828,
+    "eligible": false,
+    "eligibility_reason": "emitted 315,603 px = 6.1% of the footprint > cap 5%",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.288378,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 54891,
+    "catalogue_dti": 0.035679109356446956,
+    "proxy_dti": 0.11176011978468206,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.288378,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 159091,
+    "catalogue_dti": 0.04009651862076337,
+    "proxy_dti": 0.1364934232137288,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.9,
+    "thin": false,
+    "dilate": 0,
+    "emitted_px": 0,
+    "catalogue_dti": 0.0,
+    "proxy_dti": 0.0,
+    "eligible": false,
+    "eligibility_reason": "emitted 0 px < floor 1,000",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.9,
+    "thin": false,
+    "dilate": 1,
+    "emitted_px": 0,
+    "catalogue_dti": 0.0,
+    "proxy_dti": 0.0,
+    "eligible": false,
+    "eligibility_reason": "emitted 0 px < floor 1,000",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.9,
+    "thin": true,
+    "dilate": 0,
+    "emitted_px": 0,
+    "catalogue_dti": 0.0,
+    "proxy_dti": 0.0,
+    "eligible": false,
+    "eligibility_reason": "emitted 0 px < floor 1,000",
+    "scope": "fold 0 (selection)"
+   },
+   {
+    "t0": 0.9,
+    "thin": true,
+    "dilate": 1,
+    "emitted_px": 0,
+    "catalogue_dti": 0.0,
+    "proxy_dti": 0.0,
+    "eligible": false,
+    "eligibility_reason": "emitted 0 px < floor 1,000",
+    "scope": "fold 0 (selection)"
+   }
+  ]
+ },
+ "generalisation": {
+  "fold": 1,
+  "scope": "blocks of fold 1: excluded from training and never used by the policy sweep",
+  "by_scope": {
+   "selection": {
+    "catalogue": {
+     "dti": 0.08996804197574153,
+     "TP_w": 2207.3460522138557,
+     "FP_w": 62698.55035202461,
+     "FN_w": 12234.653947786144,
+     "n_gt": 14442,
+     "pred_px": 65187,
+     "pred_mass": 65187.0,
+     "scoreable": true
+    },
+    "proxy": {
+     "dti": 0.18560554596182433,
+     "TP_w": 5405.028672930985,
+     "FP_w": 59436.22910379889,
+     "FN_w": 14785.971327069015,
+     "n_gt": 20191,
+     "pred_px": 65187,
+     "pred_mass": 65187.0,
+     "scoreable": true
+    }
+   },
+   "measurement": {
+    "catalogue": {
+     "dti": 0.09717043178071161,
+     "TP_w": 2237.178847547338,
+     "FP_w": 46487.055923661246,
+     "FN_w": 14360.821152452661,
+     "n_gt": 16598,
+     "pred_px": 48871,
+     "pred_mass": 48871.0,
+     "scoreable": true
+    },
+    "proxy": {
+     "dti": 0.16875838939538879,
+     "TP_w": 3550.246073860365,
+     "FP_w": 45169.000810960206,
+     "FN_w": 10566.753926139634,
+     "n_gt": 14117,
+     "pred_px": 48871,
+     "pred_mass": 48871.0,
+     "scoreable": true
+    }
+   },
+   "whole grid": {
+    "catalogue": {
+     "dti": 0.08747542264003613,
+     "TP_w": 7623.16730510153,
+     "FP_w": 184156.78316870946,
+     "FN_w": 53364.83269489847,
+     "n_gt": 60988,
+     "pred_px": 192481,
+     "pred_mass": 192481.0,
+     "scoreable": true
+    },
+    "proxy": {
+     "dti": 0.17838773609464428,
+     "TP_w": 15637.719774133657,
+     "FP_w": 176013.31064356182,
+     "FN_w": 46026.28022586634,
+     "n_gt": 61664,
+     "pred_px": 192481,
+     "pred_mass": 192481.0,
+     "scoreable": true
+    }
+   }
+  }
+ },
+ "submission": {
+  "path": "data/evidence/newfault/proxy_only46/submission.tif",
+  "bytes": 580094,
+  "sha256": "5de1380c0a6984fd1491faab8f495b98c13ea8d02916fc930c8e613f9dfe231e",
+  "width": 3292,
+  "height": 3730,
+  "count": 1,
+  "dtype": "float32",
+  "crs": "EPSG:32611",
+  "res": [
+   100.0,
+   100.0
+  ],
+  "transform": [
+   100.0,
+   0.0,
+   243350.0,
+   0.0,
+   -100.0,
+   4508550.0
+  ],
+  "finite_px": 5167373,
+  "total_px": 12279160,
+  "nan_px": 7111787,
+  "nonzero_px": 192481,
+  "policy": "t00.0924021_thin1_w0",
+  "sanitize_evidence": "data/evidence/newfault/proxy_only46/sanitize.json",
+  "global_scores": {
+   "catalogue": 0.08747542264003613,
+   "proxy": 0.17838773609464428
+  }
+ },
+ "prob_raw": {
+  "path": "data/evidence/newfault/proxy_only46/prob_raw.tif",
+  "bytes": 24286058,
+  "sha256": "11bc36197649dbd4b1b3eaca26ab286f328723f96f180a850f1512463430b17e",
+  "finite_px": 5167373
+ },
+ "reproduce": "python scripts/newfault_detector.py --features data/training_features.tif --labels data/labels.tif --proxy data/evidence/proxy/proxy_catalogue.tif --template data/sample_submission.tif --out-dir data/evidence/newfault/proxy_only46 --fold 0 --eval-fold 1 --seed 46 --max-iter 300 --neg-ratio 10 --supervision proxy_only",
+ "caveats": [
+  "Every number is a local surrogate on held-out geography; the real metric is the private expert-labelled new-fault set (rules SS1.1 / SS3.2).",
+  "proxy_only supervision never sees a catalogue fault as a positive: its catalogue DTI is expected to be lower than a union-supervised member, and that is the point - diversity of errors, not diversity of seeds.",
+  "The proxy population is an independent public compilation (SGMC DOI 10.3133/ds1052), not the scored faults."
+ ]
+}

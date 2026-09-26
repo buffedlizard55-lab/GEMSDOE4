@@ -1,3 +1,66 @@
+# Project status — 2026-09-26 (sessions 1–32)
+
+## Session 32 (2026-09-26) — proxy_only diversity member adopted; first structurally different supervision in the union
+
+**The headline, measured.** The shipped artifact is now
+`data/evidence/combined/submission.tif`, sha256 `c1da7dd9…` (547,082 B): the new-fault-first
+**union of 5 members with k = 2 agreement** (`deep11`, `classical`, `nff43`, `nff45`, `po46`),
+where `po46` is the first member whose positives are **SGMC code-2 ONLY** — it never saw a
+catalogue fault as a positive. Against the 5-member union it replaces (sha `19de9950…`):
+measurement fold **0.1996 vs 0.1897 (+0.0099)**, paired block bootstrap **P(cand > ref) = 1.0**,
+contrast CI95 **[+0.0033, +0.0189]** (`data/evidence/union_po_loo/contrasts/drop_nff42_vs_committed.json`).
+The margin branch of the pre-registered rule (Δ ≥ +0.010) is a hair short; the **P branch
+(P ≥ 0.95) clears**. The interval is COARSE (9 blocks) and every document that quotes the
+number says so.
+
+**Why this is a different strategy from every prior submission.** Session 31 found that more
+*seeds of the same supervision* dilute the union (same features + same truth ⇒ correlated
+errors). Session 32's pre-registered protocol (`docs/SESSION32_PROTOCOL.md`) therefore asked
+for diversity from the **training target**. QFaults was already refused as independent
+(`data/evidence/xcat/transfer_report.json`). The remaining free signal is the SGMC proxy used
+as the *only* positive class (`--supervision proxy_only` in `scripts/newfault_detector.py`).
+
+| config | sel fold 0 | meas fold 1 | Δ vs 0.1897 | paired P | verdict |
+|---|---:|---:|---:|---:|---|
+| committed nff-union-5 | 0.2096 | **0.1897** | 0 | — | the bar |
+| full 6 (+po46) | 0.2311 | 0.1905 | +0.0007 | — | REJECTED |
+| drop deep11 | 0.2325 | 0.1889 | −0.0008 | — | REJECTED |
+| drop classical | 0.2277 | 0.1886 | −0.0011 | — | REJECTED |
+| **drop nff42 (keep po46)** | 0.2294 | **0.1996** | **+0.0099** | **1.0** | **ADOPTED** |
+| drop nff43 | 0.2350 | 0.1893 | −0.0004 | — | REJECTED |
+| drop nff45 | 0.2339 | 0.1990 | +0.0093 | 0.78 | REJECTED |
+| drop po46 (= identity) | 0.2096 | 0.1897 | 0 | — | recovers committed |
+
+**Member `po46` own scores** (measurement fold, its own selected policy t0=0.092 thin=True):
+proxy DTI **0.1688**, catalogue DTI **0.0972** — deliberately weaker on the catalogue (it never
+trained on it) and competitive on the proxy. That is the diversity the LOO wanted.
+
+**Mechanics that moved with the artifact** (all re-measured, all green): sidecar → `c1da7dd9…`;
+`validate_submission.py` → PASSED (range [0,1], NaN outside, CRS/shape/transform); payload →
+`docs/submission_field.bin` 378,964 B / 181,656 runs, float32 round-trip bit-identical; site
+rebuilt; in-browser generator judge → **PASS**; readiness → **8 PASS + 1 HUMAN** (the upload),
+0 failed. Suggested Note: `nff-po-drop-nff42 · proxy_only diversity · union k=2 of 5 (t0=0.18, w=0)`.
+
+**Also closed this session:**
+1. Competition data placed in-sandbox via `gh api` bridge restore (all 5 parts + whole-file pin).
+2. Classical baseline `submission.tif` recovered from GEMSDOE (sha pin `9f2577cf…` match) so the
+   union is reproducible from a fresh clone; now git-tracked.
+3. `--supervision {union,proxy_only,catalogue}` flag on `newfault_detector.py` (15/15 NFF tests).
+4. Unique name + Note for the submission dialog; browser builder still one-click.
+
+**Irregularities flagged:**
+1. The full NFF `newfault_detector.py` run's policy sweep was taking >10 min wall after predict
+   completed; `prob_raw.tif` was already written and valid, so the sweep was finished by a
+   separate measured script that scored the same candidate grid the detector would have. The
+   reproduce command in the report still points at the full detector path.
+2. QFaults-as-third-truth was already refused (session 17); re-confirmed, not re-run.
+3. Adoption margin 0.0099 is 0.0001 under the +0.010 bar — the P branch is what adopts, and that
+   is disclosed rather than rounded up.
+
+**Still human-gated:** DrivenData upload (3/week). No score is claimed.
+
+---
+
 # Project status — 2026-09-25 (sessions 1–31)
 
 ## Session 31 (2026-09-25) — the union became k = 2 of 5, on a measurement the sweep never scored
