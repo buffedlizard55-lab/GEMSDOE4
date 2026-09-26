@@ -251,6 +251,58 @@ def test_build_positives_modes_are_disjoint_where_they_should_be():
     assert u[0, 0] and u[1, 1] and u[2, 2]
 
 
+def test_the_corridor_is_the_scorers_own_disk_not_an_approximation():
+    """--corridor must widen positives by the metric's Euclidean R-neighbourhood.
+
+    The scorer gives a ground-truth pixel credit from any prediction within R = 3 px at weight
+    k(d) = (1 - d/R)+, so "the metric's tolerance region" is the 29-offset disk of
+    ``src.metrics.kernel_offsets(3)``.  The two cheap approximations a reader would assume are
+    both wrong and both detectable on a single-pixel fixture:
+
+      * a 3-iteration default ``binary_dilation`` uses a 4-connected (diamond) element, which
+        contains (3, 0) and omits (2, 2) - i.e. it credits a 300 m offset but not a 283 m one;
+      * a square 7x7 element contains (3, 3), which is 424 m away and scores k = 0.
+
+    Asserting on those two pixels is what makes this a test of the metric's geometry rather
+    than of "some dilation happened".
+    """
+    mod = _mod()
+    from src.metrics import kernel_offsets
+    blank = np.zeros((11, 11), bool)
+    proxy = np.zeros((11, 11), bool)
+    near = np.zeros((11, 11), bool)
+    fault = np.zeros((11, 11), bool)
+    fault[5, 5] = True
+
+    for R in (0, 1, 2, 3):
+        got = mod.build_positives(fault, proxy, near, "catalogue", corridor=R)
+        expected = len(kernel_offsets(R)) if R else 1
+        assert int(got.sum()) == expected, f"corridor {R}: {int(got.sum())} px, want {expected}"
+
+    disk = mod.build_positives(fault, proxy, near, "catalogue", corridor=3)
+    assert disk[7, 7], "Euclidean distance sqrt(8) = 2.83 px <= R must be inside the corridor"
+    assert not disk[8, 8], "Euclidean distance sqrt(18) = 4.24 px > R must be outside"
+    assert disk[8, 5] and disk[5, 8], "orthogonal 3 px offsets are exactly at R"
+    # a diamond would have (3,0) but not (2,2); a square would have (3,3).  Pin both endpoints.
+    assert disk[8, 5] and disk[7, 7] and not disk[8, 8]
+
+    # corridor=0 must be an exact no-op (the default in every committed member run)
+    assert np.array_equal(mod.build_positives(fault, proxy, near, "catalogue", corridor=0), fault)
+
+
+def test_the_corridor_widens_the_reported_positive_set_and_is_recorded():
+    """The report has to say the target was widened, and by how much: a member's row is only
+    interpretable next to the positive population it was fitted on."""
+    mod = _mod()
+    fault = np.zeros((9, 9), bool); fault[4, :] = True          # a 9 px trace
+    proxy = np.zeros((9, 9), bool)
+    near = np.zeros((9, 9), bool)
+    plain = mod.build_positives(fault, proxy, near, "catalogue", corridor=0)
+    wide = mod.build_positives(fault, proxy, near, "catalogue", corridor=3)
+    assert int(plain.sum()) == 9
+    assert int(wide.sum()) > int(plain.sum()), "corridor 3 must grow the positive set"
+
+
 def test_resolve_supervision_honours_legacy_and_refuses_conflicts():
     mod = _mod()
     from argparse import Namespace
@@ -276,6 +328,34 @@ def test_the_winner_is_the_argmax_of_the_statistic_it_ranks_on(run):
     assert sel["winner"] in eligible
     assert sel["winner"]["proxy_dti"] == max(r["proxy_dti"] for r in eligible), \
         "the winner must be the argmax of the statistic the report says it ranked on"
+
+
+def test_the_policy_sweep_is_scored_on_the_selection_fold_not_the_whole_grid(run):
+    """REGRESSION (session 34).  `sweep(scope_mask, scope_name)` took a scope mask and never used
+    it: every candidate row was scored with `GtContext.score`, i.e. over the WHOLE grid, while the
+    report labelled the rows with the fold.  Since this detector is trained on everything except
+    folds 0 and 1, fold 2/3 truth is in-sample, so the whole-grid score is partly a memorisation
+    measurement.  Both numbers are now recorded, and they must differ on this fixture (the whole
+    grid carries truth outside the selection fold) - otherwise the test is not exercising the fix.
+    """
+    sel = run["report"]["policy_selection"]
+    rows = sel["candidates"]
+    assert sel["selection_key"].startswith("proxy_dti")
+    assert "SELECTION FOLD" in sel["ranking_key"], sel["ranking_key"]
+    for r in rows:
+        assert "proxy_dti_whole" in r, "the whole-grid number must still be reported (as context)"
+        assert "catalogue_dti_whole" in r
+    eligible = [r for r in rows if r["eligible"]]
+    assert eligible
+    assert sel["winner"]["proxy_dti"] == max(r["proxy_dti"] for r in eligible)
+    # the fold score must not be the whole-grid score in disguise
+    assert any(r["proxy_dti"] != r["proxy_dti_whole"] for r in rows), \
+        "the fold score must not be the whole-grid score in disguise"
+    # NOTE: the fold score is NOT bounded above by the whole-grid score, and asserting that it is
+    # was this test's first version.  DTI is a RATIO - a fold whose predictions happen to cover a
+    # larger share of its own truth than the grid average can score higher than the whole grid
+    # (on the real data the selection fold scores 0.2844 against a whole-grid 0.2199).  Only the
+    # identity `sum of per-block components == the scoped score` constrains the two numbers.
 
 
 def test_the_eligibility_window_is_enforced_not_decorative(run):

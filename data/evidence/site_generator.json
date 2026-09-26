@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-09-26T03:05:56Z",
+ "generated_utc": "2026-09-26T05:35:19Z",
  "script": "scripts/check_site_generator.py",
  "purpose": "the in-browser generator on docs/how_to_submit.html is executed here under node and its output is judged by rasterio and by the repository's own validator",
  "artifact": "data/evidence/combined/submission.tif",
@@ -15,7 +15,7 @@
    "status": "PASS",
    "measured": {
     "exit_code": 0,
-    "stdout": "OK \u2014 docs/submission_meta.json + docs/submission_field.bin reproduce data/evidence/combined/submission.tif (181,656 runs, 335,054 px at 1.0, float32 bits identical after a decode round trip)",
+    "stdout": "OK \u2014 docs/submission_meta.json + docs/submission_field.bin reproduce data/evidence/combined/submission.tif (141,156 runs, 264,247 px at 1.0, float32 bits identical after a decode round trip)",
     "stderr": ""
    },
    "source": "scripts/build_submission_payload.py --check",
@@ -29,8 +29,8 @@
     "ok": true,
     "failed_checks": [],
     "self_checks": 17,
-    "bytes": 298364,
-    "sha256": "c97bf2657129104105d4028e52917c14cc54ebaa1d04fc317af74ebea844d93d",
+    "bytes": 249620,
+    "sha256": "9734533f8b2cdd7faf2f424877997f9a7f458faac241764f7ab2e16cf5a43d06",
     "compression": "deflate (zlib-wrapped, per strip \u2014 tag 8, as GDAL writes)",
     "layout": {
      "width": 3292,
@@ -43,17 +43,17 @@
      "ifdBytes": 222,
      "extrasBytes": 670,
      "dataStart": 900,
-     "totalBytes": 298364,
+     "totalBytes": 249620,
      "rawFieldBytes": 49116640,
-     "containerBytes": 298364,
-     "strippedBytes": 297381
+     "containerBytes": 249620,
+     "strippedBytes": 248625
     },
     "node": "v22.22.3",
     "reported_field_counts": {
-     "one_px": 335054,
-     "zero_px": 4832319,
+     "one_px": 264247,
+     "zero_px": 4903126,
      "nan_px": 7111787,
-     "runs": 181656
+     "runs": 141156
     }
    },
    "source": "docs/geotiff_writer.js (the file the page loads)",
@@ -88,7 +88,7 @@
     "tiled": false
    },
    "source": "rasterio",
-   "note": "generated 298,364 B vs artifact 547,082 B (container differs; pixels do not)"
+   "note": "generated 249,620 B vs artifact 505,882 B (container differs; pixels do not)"
   },
   {
    "name": "rasterio reads it; pixels are the artifact's",
@@ -146,7 +146,7 @@
     "float32_bits_identical": true,
     "uint32_px_differing": 0,
     "pixels": 12279160,
-    "one_px": 335054,
+    "one_px": 264247,
     "nan_px": 7111787,
     "container_note": "generated NODATA='nan', artifact NODATA='nan' (matches the template since the 2026-09-25 conformance fix)",
     "container_vs_sample": {
@@ -206,8 +206,8 @@
    "status": "PASS",
    "measured": {
     "exit_code": 0,
-    "lines": 16,
-    "ticks": 10,
+    "lines": 17,
+    "ticks": 11,
     "tail": "Next: Upload to https://www.drivendata.org/competitions/306/competition-doe-gems/ via 'Submit' button"
    },
    "source": "scripts/validate_submission.py",
@@ -221,8 +221,8 @@
      "submission.tif"
     ],
     "member_equals_tif": true,
-    "zip_bytes": 298490,
-    "tif_bytes": 298364
+    "zip_bytes": 249746,
+    "tif_bytes": 249620
    },
    "source": "zipfile.testzip() + byte comparison",
    "note": ""
@@ -236,7 +236,7 @@
      "--no-deflate"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-mgdhn4an/variant_0.tif",
+    "path": "/tmp/gems-gen-1kbw0o8h/variant_0.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
@@ -257,11 +257,11 @@
      "1"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-mgdhn4an/variant_1.tif",
+    "path": "/tmp/gems-gen-1kbw0o8h/variant_1.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
-    "bytes": 490812,
+    "bytes": 437604,
     "container_ok": true,
     "self_reported_ok": true
    },
@@ -278,11 +278,11 @@
      "3730"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-mgdhn4an/variant_2.tif",
+    "path": "/tmp/gems-gen-1kbw0o8h/variant_2.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
-    "bytes": 296140,
+    "bytes": 247436,
     "container_ok": true,
     "self_reported_ok": true
    },
@@ -296,11 +296,11 @@
   "passed": 8,
   "failed": 0,
   "node": "v22.22.3",
-  "payload_meta_sha256": "b83d8a78fc0e1ba93d0809af5104f103818642731fb7eaeaf4deddddb192bf68",
-  "payload_blob_sha256": "ffeb39e161a17af7202a6844df68ded219f23151ff4b759974270e80eaa507a0",
-  "blob_bytes": 378964,
+  "payload_meta_sha256": "399c65df5ffaed5da53254f818be5266182776787bfc85e4c0c50ec813b5d112",
+  "payload_blob_sha256": "3eda075a41224e7d4f2737720a9e7d7ffd85691e9e0aaf25b5147cba519874e2",
+  "blob_bytes": 298012,
   "encoding": {
-   "bytes": 378964,
+   "bytes": 298012,
    "codes": {
     "0": "float32 0.0",
     "1": "float32 1.0",
@@ -310,10 +310,10 @@
    "file": "docs/submission_field.bin",
    "format": "gems-rle-v1",
    "layout": "row-major runs: uleb128(length), u8(code)",
-   "n_runs": 181656
+   "n_runs": 141156
   },
-  "artifact_sha256": "c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4",
-  "artifact_bytes": 547082,
+  "artifact_sha256": "237f0063a440b2c6c4b822bcb0f74e5203586313b3b5ed6c5cabe70fa046f63f",
+  "artifact_bytes": 505882,
   "variants": [
    {
     "name": "uncompressed strips",
@@ -321,7 +321,7 @@
      "--no-deflate"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-mgdhn4an/variant_0.tif",
+    "path": "/tmp/gems-gen-1kbw0o8h/variant_0.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
@@ -336,11 +336,11 @@
      "1"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-mgdhn4an/variant_1.tif",
+    "path": "/tmp/gems-gen-1kbw0o8h/variant_1.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
-    "bytes": 490812,
+    "bytes": 437604,
     "container_ok": true,
     "self_reported_ok": true
    },
@@ -351,15 +351,15 @@
      "3730"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-mgdhn4an/variant_2.tif",
+    "path": "/tmp/gems-gen-1kbw0o8h/variant_2.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
-    "bytes": 296140,
+    "bytes": 247436,
     "container_ok": true,
     "self_reported_ok": true
    }
   ]
  },
- "seconds": 10.12
+ "seconds": 8.7
 }

@@ -63,6 +63,7 @@ from pathlib import Path
 
 import numpy as np
 import rasterio
+from scipy import ndimage
 from rasterio.windows import Window
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -72,7 +73,7 @@ from src.blocks import (assign_folds, block_id_map, block_table, describe_partit
                         held_out_mask, scored_mask)
 from src.lineament_features import lineament_features  # noqa: E402
 from src.metrics import (DEFAULT_ALPHA, DEFAULT_BETA, DEFAULT_R_PIXELS, GtContext,  # noqa: E402
-                        score_within_mask)
+                        kernel_offsets, score_within_mask)
 from src.submission_io import (clean_profile, conform_to_template, sha256_file,  # noqa: E402
                                write_submission)
 from src.submission_optim import dilate_mask, dominant_thin, floor_sharpen  # noqa: E402
@@ -259,6 +260,12 @@ def build_parser() -> argparse.ArgumentParser:
                     help="positive-label population: 'union' = catalogue∪proxy (default); "
                          "'proxy_only' = SGMC code-2 only (structurally anti-correlated with "
                          "catalogue-trained members); 'catalogue' = labels.tif only")
+    ap.add_argument("--corridor", type=int, default=0, metavar="PX",
+                    help="widen the positive set to the metric's own tolerance region: every pixel "
+                         "within PX of a labelled fault becomes a positive. 0 (default) trains on "
+                         "the traces themselves; 3 trains the classifier on exactly the quantity "
+                         "the scorer rewards, using src.metrics.kernel_offsets as the structuring "
+                         "element so the disk is the scorer's, not an approximation of it")
     ap.add_argument("--use-proxy-labels", action="store_true", default=None,
                     help="deprecated synonym for --supervision union (kept for reproduce cmds)")
     ap.add_argument("--no-proxy-labels", dest="use_proxy_labels", action="store_false",
@@ -293,21 +300,37 @@ def resolve_supervision(args) -> str:
 
 
 def build_positives(fault: np.ndarray, proxy: np.ndarray, proxy_near: np.ndarray,
-                    mode: str) -> np.ndarray:
+                    mode: str, corridor: int = 0) -> np.ndarray:
     """Positive mask for the requested supervision mode.
 
     * union       — catalogue ∪ proxy-near ∪ proxy-only (production default)
     * proxy_only  — proxy code-2 ONLY; never a catalogue fault.  This is the
                     structurally different member the LOO finding asked for.
     * catalogue   — catalogue only (ablation / legacy --no-proxy-labels)
+
+    ``corridor`` > 0 widens the positive set to the metric's OWN tolerance region: the ground
+    truth pixel g earns credit from any prediction within R = 3 px (k(d) = (1-d/R)_+), so the
+    quantity a member is asked to reproduce is not "this pixel is a fault" but "a fault is within
+    300 m of this pixel".  Training on the dilated positives asks the classifier that question
+    directly.  The structuring element is built from ``src.metrics.kernel_offsets`` so the
+    corridor is the SAME Euclidean disk the scorer uses, not a 4- or 8-connected approximation
+    of it; a diamond would include (3, 0) and miss (2, 2), which the metric does not.
     """
     if mode == "union":
-        return fault | proxy | proxy_near
-    if mode == "proxy_only":
-        return proxy.copy()
-    if mode == "catalogue":
-        return fault.copy()
-    raise ValueError(f"unknown supervision mode: {mode!r}")
+        base = fault | proxy | proxy_near
+    elif mode == "proxy_only":
+        base = proxy.copy()
+    elif mode == "catalogue":
+        base = fault.copy()
+    else:
+        raise ValueError(f"unknown supervision mode: {mode!r}")
+    if not corridor:
+        return base
+    R = int(corridor)
+    foot = np.zeros((2 * R + 1, 2 * R + 1), bool)
+    for dy, dx, _k in kernel_offsets(R):
+        foot[dy + R, dx + R] = True
+    return ndimage.binary_dilation(base, structure=foot, iterations=1)
 
 
 def main(argv=None) -> int:
@@ -340,7 +363,8 @@ def main(argv=None) -> int:
                                 buffer_px=DEFAULT_R_PIXELS))
     trainable = valid & ~excluded
 
-    positives = build_positives(fault, proxy, proxy_near, supervision)
+    positives = build_positives(fault, proxy, proxy_near, supervision,
+                               corridor=int(getattr(args, "corridor", 0) or 0))
     # proxy_only mode still needs a non-empty positive set inside the trainable region;
     # fail loudly rather than fitting a classifier on zero positives.
     n_pos_trainable = int((positives & trainable).sum())
@@ -383,13 +407,26 @@ def main(argv=None) -> int:
     footprint_px = int(footprint.sum())
 
     def sweep(scope_mask, scope_name):
+        """Score every candidate policy ON `scope_mask` — the folds the sweep is allowed to see.
+
+        THE BUG THIS FIXES (2026-09-26, session 34).  `scope_mask` was passed in and never used:
+        every row was scored with `c.score(q)` over the WHOLE grid, while the rows were labelled
+        `f"fold {args.fold} (selection)"` and the report said the scope was that fold.  A whole-grid
+        score is not a superset that is merely noisier - it is a different measurement, because the
+        members are trained on everything except folds 0 and 1, so folds 2 and 3 carry truth this
+        detector has already seen.  Selecting on it is selection on in-sample geography wearing an
+        out-of-sample label.  `scripts/newfault_detector.py`'s committed runs (seed42-45, po46) were
+        produced by the old path; their reports say so, and re-running them is queued in
+        SUGGESTIONS.md rather than silently re-made here.
+        """
         rows = []
         for t0, thin, dil in candidate_grid():
             q = shaped(prob, t0, thin, dil, DEFAULT_R_PIXELS)
             row = dict(t0=t0, thin=thin, dilate=dil,
                        emitted_px=int((q > 0).sum()))
             for pop, c in ctx.items():
-                row[f"{pop}_dti"] = c.score(q)
+                row[f"{pop}_dti"] = score_within_mask(q, c, scope_mask)["dti"]
+                row[f"{pop}_dti_whole"] = c.score(q)
             row["scope"] = scope_name
             ok, why = eligibility(row, footprint_px)
             row["eligible"] = ok
@@ -460,6 +497,14 @@ def main(argv=None) -> int:
                          proxy_near_px=int(proxy_near.sum()),
                          catalogue_in_positives=bool(supervision in ("union", "catalogue")),
                          proxy_only_in_positives=bool(supervision in ("union", "proxy_only")),
+                         # Session 34: the corridor is part of the TARGET, so a member's row is only
+                         # interpretable if the width is recorded next to the mode.  `corridor_px`
+                         # is the raw trace count before dilation, so a reader can see how much the
+                         # positive set grew (a 3 px disk multiplies a 1 px trace network ~7x).
+                         corridor_px=int(getattr(args, "corridor", 0) or 0),
+                         positives_before_corridor_px=(int(build_positives(
+                             fault, proxy, proxy_near, supervision).sum())
+                             if getattr(args, "corridor", 0) else int(positives.sum())),
                          note=({"union": "catalogue ∪ proxy-near ∪ proxy-only (default)",
                                 "proxy_only": ("SGMC code-2 ONLY — structurally anti-correlated "
                                                "with catalogue-trained detectors"),
@@ -481,7 +526,10 @@ def main(argv=None) -> int:
         policy_selection=dict(
             population="proxy (new-fault-like) pixels only - the population rules SS1.1 scores",
             scope=f"blocks of fold {args.fold} (spatially held out of training)",
-            ranking_key="proxy_dti desc, then narrower band, then fewer emitted pixels",
+            selection_key="proxy_dti (scored ON the selection fold's blocks since 2026-09-26)",
+            ranking_key=("proxy_dti desc on the SELECTION FOLD's blocks, then narrower band, then "
+                         "fewer emitted pixels; `proxy_dti_whole`/`catalogue_dti_whole` are "
+                         "reported for context and never used to pick"),
             winner=winner, candidates=select_rows),
         generalisation=dict(
             fold=args.eval_fold,

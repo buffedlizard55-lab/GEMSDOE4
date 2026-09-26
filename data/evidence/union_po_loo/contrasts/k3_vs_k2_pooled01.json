@@ -1,0 +1,83 @@
+{
+ "generated_by": "scripts/paired_union_contrast.py",
+ "population": "proxy",
+ "population_note": "SGMC proxy compilation (code 2), the stand-in for the privately withheld expert-mapped new faults - not the scored set (rules SS1.1/SS3.2)",
+ "fold": null,
+ "folds": [
+  0,
+  1
+ ],
+ "fold_note": "POOLED over 2 folds: the bootstrap redraws the disjoint blocks of all of them, so the interval describes their union, not any one region",
+ "per_fold": [
+  {
+   "fold": 0,
+   "n_blocks": 8,
+   "reference_dti": 0.283743,
+   "candidate_dti": 0.285636,
+   "delta": 0.001893
+  },
+  {
+   "fold": 1,
+   "n_blocks": 9,
+   "reference_dti": 0.199605,
+   "candidate_dti": 0.222076,
+   "delta": 0.022471
+  }
+ ],
+ "note": "POOLED honest pool - folds 0 and 1 are the two folds scripts/newfault_detector.py excluded from every NFF member's training. DISCLOSURE: fold 0 is the fold the sweep selected on, so its share of the gain is selection-biased upward; fold 1's is not. Folds 2/3 are in-sample for the members and are NOT pooled here.",
+ "partition": {
+  "block_px": 512,
+  "folds": 4,
+  "seed": 42,
+  "mode": "balanced"
+ },
+ "reference": {
+  "path": "data/evidence/union_po_loo/prev_committed_nff_k2_t0.18.tif",
+  "sha256": "c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4",
+  "scalar_dti": 0.247454
+ },
+ "candidate": {
+  "path": "data/evidence/combined/submission.tif",
+  "sha256": "237f0063a440b2c6c4b822bcb0f74e5203586313b3b5ed6c5cabe70fa046f63f",
+  "scalar_dti": 0.260266
+ },
+ "identity_max_abs_error": {
+  "reference": 1.9984014443252818e-15,
+  "candidate": 2.609024107869118e-15
+ },
+ "n_blocks_kept": 17,
+ "n_boot": 2000,
+ "reliability": "adequate - 17 resampling units",
+ "bootstrap": {
+  "reference": {
+   "dti_p50": 0.244176,
+   "dti_ci95": [
+    0.184542,
+    0.29264
+   ],
+   "contrast_vs_reference_p50": 0.0,
+   "contrast_vs_reference_ci95": [
+    0.0,
+    0.0
+   ],
+   "prob_beats_reference": null,
+   "n_blocks": 17,
+   "n_scoreable_blocks": 16
+  },
+  "candidate": {
+   "dti_p50": 0.256751,
+   "dti_ci95": [
+    0.195136,
+    0.304708
+   ],
+   "contrast_vs_reference_p50": 0.011959,
+   "contrast_vs_reference_ci95": [
+    -0.002834,
+    0.027379
+   ],
+   "prob_beats_reference": 0.954,
+   "n_blocks": 17,
+   "n_scoreable_blocks": 16
+  }
+ }
+}

@@ -1,0 +1,132 @@
+{
+ "generated_utc": "2026-09-26T05:14:03Z",
+ "script": "scripts/audit_fold_discipline.py",
+ "question": "Is the geography the union uses to SELECT and MEASURE a policy held out by every member it unions?",
+ "union_selection_fold": 0,
+ "union_measurement_fold": 1,
+ "common_policy": {
+  "t0": 0.5,
+  "dilate": 0,
+  "why": "every member is scored at one common floor on its own committed field, so the only variation between rows is training geography"
+ },
+ "population": "proxy (SGMC code 2), the new-fault surrogate",
+ "partition": {
+  "block_px": 512,
+  "folds": 4,
+  "seed": 42,
+  "mode": "balanced",
+  "n_blocks": null
+ },
+ "members": [
+  {
+   "member": "proxy_only46",
+   "field": "data/evidence/newfault/proxy_only46/prob_raw.tif",
+   "sha256": "11bc36197649dbd4b1b3eaca26ab286f328723f96f180a850f1512463430b17e",
+   "held_out_folds": [
+    0,
+    1
+   ],
+   "in_sample_on_union_scopes": false,
+   "scopes": {
+    "fold0": 0.0085,
+    "fold1": 0.0094,
+    "fold2": 0.1623,
+    "fold3": 0.2126
+   },
+   "union_scope_mean": 0.0089,
+   "own_holdout_mean": 0.0089,
+   "other_folds_mean": 0.1875,
+   "union_minus_other_folds": -0.1785
+  },
+  {
+   "member": "seed42",
+   "field": "data/evidence/newfault/seed42/prob_raw.tif",
+   "sha256": "f2b2e033d09520522c55b84826ea9aa6185719498ea17f8047db63dba9afeca4",
+   "held_out_folds": [
+    0,
+    1
+   ],
+   "in_sample_on_union_scopes": false,
+   "scopes": {
+    "fold0": 0.0071,
+    "fold1": 0.0095,
+    "fold2": 0.0239,
+    "fold3": 0.0326
+   },
+   "union_scope_mean": 0.0083,
+   "own_holdout_mean": 0.0083,
+   "other_folds_mean": 0.0282,
+   "union_minus_other_folds": -0.0199
+  },
+  {
+   "member": "seed43",
+   "field": "data/evidence/newfault/seed43/prob_raw.tif",
+   "sha256": "84c0b0000f00db01966ef66275e0b902003436eb56783558bd99fd9956fc6d48",
+   "held_out_folds": [
+    2,
+    3
+   ],
+   "in_sample_on_union_scopes": true,
+   "scopes": {
+    "fold0": 0.0233,
+    "fold1": 0.0501,
+    "fold2": 0.0222,
+    "fold3": 0.008
+   },
+   "union_scope_mean": 0.0367,
+   "own_holdout_mean": 0.0151,
+   "other_folds_mean": 0.0151,
+   "union_minus_other_folds": 0.0216
+  },
+  {
+   "member": "seed44",
+   "field": "data/evidence/newfault/seed44/prob_raw.tif",
+   "sha256": "57f8ad5491f7e0da75eafcd19bcdc538bf0d82fc6825e0c2654804ec23116fc0",
+   "held_out_folds": [
+    0,
+    1
+   ],
+   "in_sample_on_union_scopes": false,
+   "scopes": {
+    "fold0": 0.024,
+    "fold1": 0.0613,
+    "fold2": 0.1017,
+    "fold3": 0.1556
+   },
+   "union_scope_mean": 0.0427,
+   "own_holdout_mean": 0.0427,
+   "other_folds_mean": 0.1286,
+   "union_minus_other_folds": -0.086
+  },
+  {
+   "member": "seed45",
+   "field": "data/evidence/newfault/seed45/prob_raw.tif",
+   "sha256": "6d18948d0287301b7a20fc907da439cdc1cfe253c3392853d4e34bd0d8d69801",
+   "held_out_folds": [
+    2,
+    3
+   ],
+   "in_sample_on_union_scopes": true,
+   "scopes": {
+    "fold0": 0.0083,
+    "fold1": 0.0167,
+    "fold2": 0.0104,
+    "fold3": 0.0027
+   },
+   "union_scope_mean": 0.0125,
+   "own_holdout_mean": 0.0066,
+   "other_folds_mean": 0.0066,
+   "union_minus_other_folds": 0.006
+  }
+ ],
+ "difference_in_differences": {
+  "treated_mean": 0.0138,
+  "control_mean": -0.0948,
+  "exposure_effect": 0.0543,
+  "design": "mean over treated members of [score on the union's folds - score on the rest] minus the same mean over controls, halved.  Halving is only exact if the in-sample boost is the same kind of boost on both fold sets (B_01 = B_23); the two groups are built so the fold-difficulty term cancels exactly, and the residual is exposure - with that symmetry assumption as its only gap, stated here rather than hidden.  A harsh COMMON floor inflates the magnitude: the honest side of the contrast can be near zero",
+  "reading": "positive effect = a member trained on the union's folds scores higher there than a member for which those folds are the holdout, after removing the difference in fold difficulty"
+ },
+ "verdict": "2 of 5 members were fitted on the geography the union selects and measures on (seed43, seed45); every number the union reports on those folds is an in-sample number for them. Clean members: proxy_only46, seed42, seed44",
+ "consequence": "A policy selected on a scope that is in-sample for part of the member pool is selected on a mixture the sweep cannot claim. The clean pool is the set of members whose holdout IS the union's scope; see data/evidence/combined_clean/report.json.",
+ "caveat": "In-sample-ness does not make a member a bad detector - the private scored set is a different population of faults, not different geography. It makes the MEASUREMENT optimistic, and therefore any policy chosen with it."
+}

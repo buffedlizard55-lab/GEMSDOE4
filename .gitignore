@@ -48,6 +48,10 @@ outputs_*/
 !data/evidence/newfault/*/prob_raw.tif
 !data/evidence/newfault/*/submission.tif
 !data/evidence/combined/submission.tif
+# GEMSDOE4 session 34: the clean-pool CONTROL artifact.  The union evidence section of the site
+# and docs/SESSION34_PROTOCOL.md both point at it as the arm with no in-sample member, and a
+# control that exists only in a report is a claim rather than evidence - same rule as above.
+!data/evidence/combined_clean/submission.tif
 # GEMSDOE4 session 31 (2026-09-25): the rejected 6-member / leave-one-out candidate rasters and
 # the adopted contrast measurement are evidence - they record how the shipping decision was made
 !data/evidence/union6/submission.tif
@@ -65,6 +69,13 @@ outputs_*/
 !data/evidence/baseline/submission.tif
 !data/evidence/union_po/submission.tif
 !data/evidence/union_po_loo/**/submission.tif
+# GEMSDOE4 session 34 (2026-09-26): a paired adoption contrast has to name the raster it compares
+# AGAINST, and `data/evidence/union_po_loo/prev_committed_*.tif` is that reference (session 33's
+# prev_committed_nff_union5.tif, this session's prev_committed_nff_k2_t0.18.tif).  If the reference
+# does not travel in git, `scripts/paired_union_contrast.py` cannot re-run from a fresh clone and the
+# contrast JSON cites a path no reviewer can open - the same "audit artefact must be committed or
+# not cited" rule this repository keeps applying to itself.
+!data/evidence/union_po_loo/prev_committed_*.tif
 *.zip
 *.gdb
 *.grd
