@@ -29,12 +29,31 @@ CHECKS
   8. human steps remaining        - enroll / upload / read the leaderboard / pick the final entry
   9. artifact candidates          - every committed raster that could be uploaded, with its hash
 
+THE RECORD IS PROTECTED FROM A DEGRADED RE-RUN
+----------------------------------------------
+`data/labels.tif` and `data/sample_submission.tif` are committed, but `data/training_features.tif`
+(418,912,844 B) is not - it travels as sha256-pinned bridge parts and is restored per machine
+(`scripts/fetch_bridge_parts.py`).  So a checkout that has not restored the feature stack
+legitimately measures `data_placed` and `preflight` as MISSING, while the committed record -
+measured in a checkout that had it - says PASS.  Overwriting the record with that weaker reading
+publishes a weaker page, and because `scripts/build_site.py` renders this file, it also breaks
+`tests/test_site_pages.py::test_the_build_reproduces_the_committed_pages` on the next CI run.
+Measured, not hypothetical: re-running this script in a parts-less sandbox on 2026-09-26 turned
+two PASS gates into MISSING and wrote them.
+
+The rule is the one `scripts/verify_links.py` already applies to the link record: a run that
+measures LESS than the committed record refuses to overwrite it (exit 3) and prints the
+comparison; `--allow-degraded` is the explicit override.  A genuine FAIL is never suppressed -
+a defect must always be recorded, so FAIL always writes.
+
 USAGE
     python scripts/check_submission_readiness.py                    # writes the evidence JSON
     python scripts/check_submission_readiness.py --data-dir data --skip-preflight
     python scripts/check_submission_readiness.py --print             # also print a human summary
+    python scripts/check_submission_readiness.py --allow-degraded   # write a weaker record on purpose
 Exit code is 0 when every machine check that can pass does; 2 when a *mismatch* is found
-(a wrong hash is a defect, a missing file in a fresh checkout is just a fresh checkout).
+(a wrong hash is a defect, a missing file in a fresh checkout is just a fresh checkout);
+3 when the run measured less than the committed record and therefore wrote nothing.
 """
 from __future__ import annotations
 
@@ -279,6 +298,34 @@ def check_candidates() -> dict:
                   "results page")
 
 
+def previous_statuses(path: Path) -> dict:
+    """Gate statuses from the record already at `path` ({} when it is absent or unreadable).
+
+    An unreadable record is treated as "nothing to protect" rather than an error: the guard
+    exists to stop a good record being overwritten, not to police the file's history.
+    """
+    if not path.exists():
+        return {}
+    try:
+        doc = json.loads(path.read_text())
+    except Exception as exc:                                   # pragma: no cover
+        print(f"[readiness] WARNING: {path} is not readable JSON ({exc}); nothing to protect",
+              file=sys.stderr)
+        return {}
+    return {c["id"]: c.get("status") for c in doc.get("checks", []) if "id" in c}
+
+
+def degradations(previous: dict, checks: list) -> list:
+    """Gates that were PASS in the committed record and are MISSING/SKIPPED in this run.
+
+    FAIL is deliberately absent from the comparison: a defect found now must be written even if
+    the old record was rosier, so the guard can never hide a regression.
+    """
+    weaker = ("MISSING", "SKIPPED")
+    return [(c["id"], previous[c["id"]], c["status"]) for c in checks
+            if previous.get(c["id"]) == "PASS" and c["status"] in weaker]
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -288,6 +335,9 @@ def main(argv=None) -> int:
     ap.add_argument("--skip-generator", action="store_true",
                     help="do not re-run the in-browser generator check; quote the last committed verdict")
     ap.add_argument("--print", dest="do_print", action="store_true")
+    ap.add_argument("--allow-degraded", action="store_true",
+                    help="overwrite the committed record even when this run measured LESS than it "
+                         "(default: refuse with exit 3, like scripts/verify_links.py)")
     a = ap.parse_args(argv)
 
     t0 = time.time()
@@ -311,6 +361,17 @@ def main(argv=None) -> int:
     )
     out = ROOT / a.out
     out.parent.mkdir(parents=True, exist_ok=True)
+    degraded = degradations(previous_statuses(out), checks)
+    if degraded and not a.allow_degraded:
+        print(f"[readiness] REFUSING to overwrite {out}: this run measured LESS than the "
+              f"committed record in {len(degraded)} gate(s):", file=sys.stderr)
+        for cid, old, new in degraded:
+            print(f"[readiness]   {cid}: committed {old} -> now {new}", file=sys.stderr)
+        print("[readiness] This is the signature of a checkout without the gitignored 418 MB "
+              "feature stack (restore it with `python scripts/fetch_bridge_parts.py`), not of a "
+              "defect. Re-run with --allow-degraded to write the weaker record on purpose.",
+              file=sys.stderr)
+        return 3
     out.write_text(json.dumps(report, indent=1))
     if a.do_print:
         for c in checks:

@@ -1,0 +1,3 @@
+[contrast] folds 0 population=proxy blocks=8 ref=0.269654 cand=0.283743 P(cand>ref)=0.99 contrast_ci95=[0.003197, 0.021492]
+[contrast]   fold 0: blocks=8 ref=0.269654 cand=0.283743 delta=+0.014088
+[contrast] wrote data/evidence/union_po_loo/contrasts/drop_nff42_vs_committed_fold0.json

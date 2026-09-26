@@ -1,0 +1,75 @@
+{
+ "generated_by": "scripts/paired_union_contrast.py",
+ "population": "proxy",
+ "population_note": "SGMC proxy compilation (code 2), the stand-in for the privately withheld expert-mapped new faults - not the scored set (rules SS1.1/SS3.2)",
+ "fold": 3,
+ "folds": [
+  3
+ ],
+ "fold_note": "single fold",
+ "per_fold": [
+  {
+   "fold": 3,
+   "n_blocks": 8,
+   "reference_dti": 0.188154,
+   "candidate_dti": 0.212795,
+   "delta": 0.024641
+  }
+ ],
+ "note": "IN-SAMPLE for the NFF members: scripts/newfault_detector.py trains on everything except folds 0 and 1 (trainable = valid & ~(fold0 | fold1)), so this fold's ground WAS in every member's training set and a gain measured here is a memorisation-contaminated upper bound, not an out-of-sample estimate. Truth is the SGMC proxy compilation (code 2), not the scored set (rules SS1.1/SS3.2).",
+ "partition": {
+  "block_px": 512,
+  "folds": 4,
+  "seed": 42,
+  "mode": "balanced"
+ },
+ "reference": {
+  "path": "data/evidence/union_po_loo/prev_committed_nff_union5.tif",
+  "sha256": "19de9950ceffbdf7a7163b645984353965ab7d61dca07dfe8b9b68856edb853b",
+  "scalar_dti": 0.188154
+ },
+ "candidate": {
+  "path": "data/evidence/combined/submission.tif",
+  "sha256": "c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4",
+  "scalar_dti": 0.212795
+ },
+ "identity_max_abs_error": {
+  "reference": 1.8041124150158794e-15,
+  "candidate": 2.1649348980190553e-15
+ },
+ "n_blocks_kept": 8,
+ "n_boot": 2000,
+ "reliability": "COARSE - 8 resampling units is below this repository's readable-CI threshold (12): the interval cannot separate a regional preference from block-level noise, so treat P as suggestive and say so when quoting it",
+ "bootstrap": {
+  "reference": {
+   "dti_p50": 0.18614,
+   "dti_ci95": [
+    0.116356,
+    0.230226
+   ],
+   "contrast_vs_reference_p50": 0.0,
+   "contrast_vs_reference_ci95": [
+    0.0,
+    0.0
+   ],
+   "prob_beats_reference": null,
+   "n_blocks": 8,
+   "n_scoreable_blocks": 8
+  },
+  "candidate": {
+   "dti_p50": 0.209522,
+   "dti_ci95": [
+    0.13875,
+    0.244429
+   ],
+   "contrast_vs_reference_p50": 0.023689,
+   "contrast_vs_reference_ci95": [
+    0.010309,
+    0.042422
+   ],
+   "prob_beats_reference": 0.9995,
+   "n_blocks": 8,
+   "n_scoreable_blocks": 8
+  }
+ }
+}
