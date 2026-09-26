@@ -1,3 +1,25 @@
+## Session 31 (2026-09-25) — one more limitation measured, one more disclosed
+
+- **The adoption P-value rests on 9 resampling units.** Fold 1 has 9 scoreable blocks, so the
+  paired bootstrap interval is COARSE by this repository's own reliability rule
+  (`MIN_BLOCKS_FOR_A_READABLE_CI` = 12; "a bootstrap that redraws 9 units cannot separate a
+  regional preference from block-level noise"). The adoption cleared BOTH pre-registered
+  branches — point margin +0.0150 ≥ +0.010 AND P = 0.957 ≥ 0.95 — but the honest strength of the
+  evidence is "consistent with a real gain", not "proven". Mitigation already in the queue: fold
+  0's blocks give a second paired read of the same contrast (16 blocks pooled is a different
+  statement than either fold alone), and a pre-registered 4-fold pooled contrast is the version
+  that can actually be trusted.
+- **`raw.githubusercontent.com` is unreachable from this sandbox** (TLS closed mid-handshake on
+  every request, verified repeatedly). The GitHub API (`gh api`, token-authenticated) is
+  reachable and restored the 418 MB bridge parts; `scripts/fetch_bridge_parts.py` itself keeps
+  the raw URL as its default transport, which is correct on GitHub-hosted runners and anywhere
+  with normal egress — this sandbox is the exception, worked around, not a code change.
+- **The 418 MB of `data/bridge/*.part-*` are now explicitly git-ignored in this repository.**
+  They were fetched and verified locally this session (all five sha256 pins + the whole-file
+  pin), so the full pipeline runs here; but a turn's patchset caps around 128 MB, so the parts
+  must keep travelling by restoration (`fetch_bridge_parts.py`), never by commit.
+- Unchanged from session 30: the score itself (login-gated), GPU training, ~50 GB of 3DEP tiles.
+
 ## Session 26 additions (2026-09-25, GEMSDOE4)
 
 1. **The scored population cannot be measured locally — only approximated.** Both prize phases score

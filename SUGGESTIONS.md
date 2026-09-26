@@ -1,3 +1,21 @@
+## Session 31 (2026-09-25) — member diversity measured honestly: two members in, one better member set out
+
+| # | Suggestion | Status |
+|---|---|---|
+| 1 | **More NFF members are the cheapest gain** (the session-26 queue, item 3). | ⚠️ **Measured, and the naive version is FALSE** — two pre-registered members (`nff44` neg-ratio 5, `nff45` neg-ratio 20) made every 6-member union worse on the measurement fold (0.1590 coarse / 0.1692 fine vs 0.1747). Same features + same truth ⇒ correlated errors: extra members add FP mass faster than coverage. The gain came from the leave-one-out: **drop `nff44`, adopt k = 2 of 5** (`data/evidence/union6_loo/drop_nff44/report.json`). |
+| 2 | The floor grid (9 geometric steps) was hiding the k-of-n family; the 4-member sweep never searched votes. | ✅ Adopted — `--floors 18 --votes 1,2` on the same folds/seed; the k = 2 family leads the selection fold (0.2096, 0.1993 before the best k = 1 at 0.1832). The adopted policy is k = 2 of 5 at t0 = 0.180482. |
+| 3 | Adoption decisions should carry a paired probability, not two point estimates. | ✅ Implemented — `scripts/paired_union_contrast.py`: per-block decomposition + `bootstrap_from_blocks`, with a refuse-to-run identity guard (per-block sums must recompose to `score_within_mask` within 1e-9). Measured: P(cand > ref) = **0.957**, contrast CI95 [−0.0030, +0.0232], **9 blocks — COARSE, disclosed everywhere the number appears**. |
+| 4 | Data placement was believed to need "any unrestricted machine". | ✅ Closed for THIS sandbox — `raw.githubusercontent.com` is TLS-blocked, but the GitHub API is not: `gh api repos/…/contents/… -H "Accept: application/vnd.github.raw"` restores the pinned parts, then `fetch_bridge_parts.py --check` verifies all five sha256 pins. Placed + prepared in-sandbox for the first time. |
+| 5 | Session-30 open item: a "Build it here" link from the site root. | ✅ Done — root `index.html` now offers the one-click builder directly (`docs/how_to_submit.html#generate-here`); its canonical URL also no longer claims to be the GEMSDOE repository. |
+| 6 | Leaderboard-calibration observation (labelled heuristic, not a prediction): the two known surrogate→board pairs are deep11 (proxy 0.0999 → board 0.1563, ratio 1.56) and nothing else; the GEMSDOE2 dual-family union (board 0.1560) has no committed proxy score in this repo. If the ratio transferred at all, the adopted union's 0.1897 would land near ~0.30 — i.e. in range of the 0.3049 leader. | ⏳ Recorded as a hypothesis with ONE calibration point. The only honest test is the next upload; do not tune anything to this ratio. |
+
+**Next session queue (priority order):**
+1. **Upload `nff-union-5` and record the real score** (human, 1 of 3 this week) — file `data/evidence/combined/submission.tif` (or the browser-built copy), Note `nff-union-5 · union k=2 of 5 members (t0=0.18, w=0)`. The board score turns the one-point surrogate calibration into two, and decides whether the union line keeps leading.
+2. **A third truth source for member diversity** — the failed 6-member union says diversity must come from *supervision*, not seeds: pre-register an NFF member supervised on catalogue ∪ SGMC ∪ **QFaults** (`data/evidence/xcat/qfaults_catalogue.tif`, already committed with its fetch provenance), then re-run the LOO + adoption protocol unchanged.
+3. **DEM derivatives** — unchanged (needs unrestricted egress + ~50 GB; code ready).
+4. **Pseudo-label self-training on the NFF line** — the session-26 trade (+0.1036 new-fault / −0.087 catalogue) is now philosophically free since the catalogue is not scored; a CPU-able variant is folding SGMC *code-2-only* weighting into `newfault_detector.py`'s sampler.
+5. **GPU full-config** — unchanged (no GPU in any sandbox so far).
+
 ## Session 30 (2026-09-25) — the open item from session 23 is closed, and what it cost to close it
 
 **Item 6 of the session-23 table is done.** `make-submission.yml` has now run on a real runner, more

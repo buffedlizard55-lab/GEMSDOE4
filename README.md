@@ -26,7 +26,7 @@ asserted.
 | 5 | Work line by line verifying from official verified trusted sources, with links for manual review. No manual input. Work autonomously. Flag irregularities for review. No hallucinations. Verify line by line. | ✅ §8 and `scripts/verify_rules_quotes.py` (29/29 quoted sentences exact-matched against the rules PDF); every irregularity this session found is written down, including the ones that were mine. |
 | 6 | The site must generate the submission TIF as easily as "download a file to click into the competition", obvious at the very beginning of the site / executive summary. | ✅ Both the landing page and the executive summary open with the in-browser builder; `scripts/check_site_generator.py` re-runs the browser's own pipeline headless and is gate 9 of the readiness check. |
 | 7 | Fix the platform rejection `Predicted values must be in range [0, 1]`. | ✅ Root-caused (NaN inside the valid region, finite outside) and fixed by `scripts/sanitize_submission.py` + `conform_to_template()`; validator checks 16–17; two-sided evidence committed. |
-| 8 | Provide a unique name and a short comment (e.g. "clustering with k=25") to tell submissions apart. | ✅ The download carries a unique per-build file name and the suggested Note `nff-union-4 · union k=1 of 4 members (t0=0.288, w=0)`. |
+| 8 | Provide a unique name and a short comment (e.g. "clustering with k=25") to tell submissions apart. | ✅ The download carries a unique per-build file name and the suggested Note `nff-union-5 · union k=2 of 5 members (t0=0.18, w=0)`. |
 | 9 | Create an executive-summary subpage explaining exactly how to make a submission into the contest. | ✅ `docs/how_to_submit.html`, a subpage of the executive summary. |
 | 10 | Work the next steps from previous sessions first. | ✅ Each session opens with the previous session's open items; `SUGGESTIONS.md` and `LIMITATIONS.md` carry the queue. |
 | 11 | Goal: top of the leaderboard. Understand the problem, collect all data, organise it into a clean, easily auditable table with official verified links. | ✅ §3 is that table (every row: source, link, licence, what it is used for); §1 is the problem summary. |
@@ -58,7 +58,12 @@ Place **top of the leaderboard** in the DOE GEMS Prize Challenge on DrivenData �
 
 Our best line is ~half the leading score. The task for this repository is therefore not "ship
 another variant of the same model" but **a different strategy, researched and measured, that can
-score above 0.3049**.
+score above 0.3049**. The file this repository ships today (`data/evidence/combined/submission.tif`,
+sha256 `19de9950…`, 548,834 B) is that line's current candidate: the adopted **k = 2 of 5** union,
+proxy DTI **0.1897** on the measurement fold nothing scored during selection (+0.0150 over the
+4-member union it replaces; paired block bootstrap P = 0.957, 9 blocks — a COARSE interval, see
+`data/evidence/union6/paired_contrast.json`). The transfer to the real leaderboard is untested
+until a human uploads it; every number here is the SGMC surrogate, not the scored set.
 
 ### 0.3 The strategy this repository is built on (GEMSDOE4, "New-Fault-First")
 

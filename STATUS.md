@@ -1,4 +1,84 @@
-# Project status — 2026-09-25 (sessions 1–30)
+# Project status — 2026-09-25 (sessions 1–31)
+
+## Session 31 (2026-09-25) — the union became k = 2 of 5, on a measurement the sweep never scored
+
+**The headline, measured.** The shipped artifact is now
+`data/evidence/combined/submission.tif`, sha256 `19de9950…` (548,834 B): the new-fault-first
+**union of 5 members with k = 2 agreement** (`deep11`, `classical`, `nff42`, `nff43`, `nff45`),
+probability members floored at t0 = 0.180482, no dilation, 332,544 px at 1.0. Against the
+4-member union it replaces: selection fold **0.2096 vs 0.1864**, and — the number that decides —
+measurement fold (fold 1, excluded from every sweep) **0.1897 vs 0.1747, +0.0150**, paired block
+bootstrap **P(cand > ref) = 0.957** (`data/evidence/union6/paired_contrast.json`). Both branches
+of the adoption rule pre-registered before any new member was trained (margin ≥ +0.010 OR
+P ≥ 0.95) pass. The interval is COARSE — the fold has 9 scoreable blocks — and every document
+that quotes the number says so.
+
+**The path here was mostly negative results, and they are recorded as such:**
+
+| Step | Selection fold 0 | Measurement fold 1 | Verdict per the pre-registered rule |
+|---|---|---|---|
+| committed 4-member union (k = 1, t0 = 0.288) | 0.1864 | **0.1747** | the bar to beat |
+| 6-member union, coarse grid, k = 1 | 0.1730 | 0.1590 | REJECTED (worse on both folds) |
+| 6-member union, 18 floors, k ∈ {1, 2} | 0.1891 | 0.1692 | REJECTED (selection gain, measurement drop) |
+| LOO best subset on fold 0 → drop `nff44`, k = 2 of 5, t0 = 0.1805 | **0.2096** | **0.1897** | **ADOPTED** |
+
+Two new NFF members were trained that day with configs fixed in writing before either ran:
+`nff44` (seed 44, folds 0/1, `--neg-ratio 5`, max-iter 300) and `nff45` (seed 45, folds 2/3,
+`--neg-ratio 20`, max-iter 500). Both are weaker detectors than the union needs — their own
+measurement folds give proxy DTI 0.1600 (seed 44) and 0.1481 (seed 45) — and the leave-one-out
+showed they were the *dilution*: the best 6-member union is the one without `nff44`. That is a
+real finding about this member family (same features, same truth ⇒ correlated errors ⇒ more
+members add FP mass faster than coverage), not a failed tuning attempt.
+
+**Why the adopted rule differs from the committed one.** The 4-member line searched 9 floors and
+k = 1 only; with a finer floor grid (18 steps) and k-of-n voting searched, the k = 2 family
+dominates the selection fold (top-2 candidates 0.2096, 0.1993, before the best k = 1 at 0.1832)
+— the coarse grid had hidden the agreement rule entirely. The combiner already exposed
+`--floors` and `--votes`; only the invocation changed, on the same folds, same seed, same
+partition.
+
+**New tooling.** `scripts/paired_union_contrast.py` — the paired block-bootstrap contrast the
+adoption decision needed, with a hard identity guard: it refuses to emit a bootstrap unless the
+per-block table recomposes to `score_within_mask` on the scope to 1e-9. The guard earned its
+keep during development: the first version kept only truth-bearing blocks, which silently drops
+their FP mass and breaks the identity — the script refused, the bug was fixed, and the committed
+run passed with max abs error < 1e-12 on both fields.
+
+**Mechanics that had to move with the artifact** (all re-measured, all green): sidecar
+`submission.sha256` → `19de9950…`; `validate_submission.py` → PASSED; template conformance →
+`"conformant": true`; payload → `docs/submission_field.bin` 377,795 B / 181,041 runs, float32
+round trip bit-identical, hash **matches** the sidecar; site rebuilt; in-browser generator judge
+→ **PASS** (10 steps) on the new bytes; readiness → **8 PASS + 1 HUMAN** (the upload), 0 failed.
+
+**Data placement happened in this sandbox for the first time.** The bridge parts (418,912,844 B)
+were fetched through the GitHub API (`gh api … -H "Accept: application/vnd.github.raw"`) because
+`raw.githubusercontent.com` is not reachable from this sandbox — every TLS request to it dies
+with `Connection closed (EOF)`. All five parts verified against the manifest with the repo's own
+`fetch_bridge_parts.py --check`, and the assembled rasters match `data/evidence/inventory.json`.
+The parts are now explicitly `.gitignore`d (`data/bridge/*.part-*`): this repository never
+commits them; the manifest + mirror record travel, the script restores the bytes.
+
+**Closed:** session-30 open item 5 — the site root now carries a "Build the submission .tif
+here" link, and while there, the root `index.html`'s canonical URL was found pointing at
+**GEMSDOE** (a leftover from the tree copy, telling search engines this site is the other
+repository) and fixed to GEMSDOE4.
+
+**Irregularities flagged this session (own work included):**
+1. The Edit tool reported success on a table replacement in `EXECUTIVE_SUMMARY.md` while writing
+   nothing (caught by grep, re-applied via a checked script with a `count == 1` assertion).
+2. A session script mapped member `nff42` to directory `nff42/` instead of `seed42/` — six
+   leave-one-out runs failed in seconds; reading the error (not guessing) found it.
+3. An EXEC number ("144 eligible candidates") was written from memory before measuring; the
+   measured value is 14 of 76, and the text was corrected the same hour.
+4. The first 6-member combiner run overwrote the shipped artifact with a worse one; restored
+   byte-identical from git (`932c2f30…` re-verified against its sidecar) before any further step.
+5. After the adoption, the contrast script was re-run with `--reference` pointing at the (now
+   new) canonical artifact - i.e. the file contrasted with **itself**, P = 0.0. The script now
+   refuses that case outright (same-bytes guard), and the committed contrast was regenerated
+   against the previous artifact recovered from git at `932c2f30…` (sha-verified before use).
+
+---
+
 
 ## Session 30 (2026-09-25) — `make-submission` is green, and every number in its record is real
 

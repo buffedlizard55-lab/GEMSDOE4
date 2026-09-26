@@ -1,0 +1,1142 @@
+{
+ "generated_utc": "2026-09-25T23:48:59Z",
+ "script": "scripts/combine_newfault.py",
+ "purpose": "union of structurally different detectors, with the combination rule selected on the NEW-FAULT population on geography the sweep never scored",
+ "members": [
+  {
+   "name": "deep11",
+   "path": "data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif",
+   "probability": false,
+   "sha256": "7f00890a62878d612fb5eef67a9a364a2df819433dde74b6762ce4fc0fc4fe15",
+   "provenance": {
+    "script": "scripts/blend_submission.py",
+    "held_out_fold": "none - whole-grid training",
+    "measurement_fold": null,
+    "generated_utc": "2026-09-17T22:47:58Z"
+   },
+   "own_scores": {
+    "proxy_dti": 0.09985938622937189,
+    "catalogue_dti": 0.22979915192669062,
+    "emitted_px": 172974,
+    "note": "binary field as written"
+   }
+  },
+  {
+   "name": "classical",
+   "path": "data/evidence/baseline/submission.tif",
+   "probability": false,
+   "sha256": "9f2577cff20d97717dc42afbdc08faff149bf5fcf237b3bc3daffa9d81dc1163",
+   "provenance": {
+    "script": "scripts/baseline_submission.py",
+    "held_out_fold": 0,
+    "measurement_fold": 1,
+    "generated_utc": "2026-09-20T16:55:53Z"
+   },
+   "own_scores": {
+    "proxy_dti": 0.11907096060510475,
+    "catalogue_dti": 0.061148543512767786,
+    "emitted_px": 155889,
+    "note": "binary field as written"
+   }
+  },
+  {
+   "name": "nff43",
+   "path": "data/evidence/newfault/seed43/prob_raw.tif",
+   "probability": true,
+   "sha256": "84c0b0000f00db01966ef66275e0b902003436eb56783558bd99fd9956fc6d48",
+   "provenance": {
+    "script": "scripts/newfault_detector.py",
+    "held_out_fold": 2,
+    "measurement_fold": 3,
+    "generated_utc": "2026-09-25T20:08:40Z"
+   },
+   "own_scores": {
+    "proxy_dti": 0.15532136680310116,
+    "catalogue_dti": 0.13119426566041864,
+    "emitted_px": 214920,
+    "note": "scored at its own run's selected policy"
+   }
+  },
+  {
+   "name": "nff44",
+   "path": "data/evidence/newfault/seed44/prob_raw.tif",
+   "probability": true,
+   "sha256": "57f8ad5491f7e0da75eafcd19bcdc538bf0d82fc6825e0c2654804ec23116fc0",
+   "provenance": {
+    "script": "scripts/newfault_detector.py",
+    "held_out_fold": 0,
+    "measurement_fold": 1,
+    "generated_utc": "2026-09-25T23:16:47Z"
+   },
+   "own_scores": {
+    "proxy_dti": 0.16415306803674445,
+    "catalogue_dti": 0.1279653025761903,
+    "emitted_px": 578708,
+    "note": "scored at its own run's selected policy"
+   }
+  },
+  {
+   "name": "nff45",
+   "path": "data/evidence/newfault/seed45/prob_raw.tif",
+   "probability": true,
+   "sha256": "6d18948d0287301b7a20fc907da439cdc1cfe253c3392853d4e34bd0d8d69801",
+   "provenance": {
+    "script": "scripts/newfault_detector.py",
+    "held_out_fold": 2,
+    "measurement_fold": 3,
+    "generated_utc": "2026-09-25T23:34:02Z"
+   },
+   "own_scores": {
+    "proxy_dti": 0.16863972035735272,
+    "catalogue_dti": 0.12058644189978328,
+    "emitted_px": 851822,
+    "note": "scored at its own run's selected policy"
+   }
+  }
+ ],
+ "metric": {
+  "R_pixels": 3,
+  "alpha": 0.2,
+  "beta": 0.8
+ },
+ "partition": {
+  "grid": {
+   "height": 3730,
+   "width": 3292
+  },
+  "block_px": 512,
+  "block_shape": [
+   8,
+   7
+  ],
+  "n_blocks": 56,
+  "n_folds": 4,
+  "seed": 42,
+  "buffer_px": 3,
+  "resolution_m": 100.0,
+  "block_km": 51.2,
+  "mode": "balanced",
+  "assignment": "greedy LPT: blocks dealt by descending fault mass to the fold with the smallest normalised load (fault/target + valid/target)",
+  "per_fold": [
+   {
+    "fold": 0,
+    "blocks": 8,
+    "block_ids": [
+     3,
+     4,
+     5,
+     6,
+     10,
+     15,
+     29,
+     32
+    ],
+    "valid_px": 1352377,
+    "fault_px": 14442,
+    "fault_km": 1444.2,
+    "valid_frac_of_grid": 0.110136,
+    "fault_frac_of_scored": 0.236801,
+    "collar_excluded_px": 28425
+   },
+   {
+    "fold": 1,
+    "blocks": 9,
+    "block_ids": [
+     8,
+     12,
+     17,
+     24,
+     31,
+     38,
+     46,
+     52,
+     53
+    ],
+    "valid_px": 1170054,
+    "fault_px": 16598,
+    "fault_km": 1659.8,
+    "valid_frac_of_grid": 0.095288,
+    "fault_frac_of_scored": 0.272152,
+    "collar_excluded_px": 34758
+   },
+   {
+    "fold": 2,
+    "blocks": 9,
+    "block_ids": [
+     0,
+     7,
+     11,
+     16,
+     21,
+     23,
+     30,
+     37,
+     39
+    ],
+    "valid_px": 1274570,
+    "fault_px": 15404,
+    "fault_km": 1540.4,
+    "valid_frac_of_grid": 0.103799,
+    "fault_frac_of_scored": 0.252574,
+    "collar_excluded_px": 36999
+   },
+   {
+    "fold": 3,
+    "blocks": 8,
+    "block_ids": [
+     1,
+     2,
+     9,
+     13,
+     14,
+     22,
+     44,
+     45
+    ],
+    "valid_px": 1370372,
+    "fault_px": 14544,
+    "fault_km": 1454.4,
+    "valid_frac_of_grid": 0.111601,
+    "fault_frac_of_scored": 0.238473,
+    "collar_excluded_px": 32130
+   }
+  ],
+  "balance": {
+   "fault_px_min": 14442,
+   "fault_px_max": 16598,
+   "fault_px_spread": 0.141405
+  },
+  "empty_blocks_excluded": 22
+ },
+ "selection": {
+  "fold": 0,
+  "population": "proxy (new-fault-like) pixels only",
+  "scope": "blocks of fold 0",
+  "ranking_key": "proxy_dti desc, then narrower dilation, then lower k",
+  "winner": {
+   "t0": 0.180482,
+   "dilate": 0,
+   "vote": 2,
+   "emitted_px": 489372,
+   "proxy_dti": 0.20645759493416155,
+   "catalogue_dti": 0.1730817512265789,
+   "eligible": true,
+   "eligibility_reason": "within the pre-registered support window"
+  },
+  "candidates": [
+   {
+    "t0": 0.0,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 5167373,
+    "proxy_dti": 0.05850133094693036,
+    "catalogue_dti": 0.05795496774954667,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,167,373 px = 100.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0,
+    "dilate": 0,
+    "vote": 2,
+    "emitted_px": 5167373,
+    "proxy_dti": 0.05850133094693036,
+    "catalogue_dti": 0.05795496774954667,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,167,373 px = 100.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 5179002,
+    "proxy_dti": 0.05837474795718668,
+    "catalogue_dti": 0.05783065722472968,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,179,002 px = 100.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0,
+    "dilate": 1,
+    "vote": 2,
+    "emitted_px": 5179002,
+    "proxy_dti": 0.05837474795718668,
+    "catalogue_dti": 0.05783065722472968,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,179,002 px = 100.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0001,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 5167373,
+    "proxy_dti": 0.05850133094693036,
+    "catalogue_dti": 0.05795496774954667,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,167,373 px = 100.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0001,
+    "dilate": 0,
+    "vote": 2,
+    "emitted_px": 5167368,
+    "proxy_dti": 0.05850138644785423,
+    "catalogue_dti": 0.05795501915084716,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,167,368 px = 100.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0001,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 5179002,
+    "proxy_dti": 0.05837474795718668,
+    "catalogue_dti": 0.05783065722472968,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,179,002 px = 100.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0001,
+    "dilate": 1,
+    "vote": 2,
+    "emitted_px": 5179002,
+    "proxy_dti": 0.05837474795718668,
+    "catalogue_dti": 0.05783065722472968,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,179,002 px = 100.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.000170845,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 5167373,
+    "proxy_dti": 0.05850133094693036,
+    "catalogue_dti": 0.05795496774954667,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,167,373 px = 100.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.000170845,
+    "dilate": 0,
+    "vote": 2,
+    "emitted_px": 5166903,
+    "proxy_dti": 0.05850654849411941,
+    "catalogue_dti": 0.05796010521293524,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,166,903 px = 100.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.000170845,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 5179002,
+    "proxy_dti": 0.05837474795718668,
+    "catalogue_dti": 0.05783065722472968,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,179,002 px = 100.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.000170845,
+    "dilate": 1,
+    "vote": 2,
+    "emitted_px": 5178817,
+    "proxy_dti": 0.05837679268394298,
+    "catalogue_dti": 0.05783268220887729,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,178,817 px = 100.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00029188,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 5167373,
+    "proxy_dti": 0.05850133094693036,
+    "catalogue_dti": 0.05795496774954667,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,167,373 px = 100.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00029188,
+    "dilate": 0,
+    "vote": 2,
+    "emitted_px": 5163636,
+    "proxy_dti": 0.05854284173199523,
+    "catalogue_dti": 0.057995648072330167,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,163,636 px = 99.9% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00029188,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 5179002,
+    "proxy_dti": 0.05837474795718668,
+    "catalogue_dti": 0.05783065722472968,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,179,002 px = 100.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00029188,
+    "dilate": 1,
+    "vote": 2,
+    "emitted_px": 5177256,
+    "proxy_dti": 0.05839405146202377,
+    "catalogue_dti": 0.05784973752504641,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,177,256 px = 100.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.000498663,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 5167373,
+    "proxy_dti": 0.05850133094693036,
+    "catalogue_dti": 0.05795496774954667,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,167,373 px = 100.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.000498663,
+    "dilate": 0,
+    "vote": 2,
+    "emitted_px": 5152839,
+    "proxy_dti": 0.05866310353088242,
+    "catalogue_dti": 0.058105921143604314,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,152,839 px = 99.7% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.000498663,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 5179002,
+    "proxy_dti": 0.05837474795718668,
+    "catalogue_dti": 0.05783065722472968,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,179,002 px = 100.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.000498663,
+    "dilate": 1,
+    "vote": 2,
+    "emitted_px": 5168750,
+    "proxy_dti": 0.05848827536828775,
+    "catalogue_dti": 0.05793844892200473,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,168,750 px = 100.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.000851942,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 5167371,
+    "proxy_dti": 0.058501353147287265,
+    "catalogue_dti": 0.057954989778664284,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,167,371 px = 100.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.000851942,
+    "dilate": 0,
+    "vote": 2,
+    "emitted_px": 5132570,
+    "proxy_dti": 0.05889020913172478,
+    "catalogue_dti": 0.05832599965490856,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,132,570 px = 99.3% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.000851942,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 5179002,
+    "proxy_dti": 0.05837474795718668,
+    "catalogue_dti": 0.05783065722472968,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,179,002 px = 100.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.000851942,
+    "dilate": 1,
+    "vote": 2,
+    "emitted_px": 5153869,
+    "proxy_dti": 0.05865385011177563,
+    "catalogue_dti": 0.05809732181209795,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,153,869 px = 99.7% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0014555,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 5166454,
+    "proxy_dti": 0.05851153378616055,
+    "catalogue_dti": 0.05796509189352172,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,166,454 px = 100.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0014555,
+    "dilate": 0,
+    "vote": 2,
+    "emitted_px": 5080513,
+    "proxy_dti": 0.05948150675203078,
+    "catalogue_dti": 0.05889423106445179,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,080,513 px = 98.3% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0014555,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 5178726,
+    "proxy_dti": 0.05837779852101611,
+    "catalogue_dti": 0.057833684372869176,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,178,726 px = 100.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0014555,
+    "dilate": 1,
+    "vote": 2,
+    "emitted_px": 5114278,
+    "proxy_dti": 0.05909896048999444,
+    "catalogue_dti": 0.05852976076929446,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,114,278 px = 99.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00248665,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 5157141,
+    "proxy_dti": 0.05861512886191659,
+    "catalogue_dti": 0.05806788826097747,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,157,141 px = 99.8% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00248665,
+    "dilate": 0,
+    "vote": 2,
+    "emitted_px": 4981256,
+    "proxy_dti": 0.06062910637292275,
+    "catalogue_dti": 0.059926614413931587,
+    "eligible": false,
+    "eligibility_reason": "emitted 4,981,256 px = 96.4% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00248665,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 5171372,
+    "proxy_dti": 0.05845919816318622,
+    "catalogue_dti": 0.05791445939707695,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,171,372 px = 100.1% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00248665,
+    "dilate": 1,
+    "vote": 2,
+    "emitted_px": 5036848,
+    "proxy_dti": 0.05998340861061773,
+    "catalogue_dti": 0.05935733453008328,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,036,848 px = 97.5% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00424832,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 5136269,
+    "proxy_dti": 0.05884864049828971,
+    "catalogue_dti": 0.05829960173607249,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,136,269 px = 99.4% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00424832,
+    "dilate": 0,
+    "vote": 2,
+    "emitted_px": 4790123,
+    "proxy_dti": 0.06295713195296343,
+    "catalogue_dti": 0.061552978118402206,
+    "eligible": false,
+    "eligibility_reason": "emitted 4,790,123 px = 92.7% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00424832,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 5154328,
+    "proxy_dti": 0.058648729616066514,
+    "catalogue_dti": 0.05810253793466036,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,154,328 px = 99.7% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00424832,
+    "dilate": 1,
+    "vote": 2,
+    "emitted_px": 4881810,
+    "proxy_dti": 0.06182502920642416,
+    "catalogue_dti": 0.06068005580247311,
+    "eligible": false,
+    "eligibility_reason": "emitted 4,881,810 px = 94.5% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00725805,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 5074451,
+    "proxy_dti": 0.059550253354433404,
+    "catalogue_dti": 0.058993584568092026,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,074,451 px = 98.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00725805,
+    "dilate": 0,
+    "vote": 2,
+    "emitted_px": 4465072,
+    "proxy_dti": 0.06731624187063646,
+    "catalogue_dti": 0.06453516184991019,
+    "eligible": false,
+    "eligibility_reason": "emitted 4,465,072 px = 86.4% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00725805,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 5108857,
+    "proxy_dti": 0.05916043831549044,
+    "catalogue_dti": 0.05861028906364749,
+    "eligible": false,
+    "eligibility_reason": "emitted 5,108,857 px = 98.9% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.00725805,
+    "dilate": 1,
+    "vote": 2,
+    "emitted_px": 4605956,
+    "proxy_dti": 0.06537386319715326,
+    "catalogue_dti": 0.06304378688810586,
+    "eligible": false,
+    "eligibility_reason": "emitted 4,605,956 px = 89.1% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0124,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 4910317,
+    "proxy_dti": 0.06149384615144407,
+    "catalogue_dti": 0.060875098694348095,
+    "eligible": false,
+    "eligibility_reason": "emitted 4,910,317 px = 95.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0124,
+    "dilate": 0,
+    "vote": 2,
+    "emitted_px": 3997391,
+    "proxy_dti": 0.07467738343948993,
+    "catalogue_dti": 0.06967362926875255,
+    "eligible": false,
+    "eligibility_reason": "emitted 3,997,391 px = 77.4% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0124,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 4979839,
+    "proxy_dti": 0.06066002490343122,
+    "catalogue_dti": 0.0600750316103839,
+    "eligible": false,
+    "eligibility_reason": "emitted 4,979,839 px = 96.4% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0124,
+    "dilate": 1,
+    "vote": 2,
+    "emitted_px": 4182337,
+    "proxy_dti": 0.07162450583032677,
+    "catalogue_dti": 0.06751172325591015,
+    "eligible": false,
+    "eligibility_reason": "emitted 4,182,337 px = 80.9% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0211848,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 4610148,
+    "proxy_dti": 0.06530439308463576,
+    "catalogue_dti": 0.0644551017937339,
+    "eligible": false,
+    "eligibility_reason": "emitted 4,610,148 px = 89.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0211848,
+    "dilate": 0,
+    "vote": 2,
+    "emitted_px": 3456229,
+    "proxy_dti": 0.08466765105606544,
+    "catalogue_dti": 0.0760080454319817,
+    "eligible": false,
+    "eligibility_reason": "emitted 3,456,229 px = 66.9% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0211848,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 4720323,
+    "proxy_dti": 0.06385897724946568,
+    "catalogue_dti": 0.06311698833948363,
+    "eligible": false,
+    "eligibility_reason": "emitted 4,720,323 px = 91.3% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0211848,
+    "dilate": 1,
+    "vote": 2,
+    "emitted_px": 3656830,
+    "proxy_dti": 0.08063886890462064,
+    "catalogue_dti": 0.07341327950748602,
+    "eligible": false,
+    "eligibility_reason": "emitted 3,656,830 px = 70.8% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0361932,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 4135179,
+    "proxy_dti": 0.07237424757871079,
+    "catalogue_dti": 0.07047594525958903,
+    "eligible": false,
+    "eligibility_reason": "emitted 4,135,179 px = 80.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0361932,
+    "dilate": 0,
+    "vote": 2,
+    "emitted_px": 2894094,
+    "proxy_dti": 0.09755981666973694,
+    "catalogue_dti": 0.0835938037860938,
+    "eligible": false,
+    "eligibility_reason": "emitted 2,894,094 px = 56.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0361932,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 4299349,
+    "proxy_dti": 0.06978218458611993,
+    "catalogue_dti": 0.06832109592123371,
+    "eligible": false,
+    "eligibility_reason": "emitted 4,299,349 px = 83.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0361932,
+    "dilate": 1,
+    "vote": 2,
+    "emitted_px": 3125857,
+    "proxy_dti": 0.09191189952674514,
+    "catalogue_dti": 0.08016381734918863,
+    "eligible": false,
+    "eligibility_reason": "emitted 3,125,857 px = 60.5% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0618344,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 3524475,
+    "proxy_dti": 0.08366109311347018,
+    "catalogue_dti": 0.07907675812223851,
+    "eligible": false,
+    "eligibility_reason": "emitted 3,524,475 px = 68.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0618344,
+    "dilate": 0,
+    "vote": 2,
+    "emitted_px": 2169579,
+    "proxy_dti": 0.11870157770939531,
+    "catalogue_dti": 0.09698358972162492,
+    "eligible": false,
+    "eligibility_reason": "emitted 2,169,579 px = 42.0% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0618344,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 3730097,
+    "proxy_dti": 0.07961207446907077,
+    "catalogue_dti": 0.07604422399403483,
+    "eligible": false,
+    "eligibility_reason": "emitted 3,730,097 px = 72.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.0618344,
+    "dilate": 1,
+    "vote": 2,
+    "emitted_px": 2453517,
+    "proxy_dti": 0.10945383781466955,
+    "catalogue_dti": 0.09093895017714217,
+    "eligible": false,
+    "eligibility_reason": "emitted 2,453,517 px = 47.5% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.105641,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 2812361,
+    "proxy_dti": 0.1004230561409368,
+    "catalogue_dti": 0.09121596353814844,
+    "eligible": false,
+    "eligibility_reason": "emitted 2,812,361 px = 54.4% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.105641,
+    "dilate": 0,
+    "vote": 2,
+    "emitted_px": 1269987,
+    "proxy_dti": 0.15791340885205202,
+    "catalogue_dti": 0.1264413039079724,
+    "eligible": false,
+    "eligibility_reason": "emitted 1,269,987 px = 24.6% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.105641,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 3063534,
+    "proxy_dti": 0.09398654147675188,
+    "catalogue_dti": 0.08658802140406024,
+    "eligible": false,
+    "eligibility_reason": "emitted 3,063,534 px = 59.3% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.105641,
+    "dilate": 1,
+    "vote": 2,
+    "emitted_px": 1561331,
+    "proxy_dti": 0.14172141568979982,
+    "catalogue_dti": 0.11500452108532257,
+    "eligible": false,
+    "eligibility_reason": "emitted 1,561,331 px = 30.2% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.180482,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 1815007,
+    "proxy_dti": 0.13289740952380108,
+    "catalogue_dti": 0.1170052405387363,
+    "eligible": false,
+    "eligibility_reason": "emitted 1,815,007 px = 35.1% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.180482,
+    "dilate": 0,
+    "vote": 2,
+    "emitted_px": 489372,
+    "proxy_dti": 0.20645759493416155,
+    "catalogue_dti": 0.1730817512265789,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.180482,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 2112871,
+    "proxy_dti": 0.12123130130272183,
+    "catalogue_dti": 0.10744904172350311,
+    "eligible": false,
+    "eligibility_reason": "emitted 2,112,871 px = 40.9% of the footprint > cap 20%"
+   },
+   {
+    "t0": 0.180482,
+    "dilate": 1,
+    "vote": 2,
+    "emitted_px": 677227,
+    "proxy_dti": 0.19053357896608014,
+    "catalogue_dti": 0.15885233691536463,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.308345,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 819434,
+    "proxy_dti": 0.17662197130091767,
+    "catalogue_dti": 0.17003749245958732,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.308345,
+    "dilate": 0,
+    "vote": 2,
+    "emitted_px": 111143,
+    "proxy_dti": 0.1553096072621105,
+    "catalogue_dti": 0.16570977679155977,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.308345,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 1001706,
+    "proxy_dti": 0.1656322077016767,
+    "catalogue_dti": 0.15609180711602005,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.308345,
+    "dilate": 1,
+    "vote": 2,
+    "emitted_px": 172953,
+    "proxy_dti": 0.17016897126603597,
+    "catalogue_dti": 0.17674051550241923,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.526793,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 378224,
+    "proxy_dti": 0.16164951012781556,
+    "catalogue_dti": 0.19889091713938659,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.526793,
+    "dilate": 0,
+    "vote": 2,
+    "emitted_px": 14848,
+    "proxy_dti": 0.034933898647474045,
+    "catalogue_dti": 0.060837718214537706,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.526793,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 414596,
+    "proxy_dti": 0.16279400462137691,
+    "catalogue_dti": 0.19675154586923765,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.526793,
+    "dilate": 1,
+    "vote": 2,
+    "emitted_px": 25088,
+    "proxy_dti": 0.04567459517965318,
+    "catalogue_dti": 0.07712993116037611,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.9,
+    "dilate": 0,
+    "vote": 1,
+    "emitted_px": 325165,
+    "proxy_dti": 0.14785022334531403,
+    "catalogue_dti": 0.19396717750318127,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.9,
+    "dilate": 0,
+    "vote": 2,
+    "emitted_px": 3698,
+    "proxy_dti": 0.009903302133486547,
+    "catalogue_dti": 0.021359285088053185,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.9,
+    "dilate": 1,
+    "vote": 1,
+    "emitted_px": 325165,
+    "proxy_dti": 0.14785022334531403,
+    "catalogue_dti": 0.19396717750318127,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   },
+   {
+    "t0": 0.9,
+    "dilate": 1,
+    "vote": 2,
+    "emitted_px": 3698,
+    "proxy_dti": 0.009903302133486547,
+    "catalogue_dti": 0.021359285088053185,
+    "eligible": true,
+    "eligibility_reason": "within the pre-registered support window"
+   }
+  ]
+ },
+ "measurement": {
+  "fold": 1,
+  "scope": "blocks of fold 1: never used by the sweep",
+  "by_scope": {
+   "selection": {
+    "proxy": {
+     "dti": 0.2602838845837045,
+     "TP_w": 11264.471484295456,
+     "FP_w": 124359.7137136801,
+     "FN_w": 8926.528515704544,
+     "n_gt": 20191,
+     "pred_px": 149126,
+     "pred_mass": 149126.0,
+     "scoreable": true
+    },
+    "catalogue": {
+     "dti": 0.1829801120045276,
+     "TP_w": 7229.769333161518,
+     "FP_w": 132558.38182288135,
+     "FN_w": 7212.230666838482,
+     "n_gt": 14442,
+     "pred_px": 149126,
+     "pred_mass": 149126.0,
+     "scoreable": true
+    }
+   },
+   "measurement": {
+    "proxy": {
+     "dti": 0.19511033358231475,
+     "TP_w": 7205.8701555950465,
+     "FP_w": 120987.54739396447,
+     "FN_w": 6911.1298444049535,
+     "n_gt": 14117,
+     "pred_px": 137885,
+     "pred_mass": 137885.0,
+     "scoreable": true
+    },
+    "catalogue": {
+     "dti": 0.1950560817780168,
+     "TP_w": 7620.492945083262,
+     "FP_w": 121328.58218571535,
+     "FN_w": 8977.507054916738,
+     "n_gt": 16598,
+     "pred_px": 137885,
+     "pred_mass": 137885.0,
+     "scoreable": true
+    }
+   },
+   "whole grid": {
+    "proxy": {
+     "dti": 0.20645759493416155,
+     "TP_w": 29075.898100755072,
+     "FP_w": 428429.6056212708,
+     "FN_w": 32588.101899244928,
+     "n_gt": 61664,
+     "pred_px": 489372,
+     "pred_mass": 489372.0,
+     "scoreable": true
+    },
+    "catalogue": {
+     "dti": 0.1730817512265789,
+     "TP_w": 24508.98314325251,
+     "FP_w": 439556.55682116665,
+     "FN_w": 36479.01685674749,
+     "n_gt": 60988,
+     "pred_px": 489372,
+     "pred_mass": 489372.0,
+     "scoreable": true
+    }
+   }
+  }
+ },
+ "conform": {
+  "pixels": 12279160,
+  "template_valid_px": 5167373,
+  "filled_inside": 0,
+  "masked_outside": 7111787,
+  "clipped": 0,
+  "unchanged": 5167373
+ },
+ "submission": {
+  "sanitize_evidence": "data/evidence/union6_loo/drop_nff42/sanitize.json",
+  "path": "data/evidence/union6_loo/drop_nff42/submission.tif",
+  "bytes": 633408,
+  "sha256": "6146688da296b24df1cb12c59211f38ed78744b6631e63ba6ca9673cbd0d87e7",
+  "width": 3292,
+  "height": 3730,
+  "count": 1,
+  "dtype": "float32",
+  "crs": "EPSG:32611",
+  "transform": [
+   100.0,
+   0.0,
+   243350.0,
+   0.0,
+   -100.0,
+   4508550.0
+  ],
+  "finite_px": 5167373,
+  "total_px": 12279160,
+  "nan_px": 7111787,
+  "nonzero_px": 489372,
+  "policy": "union k=2 of 5 members; probability members floored at t0=0.180482 and dilated 0 px",
+  "suggested_note": "loo-drop-nff42 \u00b7 union k=2 of 5 members (t0=0.18, w=0)",
+  "global_scores": {
+   "proxy": 0.20645759493416155,
+   "catalogue": 0.1730817512265789
+  },
+  "writer": {
+   "path": "data/evidence/union6_loo/drop_nff42/submission.tif",
+   "bytes": 633408,
+   "sha256": "6146688da296b24df1cb12c59211f38ed78744b6631e63ba6ca9673cbd0d87e7",
+   "width": 3292,
+   "height": 3730,
+   "count": 1,
+   "dtype": "float32",
+   "crs": "EPSG:32611",
+   "res": [
+    100.0,
+    100.0
+   ],
+   "transform": [
+    100.0,
+    0.0,
+    243350.0,
+    0.0,
+    -100.0,
+    4508550.0,
+    0.0,
+    0.0,
+    1.0
+   ],
+   "nodata": NaN,
+   "tiled": true,
+   "block_shapes": [
+    [
+     256,
+     256
+    ]
+   ],
+   "finite_px": 5167373,
+   "total_px": 12279160,
+   "nan_px": 7111787,
+   "nonzero_px": 489372,
+   "prob_mass": 489372.0
+  }
+ },
+ "caveats": [
+  "OUT-OF-SAMPLE STATUS IS PER MEMBER, not per union: the deep-ensemble member was trained over the whole grid (so its contribution to a held-out fold is NOT out-of-sample), while each NFF member holds out its own folds - recorded per member under 'members' above, read from that member's own report.json.  A fold on which a member is in-sample is disclosed here rather than described as held out.",
+  "The union is therefore an ensemble of differently-biased detectors, not a set of independent out-of-sample measurements; the only per-member out-of-sample numbers in this repository are the ones in each member's own report.",
+  "The proxy population is a stand-in for the private expert labels, not the scored set.  The public leaderboard is the only unbiased test of the transfer.",
+  "The catalogue DTI is reported for context only - rules SS1.1/SS3.2 score the new faults in both prize phases."
+ ]
+}
