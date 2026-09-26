@@ -1,0 +1,75 @@
+{
+ "generated_by": "scripts/paired_union_contrast.py",
+ "population": "proxy",
+ "population_note": "SGMC proxy compilation (code 2), the stand-in for the privately withheld expert-mapped new faults - not the scored set (rules SS1.1/SS3.2)",
+ "fold": 1,
+ "folds": [
+  1
+ ],
+ "fold_note": "single fold",
+ "per_fold": [
+  {
+   "fold": 1,
+   "n_blocks": 9,
+   "reference_dti": 0.199605,
+   "candidate_dti": 0.222076,
+   "delta": 0.022471
+  }
+ ],
+ "note": "FOLD 1 ONLY - never scored by the sweep, out-of-sample for every NFF member (training excluded folds 0 and 1); the clean read on 9 blocks, so reliability is flagged rather than asserted",
+ "partition": {
+  "block_px": 512,
+  "folds": 4,
+  "seed": 42,
+  "mode": "balanced"
+ },
+ "reference": {
+  "path": "data/evidence/union_po_loo/prev_committed_nff_k2_t0.18.tif",
+  "sha256": "c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4",
+  "scalar_dti": 0.199605
+ },
+ "candidate": {
+  "path": "data/evidence/combined/submission.tif",
+  "sha256": "237f0063a440b2c6c4b822bcb0f74e5203586313b3b5ed6c5cabe70fa046f63f",
+  "scalar_dti": 0.222076
+ },
+ "identity_max_abs_error": {
+  "reference": 3.608224830031759e-16,
+  "candidate": 1.1379786002407855e-15
+ },
+ "n_blocks_kept": 9,
+ "n_boot": 2000,
+ "reliability": "COARSE - 9 resampling units is below this repository's readable-CI threshold (12): the interval cannot separate a regional preference from block-level noise, so treat P as suggestive and say so when quoting it",
+ "bootstrap": {
+  "reference": {
+   "dti_p50": 0.197163,
+   "dti_ci95": [
+    0.121263,
+    0.256417
+   ],
+   "contrast_vs_reference_p50": 0.0,
+   "contrast_vs_reference_ci95": [
+    0.0,
+    0.0
+   ],
+   "prob_beats_reference": null,
+   "n_blocks": 9,
+   "n_scoreable_blocks": 9
+  },
+  "candidate": {
+   "dti_p50": 0.219895,
+   "dti_ci95": [
+    0.138835,
+    0.271155
+   ],
+   "contrast_vs_reference_p50": 0.020712,
+   "contrast_vs_reference_ci95": [
+    -0.002626,
+    0.042
+   ],
+   "prob_beats_reference": 0.965,
+   "n_blocks": 9,
+   "n_scoreable_blocks": 9
+  }
+ }
+}

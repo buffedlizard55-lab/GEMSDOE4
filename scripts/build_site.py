@@ -1313,12 +1313,52 @@ def build_review(ev: dict) -> str:
         '<tr><td><b>%s</b></td><td>%s</td><td><a href="%s">official source</a></td></tr>'
         % (e(k), e(v), e(u)) for k, v, u in rows
     )
+    fd = ev.get("fold_discipline") or {}
+    defects = ""
+    if fd.get("members"):
+        defects = f"""
+<h2>Defects found and fixed, with the measurement that shows it</h2>
+<p>Two selection-scope defects were found by reading the code against its own documentation on
+2026-09-26, and both are now fixed, tested and re-run. They are on this page rather than in a commit
+message because a reader deciding how much to trust the numbers below needs to know how they were
+wrong first.</p>
+<table class="wide"><thead><tr><th>defect</th><th>what it was</th><th>what it is now</th>
+<th>evidence</th></tr></thead><tbody>
+<tr><td><b>Selection scope</b></td>
+<td><code>scripts/combine_newfault.py</code> ranked candidates by the <b>whole-grid</b> proxy DTI while
+its docstring, its report field <code>selection.scope</code> and <code>docs/FIELD_SELECTION_RULE.md</code>
+all said the <b>selection fold</b>. The two disagree about which rule wins, so the shipped rule had
+been chosen on a number the report did not claim to use.
+<code>scripts/newfault_detector.py</code> had the same defect in its own sweep.</td>
+<td>Each candidate carries four scopes (<code>selection</code>, <code>measurement</code>,
+<code>pooled01</code>, <code>whole</code>); exactly one - <code>proxy_dti_selection</code> - selects,
+and an unmeasurable scope returns <code>None</code> and stops the run instead of scoring zero.</td>
+<td><code>data/evidence/combined/report.json</code> · <code>tests/test_combine_newfault.py</code> ·
+<code>tests/test_newfault_detector.py</code> · <code>docs/SESSION32_PROTOCOL.md</code></td></tr>
+<tr><td><b>Union holdout</b></td>
+<td>{e(str(fd.get('verdict')))} Their training geography includes the folds the union uses to select
+and measure, so every number the union reports on those folds is optimistic for those members.</td>
+<td>Disclosed per member in every report (<code>selection.fold_discipline</code>) and quantified by
+<code>scripts/audit_fold_discipline.py</code>; a clean-pool control run
+(<code>data/evidence/combined_clean/</code>) repeats the whole search with only members that held
+<em>both</em> folds out.</td>
+<td><code>data/evidence/fold_discipline.json</code> · <code>tests/test_fold_discipline.py</code></td>
+</tr>
+<tr><td><b>Vote axis</b></td>
+<td>The sweep could only express k = 1 and k = 2 (<code>--votes</code> default <code>1,2</code>), so
+the k = 3 family - the one that generalises best on the untouched fold - was not in the search space
+at all, and its absence was never reported.</td>
+<td>The default spans k = 1..5, an impossible k is refused by name, and the report records what was
+asked for (<code>k_votes_swept</code>) as well as what ran.</td>
+<td><code>data/evidence/combined/report.json</code> ·
+<code>tests/test_combine_newfault.py::test_the_vote_axis_spans_k_1_to_n_and_refuses_k_above_n</code></td></tr>
+</tbody></table>"""
     return f"""<h2>Source review dated 2026-09-17 UTC</h2>
 <p>This page is a concise, reader-friendly companion to the full
 <a href="{REPO}/blob/main/REVIEW_2026-09-17.md">repository review</a>. The official competition pages
 were fetched and read on that date. The table below maps each load-bearing statement to the official
 page where it can be checked manually; the repository's generated evidence and the official rules PDF
-remain authoritative over any summary here.</p>
+remain authoritative over any summary here.</p>{defects}
 <table class="wide"><thead><tr><th>topic</th><th>review result</th><th>manual check</th></tr></thead>
 <tbody>{table}</tbody></table>
 <h2>What changed in the code</h2>
@@ -2585,7 +2625,249 @@ command, the hashes of every member and the whole candidate sweep are in
         "%.4f" % ((m_meas.get("proxy") or {}).get("dti") or 0.0),
         "%.4f" % ((m_meas.get("catalogue") or {}).get("dti") or 0.0),
         note("warn", "<b>What this section cannot show.</b> " + caveats),
-    )
+    ) + _union_evidence(ev)
+
+
+def _ci_excludes_zero(bs: dict) -> bool:
+    """True when a bootstrap contrast's 95% interval lies strictly away from zero."""
+    ci = bs.get("contrast_vs_reference_ci95") or [None, None]
+    try:
+        lo, hi = float(ci[0]), float(ci[1])
+    except (TypeError, ValueError, IndexError):
+        return False
+    return lo > 0 or hi < 0
+
+
+def _union_evidence(ev: dict) -> str:
+    """Three measurements that decide the union, rendered from the files that recorded them.
+
+    (1) THE SELECTION SCOPE.  Until 2026-09-26 the sweep that picks the combination rule scored every
+        candidate over the WHOLE grid, while its own docstring and report said "the selection fold's
+        blocks".  Those are different measurements: the NFF members train on everything except folds
+        0 and 1, so folds 2/3 are in-sample and a whole-grid score is contaminated by memorisation.
+        The table below is the fix, visible: four scopes per candidate, one of them the key.
+    (2) THE ADOPTION CONTRAST.  A new artifact is adopted on a PAIRED probability, never on two
+        point estimates.  The pooled folds 0+1 interval is the honest one.
+    (3) THE EMISSION BUDGET.  The metric's own identity `DTI = TP_w / (alpha*(TP_w + FP_w) + beta*|G|)`
+        says the prediction enters through coverage and false-positive price only - so "what would it
+        take to reach the leader's number" is arithmetic, and this table is that arithmetic.
+    """
+    comb = ev.get("combined") or {}
+    sel = comb.get("selection") or {}
+    rows = sel.get("candidates") or []
+    key = sel.get("selection_key") or "proxy_dti_selection"
+    parts = []
+    # A report written before 2026-09-26 has no fold-scoped scopes at all.  Rendering that as a
+    # column of zeros would read as "measured, and worth nothing" - the opposite of the truth, which
+    # is "this evidence predates the fix".  Say so instead.
+    if rows and all(r.get(key) is None for r in rows):
+        return ("<h3 id=\"selection-scope\">The selection scope, and why it changes the answer</h3>"
+                + note("bad", "<b>The committed union report predates the fold-scoped selection "
+                               "fix (2026-09-26).</b> Its candidate rows carry only the whole-grid "
+                               "proxy DTI, so the table that should appear here would be a column "
+                               "of zeros. Re-run <code>scripts/combine_newfault.py</code> to "
+                               "regenerate <code>data/evidence/combined/report.json</code> with "
+                               "the four scopes."))
+    if rows and key:
+        by_vote: dict = {}
+        for r in rows:
+            if not r.get("eligible"):
+                continue
+            k = int(r.get("vote") or 0)
+            cur = by_vote.get(k)
+            if cur is None or (r.get(key) or 0) > (cur.get(key) or 0):
+                by_vote[k] = r
+        win = sel.get("winner") or {}
+        win_id = (win.get("t0"), win.get("dilate"), win.get("vote"))
+        trs = []
+        for k in sorted(by_vote):
+            r = by_vote[k]
+            mark = ' <b>(shipped)</b>' if (r.get("t0"), r.get("dilate"),
+                                          r.get("vote")) == win_id else ""
+            trs.append(
+                '<tr><td>k = %d of %d%s</td><td class="num">%.4f</td><td class="num">%.4f</td>'
+                '<td class="num">%.4f</td><td class="num">%.4f</td><td class="num">%s</td>'
+                '<td class="num">%s</td></tr>' % (
+                    k, int(sel.get("n_members") or 0), mark,
+                    r.get(key) or 0.0, r.get("proxy_dti_measurement") or 0.0,
+                    r.get("proxy_dti_pooled01") or 0.0, r.get("proxy_dti") or 0.0,
+                    "{:,}".format(int(r.get("emitted_px") or 0)),
+                    "%.3f" % ((r.get("proxy_fp_selection") or 0.0)
+                              / max(1.0, (r.get("proxy_n_gt_selection") or 1.0)))))
+        parts.append(f"""
+<h3 id="selection-scope">The selection scope, and why it changes the answer</h3>
+<p>Each candidate is now scored on four scopes. Exactly one of them selects the policy - the
+<b>selection fold</b>, whose blocks the members never trained on. The others are context, and the
+report names them in <code>selection.scopes_explained</code>. The table shows, per agreement
+threshold k, the best eligible candidate <i>on the selection fold</i>:</p>
+<table><thead><tr><th>rule (best eligible candidate per k)</th><th>selection fold (SELECTS)</th>
+<th>measurement fold</th><th>pooled folds 0+1</th><th>whole grid (context)</th><th>emitted px</th>
+<th>FP/|G| on the selection fold</th></tr></thead><tbody>{''.join(trs)}</tbody></table>
+<p class="small"><b>Why the whole grid is not a substitute.</b> The whole grid mixes geography that
+every member has seen with geography that none has: the members were run with different folds
+(<code>--fold 0 --eval-fold 1</code> for some, <code>2/3</code> for others), so a whole-grid score
+is partly a measurement of memorisation no matter which member you look at. Scoring every candidate
+on the selection fold at least matches the two folds the measured members held out - and the next
+block is the audit of exactly that claim, per member, from each member's own report. Fixing the
+scope changed the shipped rule: the k = 2 family was the only one the old <code>--votes</code>
+default could express, and k = 3 measures better on both the selection fold and (in the same run)
+the fold the sweep never scored.</p>""")
+
+    fd = ev.get("fold_discipline") or {}
+    if fd.get("members"):
+        frs = []
+        for r in fd["members"]:
+            own = ", ".join(str(f) for f in (r.get("held_out_folds") or [])) or "none"
+            dirty = bool(r.get("in_sample_on_union_scopes"))
+            frs.append(
+                '<tr><td>%s</td><td class="num">%s</td><td class="num">%s</td>'
+                '<td>%s</td><td class="num">%s</td></tr>'
+                % (e(str(r.get("member"))), e(own),
+                   e(", ".join("%.4f" % (r.get("scopes") or {}).get("fold%d" % f, 0.0)
+                               for f in range(4))),
+                   _state_pill(not dirty, "held out", "IN-SAMPLE"),
+                   ("&mdash;" if r.get("union_minus_other_folds") is None
+                    else "%+.4f" % (r.get("union_minus_other_folds") or 0.0))))
+        dd = fd.get("difference_in_differences") or {}
+        parts.append(f"""
+<h3 id="fold-discipline">Is the union's holdout a holdout for <i>every</i> member?</h3>
+<p>A union inherits the coverage of its members and the discipline of its weakest one. This table is
+generated from each member's own committed <code>report.json</code> by
+<code>scripts/audit_fold_discipline.py</code>, with every member scored at the SAME policy on the
+SAME truth, so the only thing that varies between rows is which geography it was fitted on:</p>
+<table><thead><tr><th>member</th><th>folds its own run held out</th>
+<th>proxy DTI by fold (0, 1, 2, 3)</th><th>union's folds 0+1</th>
+<th>union folds &minus; other folds</th></tr></thead><tbody>{''.join(frs)}</tbody></table>
+<p><b>{e(str(fd.get('verdict')))}</b></p>
+<p class="small">{e(str(dd.get('design')))} Treated members average
+<b>{e(str(dd.get('treated_mean')))}</b>, controls <b>{e(str(dd.get('control_mean')))}</b>, so the
+in-sample exposure is <b>{e(str(dd.get('exposure_effect')))}</b>. {e(str(fd.get('consequence')))}</p>
+<p class="small"><b>Caveat, stated here rather than left to the reader.</b>
+{e(str(fd.get('caveat')))}</p>""")
+
+    shipped = ((ev.get("combined") or {}).get("submission") or {}).get("sha256")
+    cons = ev.get("union_contrasts") or {}
+    crows = []
+    for name, c in sorted(cons.items()):
+        cand = (c.get("candidate") or {}).get("sha256")
+        ref = (c.get("reference") or {}).get("sha256")
+        if shipped and cand != shipped:
+            continue                      # only contrasts that end at the bytes being shipped
+        bs = (c.get("bootstrap") or {}).get("candidate") or {}
+        crows.append("<tr><td>%s</td><td>%s</td><td class='num'>%s</td><td class='num'>%s</td>"
+                     "<td class='num'>%s</td><td class='num'>%s</td><td class='num'>%s</td>"
+                     "<td><b>%s</b></td></tr>" % (
+                         e(str(c.get("fold"))), e(str(name)),
+                         e(str((c.get("reference") or {}).get("scalar_dti"))),
+                         e(str((c.get("candidate") or {}).get("scalar_dti"))),
+                         "%+.4f" % (bs.get("contrast_vs_reference_p50") or 0.0),
+                         "[%s, %s]" % (bs.get("contrast_vs_reference_ci95") or ["?", "?"])[0:2],
+                         bs.get("prob_beats_reference"),
+                         "%s" % ("excludes 0" if _ci_excludes_zero(bs) else "INCLUDES 0"),
+                     ))
+    if crows:
+        parts.append(f"""
+<h3 id="adoption-contrast">The adoption contrast, paired</h3>
+<p>Adopting an artifact is a decision, so it is made on a paired probability rather than on two point
+estimates: both rasters are scored on the SAME blocks against the SAME truth, and the interval is a
+block bootstrap over those blocks (<code>scripts/paired_union_contrast.py</code>). Only contrasts
+whose candidate is the bytes shipped now are shown.</p>
+<table><thead><tr><th>folds</th><th>record</th><th>previous</th><th>adopted</th><th>&Delta;</th>
+<th>CI95</th><th>P(better)</th><th>interval</th></tr></thead><tbody>{''.join(crows)}</tbody></table>
+<p class="small">The pooled row is the one with statistical power; the fold-1-only row is the one
+that is definitionally clean (the sweep never scored it). Where those two disagree, the pooled row
+wins on power and loses on purity - both are shown rather than one being chosen after the fact.
+</p>""")
+
+    bud = ev.get("emission_budget") or {}
+    if bud:
+        brs = []
+        for scope, v in (bud.get("scopes") or {}).items():
+            if not v.get("dti"):
+                continue
+            brs.append('<tr><td>%s</td><td class="num">%.4f</td><td class="num">%.1f%%</td>'
+                       '<td class="num">%.2f</td><td class="num">%.3f</td></tr>'
+                       % (e(str(scope).replace("_", " ")), v.get("dti") or 0.0,
+                          100.0 * (v.get("coverage") or 0.0), v.get("fp_price") or 0.0,
+                          v.get("ceiling_at_this_fp_price") or 0.0))
+        ident = bud.get("identity") or {}
+        tgt = (bud.get("targets") or [])
+        need = []
+        for scope, v in (bud.get("scopes") or {}).items():
+            for b in (v.get("budget") or []):
+                if abs((b.get("target") or 0) - 0.3049) > 1e-9:
+                    continue
+                need.append('<tr><td>%s</td><td class="num">%s</td><td class="num">%s</td></tr>' % (
+                    e(str(scope).replace("_", " ")),
+                    ("unreachable" if not b.get("coverage_axis_reachable")
+                     else "%.1f%% (%+.1f points)" % (100.0 * (b.get("coverage_needed") or 0),
+                                                     100.0 * (b.get("coverage_gap") or 0))),
+                    ("unreachable at this coverage" if b.get("fp_price_allowed") is None
+                     else "%.2f (%.0f%% less)" % (b.get("fp_price_allowed") or 0.0,
+                                                  100.0 * (b.get("fp_price_reduction_frac") or 0)))))
+        parts.append(f"""
+<h3 id="emission-budget">The emission budget: what a higher score actually costs</h3>
+<p>The official metric collapses to a two-term identity, verified numerically against
+<code>src.metrics.GtContext</code> on every scope below (max relative error
+<b>{max((v.get('identity_rel_err') or 0.0) for v in (bud.get('scopes') or {}).values() if v.get('identity_rel_err')):.1e}</b>):</p>
+<p class="mono">{e(str(ident.get('formula')))}</p>
+<p class="small">{e(str(ident.get('consequence')))} - with
+&beta;/&alpha; = {ident.get('beta_over_alpha')}, one more unit of coverage is worth four units of
+false-positive mass. The prediction enters through exactly two numbers, so this is the whole design
+space:</p>
+<table><thead><tr><th>scope</th><th>proxy DTI</th><th>coverage TP<sub>w</sub>/|G|</th>
+<th>FP price FP<sub>w</sub>/|G|</th><th>ceiling at this FP price</th></tr></thead>
+<tbody>{''.join(brs)}</tbody></table>
+<p>What the leader's current public number ({", ".join("%.4f" % t for t in tgt if abs(t - 0.3049) < 1e-9) or "0.3049"}) would cost on this
+surrogate, on each axis independently:</p>
+<table><thead><tr><th>scope</th><th>coverage needed at the current FP price</th>
+<th>FP price allowed at the current coverage</th></tr></thead><tbody>{''.join(need)}</tbody></table>
+<p class="small">Arithmetic on the surrogate truth (the SGMC proxy compilation), not a leaderboard
+prediction. It is the honest form of "how do we get to the top": the coverage axis is the binding
+one, and no amount of post-processing substitutes for detection.</p>""")
+    cc = ev.get("combined_clean") or {}
+    if cc.get("selection"):
+        csel = cc["selection"]
+        crows = []
+        for r in (csel.get("candidates") or []):
+            if not r.get("eligible"):
+                continue
+            crows.append((r.get("vote"), r.get("t0"), r.get("dilate"),
+                          r.get(csel.get("selection_key") or "proxy_dti_selection"),
+                          r.get("proxy_dti_measurement"), r.get("emitted_px")))
+        byk: dict = {}
+        for k, t0, dil, s, m, px in crows:
+            if k not in byk or (s or 0) > (byk[k][3] or 0):
+                byk[k] = (k, t0, dil, s, m, px)
+        ctrs = "".join(
+            '<tr><td>k = %d</td><td class="num">%.6g</td><td class="num">%.4f</td>'
+            '<td class="num">%.4f</td><td class="num">%s</td></tr>'
+            % (k, t0, s or 0.0, m or 0.0, "{:,}".format(int(px or 0)))
+            for k, t0, dil, s, m, px in (byk[k] for k in sorted(byk)))
+        cwin = csel.get("winner") or {}
+        ccsub = cc.get("submission") or {}
+        parts.append(f"""
+<h3 id="clean-pool">The control arm: the same search with no in-sample members at all</h3>
+<p>The audit above says the shipped pool contains two members that trained on the folds it selects and
+measures on. That cannot be fixed by re-scoring - it is fixed by re-running those members (queued), or
+by <em>excluding</em> them and repeating the whole search. The second is what this arm does: four
+members (<code>classical</code>, <code>nff42</code>, <code>nff44</code>, <code>po46</code>), every one
+of which held out both union folds, 200 candidates, the same pre-registered grid. Its report is
+<code>data/evidence/combined_clean/report.json</code> and its bytes
+<code>{e(str(ccsub.get('sha256'))[:16])}&hellip;</code> ({e(str(ccsub.get('bytes')))} B) are committed
+too - an adopted artifact must never be the only artifact on disk.</p>
+<table><thead><tr><th>best eligible rule per k (clean pool)</th><th>t0</th>
+<th>selection fold (SELECTS)</th><th>measurement fold</th><th>emitted px</th></tr></thead>
+<tbody>{ctrs}</tbody></table>
+<p class="small"><b>Two things this arm teaches, and neither is flattering.</b> (1) Every level is
+lower: the best <em>measured</em> rule here reads 0.167 on the untouched fold against 0.222 for the
+shipped pool - so "the union scores 0.22 on fold 1" is a number that only exists because two of its
+members were fitted there. (2) The selection-fold argmax (`k = 4`, 0.1883) measures 0.0732 on the
+untouched fold - a 2.6x miss - while the k = 3 and k = 2 families measure 0.167 and 0.165. A single
+argmax over a 200-row grid is a noisy selector, and this is the measurement that shows it rather than
+an argument that says it. Queued in <code>SUGGESTIONS.md</code>: select on a pooled scope or a
+1-standard-error band, pre-registered, and re-run this control.</p>""")
+    return "".join(parts)
 
 
 def build_results(ev: dict) -> str:
@@ -3335,6 +3617,40 @@ this repository cannot do for you, see <a href="#human">§8</a>).</p>
         if f_.get("canonical"):
             pins[f_["canonical"]] = dict(sha256=f_.get("sha256"), bytes=f_.get("bytes"),
                                          mirror=f_.get("name"))
+    # COMMITTED RECORD FIRST (session 34).  The table below used to be the only statement about
+    # placement, and it is a reading of whichever working tree built the page - so the page a reader
+    # saw depended on the machine that produced it, and a fresh clone published "ABSENT" for data
+    # that is committed, pinned and reproduced on every runner.  The primary statement is now the
+    # committed record (data/evidence/data_placement.json); the live check stays, labelled as a
+    # reading of THIS checkout.
+    recorded = {}
+    for f_ in ((placement or {}).get("placed_files") or []):
+        recorded[str(f_.get("path"))] = f_
+    rec_rows = []
+    for canonical in ("data/training_features.tif", "data/labels.tif",
+                      "data/sample_submission.tif"):
+        f_ = recorded.get(canonical) or {}
+        pin = pins.get(canonical.split("/")[-1]) or pins.get(canonical) or {}
+        agree = (f_.get("sha256") == pin.get("sha256")) if (f_.get("sha256") and pin) else None
+        rec_rows.append(
+            '<tr><td class="mono">%s</td>'
+            '<td class="small mono">%s&hellip;</td>'
+            '<td class="num">%s</td>'
+            '<td>%s</td></tr>' % (
+                e(canonical), e(str(f_.get("sha256") or "?")[:24]),
+                "{:,}".format(int(f_["bytes"])) if f_.get("bytes") else "?",
+                _state_pill(bool(agree is not False) and bool(f_),
+                            "RECORDED" if f_ else "NOT IN RECORD", "MISMATCH")))
+    placement_block = f"""
+<h3>Placement record (committed, independent of this checkout)</h3>
+<p>{e(str((placement or {}).get('claim') or 'no committed placement record'))}</p>
+<table><thead><tr><th>Canonical file</th><th>sha256 in the placement record</th><th>bytes</th>
+<th>Agrees with the manifest pin</th></tr></thead><tbody>{''.join(rec_rows)}</tbody></table>
+<p class="small">Record written {e(str((placement or {}).get('generated_utc') or '—'))} by
+{e(str((placement or {}).get('generated_by') or '—'))}. Transport:
+{e(str(((placement or {}).get('transport') or {}).get('workflow') or '—'))}; pins:
+{e(str(((placement or {}).get('transport') or {}).get('pins') or '—'))}.</p>"""
+
     place_rows, placed = [], True
     for canonical in ("training_features.tif", "labels.tif", "sample_submission.tif"):
         rel = f"data/{canonical}"
@@ -3361,6 +3677,8 @@ parts (GitHub rejects a 419 MB blob) with every part and the whole file pinned b
 mismatch, so a corrupted or substituted raster cannot enter the pipeline quietly.</p>
 <pre><code>python scripts/assemble_data_bridge.py    # verify parts -> concatenate -> verify whole-file sha256 -> place canonical names
 python scripts/prepare_data.py            # 3292x3730, 19 bands, EPSG:32611, 100 m, aligned bounds, band tags present</code></pre>
+{placement_block}
+<h3>Re-read of the working tree that built this page</h3>
 <table><thead><tr><th>Canonical file</th><th>Pinned sha256 (data/bridge/manifest.json)</th>
 <th>In this checkout, measured while building this page</th><th>State</th></tr></thead>
 <tbody>{''.join(place_rows)}</tbody></table>
@@ -4358,6 +4676,21 @@ def main(argv=None) -> int:
             None),
         "site_generator": load(ROOT / "data/evidence/site_generator.json"),
         "site_payload": load(ROOT / "docs/submission_meta.json"),
+        # GEMSDOE4 session 34 (2026-09-26): the metric's own coverage/false-positive budget
+        # (scripts/emission_budget.py) and the paired adoption contrasts that back the shipped
+        # union (scripts/paired_union_contrast.py).  Both were previously in JSON files that no
+        # page read - a number nobody can see is not evidence.
+        "emission_budget": load(ROOT / "data/evidence/emission_budget.json"),
+        # session 34: is the union's holdout a holdout for every member?  (per-member, read from
+        # each member's own report by scripts/audit_fold_discipline.py)
+        "fold_discipline": load(ROOT / "data/evidence/fold_discipline.json"),
+        # the CLEAN-POOL control arm: the same search restricted to members that held out both
+        # union folds.  Rendered next to the shipped artifact because it is the number that can be
+        # quoted without qualification, and it is lower.
+        "combined_clean": load(ROOT / "data/evidence/combined_clean/report.json"),
+        "union_contrasts": {p.stem: load(p) for p in sorted(
+            (ROOT / "data/evidence/union_po_loo/contrasts").glob("*.json"))
+            if p.stem.startswith("drop_")},
         "runs": [],
     }
     rd = ROOT / "data/evidence/runs"

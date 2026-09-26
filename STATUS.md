@@ -1,4 +1,99 @@
-# Project status — 2026-09-26 (sessions 1–33)
+# Project status — 2026-09-26 (sessions 1–34)
+
+## Session 34 (2026-09-26) — the sweep selected on a scope it did not document, and the union's holdout was not a holdout
+
+**Both defects were found by reading code against its own documentation, before any experiment.**
+
+**Defect 1 — selection scope.** `scripts/combine_newfault.py` picked the union's combination rule
+with `max(eligible, key=lambda r: (r["proxy_dti"], ...))`, and `proxy_dti` is
+`GtContext.score(field)` — the **whole grid**. Its docstring, its report field
+`selection.scope` and `docs/FIELD_SELECTION_RULE.md` all said *"the new-fault-population DTI on the
+SELECTION fold's blocks"*. Those are different measurements, and the difference is not noise:
+`scripts/newfault_detector.py` trains each NFF member on `valid & ~(held_out(fold) |
+held_out(eval_fold))`, so folds 2 and 3 are **in-sample** for the members run with
+`--fold 2 --eval-fold 3` — and session 33 had already refused to pool folds 2+3 for exactly that
+reason. `scripts/newfault_detector.py` had the same defect: `sweep(scope_mask, scope_name)` accepted
+a scope mask and never used it.
+
+Fixed in both scripts: every candidate now carries four scopes (`proxy_dti_selection`,
+`proxy_dti_measurement`, `proxy_dti_pooled01`, `proxy_dti_whole`), exactly one of them —
+`SELECTION_KEY = "proxy_dti_selection"` — picks the policy through `select_winner()`, an unmeasurable
+scope (`None`) stops the run instead of ranking as zero, and the report names what each scope means
+(`selection.scopes_explained`). The default vote grid was widened from `1,2` to `1,2,3,4,5`: the
+k = 3 family was outside the search space entirely, which means the previous sweep could not have
+found it even if it had been the best rule.
+
+**Defect 2 — the union's holdout was not a common holdout.** `nff43` and `nff45` were run with
+`--fold 2 --eval-fold 3`, i.e. they trained on folds 0 and 1 — the folds the union selects and
+measures on. Three of the five shipped members (those two plus the deep ensemble, which has no fold
+protocol at all) are in-sample on the selection fold. New audit `scripts/audit_fold_discipline.py`
+scores every committed member at one common policy (t0 = 0.5) on each fold and estimates the exposure
+with a difference-in-differences whose control group is the members whose own holdout *is* the union's
+folds:
+
+| member | folds its report says it held out | proxy DTI fold 0 | fold 1 | fold 2 | fold 3 | union folds − other folds |
+|---|---|---|---|---|---|---|
+| `proxy_only46` | 0, 1 | 0.0085 | 0.0094 | 0.1623 | 0.2126 | −0.1785 |
+| `seed42` | 0, 1 | 0.0071 | 0.0095 | 0.0239 | 0.0326 | −0.0199 |
+| `seed43` | 2, 3 | 0.0233 | 0.0501 | 0.0222 | 0.0080 | **+0.0216** (in-sample on 0+1) |
+| `seed44` | 0, 1 | 0.0240 | 0.0613 | 0.1017 | 0.1556 | −0.0860 |
+| `seed45` | 2, 3 | 0.0083 | 0.0167 | 0.0104 | 0.0027 | **+0.0060** (in-sample on 0+1) |
+
+Treated mean +0.0138, control mean −0.0948, halved difference = **+0.0543 DTI of in-sample exposure**
+(the estimate assumes the boost is symmetric across fold sets; that assumption is written into
+`data/evidence/fold_discipline.json` rather than hidden). The raw signature is starker than the
+estimate: `proxy_only46` scores **0.187** on the folds it trained on and **0.009** on the folds it
+held out, at the same floor. The disclosure is now generated inside every report
+(`selection.fold_discipline`, computed per member from that member's own `report.json`), so it cannot
+drift from the bytes it describes.
+
+**The re-run the fix makes possible.** The pre-registered grid (`--floors 24 --dilates 0,1
+--votes 1,2,3,4,5`, `--fold 0 --eval-fold 1`, 250 candidates) now selects
+`t0 = 0.124344, dilate 0, k = 3 of 5` — selection-fold proxy DTI **0.2856**, measurement fold
+(never scored by the sweep) **0.2221**, pooled folds 0+1 **0.2603**. The previous rule (k = 2,
+t0 = 0.180482) measures 0.1990 on the same fold. New artifact
+`data/evidence/combined/submission.tif`, sha256 `237f0063a440b2c6…`, 505,882 B, validator PASS
+(3292×3730, float32, 264,247 px at 1.0, NaN on exactly the template's 7,111,787 outside pixels).
+
+**Paired adoption contrasts** (`scripts/paired_union_contrast.py`, block bootstrap over the honest
+pool, previous artifact `c1da7dd9…` = the k = 2 rule):
+
+| folds | previous | adopted | Δ | CI95 | P(better) | interval |
+|---|---|---|---|---|---|---|
+| 1 only (clean, 9 blocks) | 0.1996 | 0.2221 | **+0.0225** | [−0.0026, +0.0420] | 0.965 | includes 0 |
+| 0+1 pooled (17 blocks) | 0.2475 | 0.2603 | **+0.0128** | [−0.0028, +0.0274] | 0.954 | includes 0 |
+
+Both point estimates agree in sign and both are outside the session-32 adoption rule's *margin*
+conjunct but inside its *probability* conjunct. **This is flagged, not buried:** the intervals include
+zero by ~0.003, so the adoption is supported by the pre-registered selection key and by a same-signed
+clean-fold measurement, **not** by a decisive interval — and the pooled row's power comes partly from
+fold 0, which is the fold the sweep maximised over.
+
+**The control arm that keeps the claim honest.** `data/evidence/combined_clean/` repeats the whole
+search with only members that held out both union folds (`classical`, `nff42`, `nff44`, `po46`; 200
+candidates). Every level is lower — and the arm shows a second, independent defect that no amount of
+re-scoring fixes: the selection-fold argmax there is `k = 4, t0 = 0.0172` (selection 0.1883) but it
+measures **0.0732** on the untouched fold, a 2.6× miss, while the k = 3 and k = 2 families measure
+0.1674 and 0.1651. A single-fold argmax over a 200–250 row grid is a noisy selector. That negative
+result is committed as a report, a validator-passing raster and a site table, and the fix (select on a
+pooled scope or a 1-SE band, pre-registered) is queued in `SUGGESTIONS.md`.
+
+**What is NOT claimed.** No leaderboard number (no DrivenData login in this sandbox). The truth is
+the SGMC proxy compilation, not the withheld expert labels. The deep-ensemble member trained over the
+whole grid, so no fold is out-of-sample for it. The new artifact is not uploaded.
+
+**New in this session, all test-covered:** `scripts/emission_budget.py` +
+`tests/test_emission_budget.py` (6 tests: the two-term identity against `GtContext` including the
+scorer's `EPS = 1e-7`, both inversions as round-trips, unreachable FP axis → `None` not 0.0, a
+hand-arithmetic planner reading, and an end-to-end 128 px run), `scripts/audit_fold_discipline.py` +
+`tests/test_fold_discipline.py` (2 tests: per-member flags follow each member's own report, and the
+estimator is the halved contrast so fold difficulty cancels), `scripts/session34_union_reselection.sh`
+and `docs/SESSION34_PROTOCOL.md` (the order of operations and the falsifiers), a `--corridor PX` flag
+on the detector whose structuring element is `src.metrics.kernel_offsets` itself (so the training
+target is the metric's Euclidean disk and not a diamond approximation of it) with 2 tests that pin
+the disk's geometry, the `data/evidence/fold_discipline.json` and `combined_clean` evidence, and
+three new rendered site sections (selection scope, fold discipline, adoption contrast, clean-pool
+control, emission budget).
 
 ## Session 33 (2026-09-26) — main was red, the adoption's evidence was under-powered, and both are now fixed with measurements
 

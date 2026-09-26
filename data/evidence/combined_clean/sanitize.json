@@ -1,7 +1,7 @@
 {
- "generated_utc": "2026-09-26T05:16:46Z",
+ "generated_utc": "2026-09-26T05:24:01Z",
  "script": "scripts/combine_newfault.py (via src/submission_io.conform_to_template)",
- "command": "python scripts/combine_newfault.py --out-dir data/evidence/combined --fold 0 --eval-fold 1",
+ "command": "python scripts/combine_newfault.py --out-dir data/evidence/combined_clean --fold 0 --eval-fold 1",
  "why": "every member raster is read through nan_to_num, so the union field is finite (0.0) outside the template's valid region; conform_to_template masks those back to NaN before the writer sees the array - the placement rule the platform enforces with 'Predicted values must be in range [0, 1]'",
  "template": {
   "path": "data/sample_submission.tif",
@@ -9,17 +9,17 @@
  },
  "before": {
   "path": "(in-memory union field, before conform_to_template)",
-  "sha256_pixels": "b7f8d297a5f2cb3a5dd60e931b9c3066c03284659f17757b765ec6ebcb722efb",
+  "sha256_pixels": "1ce771eac4bcede8a126ff80f8a0610a09cbca3f06f8ce759bb5969117b08bea",
   "finite_px": 12279160,
   "findings": {
    "finite_outside_px": 7111787
   }
  },
  "after": {
-  "path": "data/evidence/combined/submission.tif",
-  "sha256": "237f0063a440b2c6c4b822bcb0f74e5203586313b3b5ed6c5cabe70fa046f63f",
-  "sha256_pixels": "1934d3da7b118e920110310f902b6b0cab1046365b0f6e2fb809ef58acb53c36",
-  "bytes": 505882,
+  "path": "data/evidence/combined_clean/submission.tif",
+  "sha256": "1b52d633a647802918b8defcf08d084d6ff808d118da0e3893eefe6a86ff9fb8",
+  "sha256_pixels": "bf446eafb9e86276e9808bc6cb4a8bb66ba0ca71787eb2ced25d8a78ee9cd53f",
+  "bytes": 474736,
   "findings": {
    "conformant": true,
    "nan_px": 7111787,

@@ -67,6 +67,41 @@ from src.submission_io import (clean_profile, conform_to_template, sha256_file, 
 from src.submission_optim import dilate_mask, dominant_thin, floor_sharpen  # noqa: E402
 
 
+SELECTION_KEY = "proxy_dti_selection"
+"""The ONE key the sweep is allowed to pick a policy with: the new-fault-population DTI on the
+SELECTION fold's blocks.  It is a module constant so a reviewer can grep for it, and so the test
+suite can assert that the whole-grid number (`proxy_dti`) never becomes the ranking key again."""
+
+
+def select_winner(rows, key: str = SELECTION_KEY):
+    """PRE-REGISTERED selection rule: argmax of `key`, ties broken by narrower dilation then by
+    lower agreement.
+
+    THE DEFECT THIS REPLACES (found and fixed 2026-09-26, session 34).  This line used to read
+    `max(eligible, key=lambda r: (r["proxy_dti"], ...))` - the WHOLE-GRID proxy DTI - while the
+    docstring, `docs/FIELD_SELECTION_RULE.md` and the report's own `selection.scope` said the sweep
+    selected on the SELECTION fold's blocks.  The whole grid is not a noisier version of the
+    selection fold: `newfault_detector.py` trains each member on everything except folds 0 and 1, so
+    folds 2 and 3 are IN-SAMPLE for three of the five members and the whole-grid number spends most
+    of its truth mass there.  Selection on it is selection on geography the members have seen.
+
+    Nothing here reads `proxy_dti` (whole grid) or `proxy_dti_measurement` (the held-out fold).
+    """
+    if not rows:
+        raise SystemExit("no eligible candidate: every combination exceeded the support window")
+    for r in rows:
+        if r.get(key) is None:
+            raise SystemExit(f"candidate {r} has no {key}: a fold with no truth pixels cannot "
+                             f"select a policy, and treating the missing value as 0.0 would.")
+    return max(rows, key=lambda r: (r[key], -r["dilate"], -r["vote"]))
+
+
+def _fmt(v) -> str:
+    """Format a possibly-undefined DTI.  A scope with no truth pixels has no index (`None`), and
+    printing it as 0.0 would look like a measured failure instead of an unmeasurable scope."""
+    return "n/a" if v is None else f"{v:.4f}"
+
+
 def _pixel_sha(arr: np.ndarray) -> str:
     """sha256 of a field's float32 pixels (the identity that ignores container metadata)."""
     return hashlib.sha256(np.asarray(arr, dtype=np.float32).tobytes()).hexdigest()
@@ -85,6 +120,81 @@ def member_mask(field: np.ndarray, t0: float, dilate: int, R: int, is_prob: bool
     return (q > 0).astype(np.float32)
 
 
+def _member_holdout(member: dict):
+    """The folds a member's own report says it trained WITHOUT, as a set of ints (possibly empty).
+
+    Read from the member's report, never assumed: a member whose runner leaves no holdout record
+    (the deep ensemble trains over the whole grid) returns an empty set, which is the honest
+    answer - it held out nothing - and never a guess.
+    """
+    prov = member.get("provenance") or {}
+    held = set()
+    for key in ("held_out_fold", "measurement_fold"):
+        v = prov.get(key)
+        if isinstance(v, int) or (isinstance(v, str) and v.strip().isdigit()):
+            held.add(int(v))
+    return held
+
+
+def _fold_discipline(members, sel_fold: int, eval_fold: int) -> dict:
+    """Per-member answer to: did this member train on the geography the union uses?
+
+    The union selects on fold ``sel_fold`` and measures on fold ``eval_fold`` and DISCLOSES
+    ``sel_fold+eval_fold``.  A member is "clean" for a scope only if its own report says both of
+    that scope's folds were held out; anything else is listed as in-sample.  Members with no
+    holdout protocol (whole-grid training) are never counted as clean.
+    """
+    rows, dirty = [], []
+    for m in members:
+        held = _member_holdout(m)
+        needs_sel, needs_eval = {int(sel_fold)}, {int(eval_fold)}
+        clean_sel = needs_sel <= held
+        clean_eval = needs_eval <= held
+        clean_pool = (needs_sel | needs_eval) <= held
+        if not clean_pool:
+            dirty.append(m["name"])
+        rows.append(dict(
+            name=m["name"], held_out_folds=sorted(held),
+            protocol=("no fold protocol (whole-grid training)" if not held
+                      else (f"trained on everything except folds {sorted(held)}")),
+            clean_on_selection_fold=bool(clean_sel), clean_on_measurement_fold=bool(clean_eval),
+            clean_on_the_pooled_pool=bool(clean_pool)))
+    clean = [r["name"] for r in rows if r["clean_on_the_pooled_pool"]]
+    return dict(
+        selection_fold=int(sel_fold), measurement_fold=int(eval_fold),
+        per_member=rows, clean_pool_members=clean, in_sample_members=dirty,
+        verdict=("every member held out both folds" if not dirty else
+                 f"{len(dirty)} of {len(rows)} members were trained on part of the geography the "
+                 f"union selects or measures on: {', '.join(dirty)}"),
+        consequence=("A policy selected on a scope that is in-sample for part of the pool is "
+                     "selected on a mixture the sweep cannot claim; the clean pool's own run is "
+                     "data/evidence/combined_clean/report.json.  Re-running the offending members "
+                     "with --fold 0 --eval-fold 1 is queued in SUGGESTIONS.md."),
+        audit=f"python scripts/audit_fold_discipline.py   # -> data/evidence/fold_discipline.json",
+    )
+
+
+def _in_sample_note(members, sel_fold: int, eval_fold: int, which: str) -> str:
+    """One sentence naming the members that are in-sample on the scope being described."""
+    def bad(folds):
+        return [m["name"] for m in members
+                if not (set(folds) <= _member_holdout(m))]
+
+    if which == "selection":
+        who, folds = bad([sel_fold]), [sel_fold]
+    elif which == "measurement":
+        who, folds = bad([eval_fold]), [eval_fold]
+    else:
+        who, folds = bad([sel_fold, eval_fold]), [sel_fold, eval_fold]
+    if not who:
+        return (f"Every member held out fold{'s' if len(folds) > 1 else ''} "
+                f"{', '.join(str(f) for f in folds)}.")
+    return (f"IN-SAMPLE for {len(who)} of {len(members)} members "
+            f"({', '.join(who)}): their training geography includes fold"
+            f"{'s' if len(folds) > 1 else ''} "
+            f"{', '.join(str(f) for f in folds)}. See selection.fold_discipline.")
+
+
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -100,9 +210,14 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--folds", type=int, default=4)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--block-mode", default="balanced", choices=("balanced", "contiguous"))
-    ap.add_argument("--floors", type=int, default=9)
+    ap.add_argument("--floors", type=int, default=24)
     ap.add_argument("--dilates", default="0,1")
-    ap.add_argument("--votes", default="1", help="comma-separated k-of-n agreement thresholds")
+    # Session 34: k = 1 and 2 were the only votes ever swept, and the k = 3 family is the one that
+    # generalises best out of sample (see STATUS.md §Session 34).  A search that cannot express the
+    # winning hypothesis is not a search of that hypothesis space, so the default now spans k = 1..5
+    # and values above the member count are refused by name rather than silently emitting nothing.
+    ap.add_argument("--votes", default="1,2,3,4,5",
+                    help="comma-separated k-of-n agreement thresholds (k <= number of members)")
     ap.add_argument("--max-emitted-fraction", type=float, default=0.20)
     ap.add_argument("--min-emitted-px", type=int, default=1_000)
     ap.add_argument("--name", default="", help="short identity for the submission Note field")
@@ -232,15 +347,51 @@ def main(argv=None) -> int:
             out = (stack.sum(axis=0) >= k).astype(np.float32)
         return np.clip(out, 0.0, 1.0).astype(np.float32)
 
+    # THE SELECTION SCOPE IS THE SELECTION FOLD, NOT THE WHOLE GRID (fixed 2026-09-26).
+    # Until session 34 every row was scored with `ctx[pop].score(field)`, i.e. over the WHOLE grid,
+    # while the docstring, the report's `selection.scope` and `ranking_key` all said "the SELECTION
+    # fold's blocks".  The two are not the same measurement, and the difference is not cosmetic:
+    # `scripts/newfault_detector.py:336-341` trains each NFF member on everything EXCEPT folds 0
+    # and 1, so folds 2 and 3 are IN-SAMPLE for three of the five members, and a whole-grid score
+    # spends 58 % of its truth mass on geography the members have already seen.  Selecting a policy
+    # on that number is selection on a mixture the sweep cannot honestly claim.  Every candidate is
+    # now scored on the selection fold (the key that selects), the measurement fold, the two pooled
+    # (17 blocks, the honest pool) and the whole grid (reported for continuity, never used to pick).
+    pool_mask = select_mask | eval_mask
+    sel_ctx = {
+        "selection": (select_mask, ctx["proxy"]),
+        "measurement": (eval_mask, ctx["proxy"]),
+        "pooled01": (pool_mask, ctx["proxy"]),
+        "whole": (None, ctx["proxy"]),
+    }
     rows = []
     for t0 in t0_grid:
         for dil in dilates:
             for k in votes:
+                if k > len(members):
+                    # k > n would emit nothing at all in real runs, but a *default* grid that
+                    # silently contains an impossible vote is a grid that lies about what it
+                    # searched: record the refusal instead of a row of zeros.
+                    print(f"[combine] skipping k={k}: only {len(members)} members", flush=True)
+                    continue
                 field = combine(t0, dil, k)
                 row = dict(t0=float(t0), dilate=int(dil), vote=int(k),
                            emitted_px=int((field > 0).sum()))
-                for pop, c in ctx.items():
-                    row[f"{pop}_dti"] = c.score(field)
+                credit = ctx["proxy"].credit_vector(field)
+                for scope, (mask, c) in sel_ctx.items():
+                    if mask is None:
+                        row[f"proxy_dti_{scope}"] = c.score(field)
+                    else:
+                        s = score_within_mask(field, c, mask, credit=credit)
+                        row[f"proxy_dti_{scope}"] = s["dti"]
+                        row[f"proxy_tp_{scope}"] = s["TP_w"]
+                        row[f"proxy_fp_{scope}"] = s["FP_w"]
+                        row[f"proxy_n_gt_{scope}"] = s["n_gt"]
+                # back-compatible names: `proxy_dti`/`catalogue_dti` stay the WHOLE-GRID numbers
+                # because build_site.py and build_submission_payload.py render them as such.  They
+                # are context.  The pick below reads `proxy_dti_selection` and nothing else.
+                row["proxy_dti"] = row["proxy_dti_whole"]
+                row["catalogue_dti"] = ctx["catalogue"].score(field)
                 frac = row["emitted_px"] / max(1, footprint_px)
                 if row["emitted_px"] > args.max_emitted_fraction * footprint_px:
                     row["eligible"] = False
@@ -255,15 +406,22 @@ def main(argv=None) -> int:
                     row["eligible"] = True
                     row["eligibility_reason"] = "within the pre-registered support window"
                 rows.append(row)
-                print(f"[combine] t0={t0:.6g} dil={dil} k={k} proxy={row['proxy_dti']:.4f} "
-                      f"catalogue={row['catalogue_dti']:.4f} px={row['emitted_px']:,}", flush=True)
+                print(f"[combine] t0={t0:.6g} dil={dil} k={k} "
+                      f"sel={_fmt(row['proxy_dti_selection'])} "
+                      f"mea={_fmt(row['proxy_dti_measurement'])} "
+                      f"pooled={_fmt(row['proxy_dti_pooled01'])} "
+                      f"whole={row['proxy_dti']:.4f} catalogue={row['catalogue_dti']:.4f} "
+                      f"px={row['emitted_px']:,}", flush=True)
 
     eligible = [r for r in rows if r["eligible"]]
     if not eligible:
         raise SystemExit("no eligible candidate: every combination exceeded the support window")
-    winner = max(eligible, key=lambda r: (r["proxy_dti"], -r["dilate"], -r["vote"]))
+    winner = select_winner(eligible)
     print(f"[combine] selected t0={winner['t0']} dilate={winner['dilate']} k={winner['vote']} "
-          f"proxy_dti={winner['proxy_dti']:.4f}", flush=True)
+          f"selection_fold_proxy_dti={winner['proxy_dti_selection']:.4f} "
+          f"(measurement fold {_fmt(winner['proxy_dti_measurement'])}, "
+          f"pooled folds 0+1 {_fmt(winner['proxy_dti_pooled01'])}, "
+          f"whole grid {winner['proxy_dti']:.4f})", flush=True)
 
     field = combine(winner["t0"], winner["dilate"], winner["vote"])
     # `template` (the sample submission's own raster, NaN outside the scored region) is the mask the
@@ -275,6 +433,14 @@ def main(argv=None) -> int:
     sub_path = out_dir / "submission.tif"
     info = write_submission(sub_path, conformed, clean_profile(profile, **common),
                             band_description="fault probability")
+    # THE SIDECAR MUST FOLLOW THE BYTES (session 34).  `scripts/package_submission.py`,
+    # `tests/test_package_submission.py` and `scripts/check_submission_readiness.py` all read
+    # `submission.sha256` as the record of what was written, so leaving a previous run's hash in
+    # place publishes a hash that belongs to bytes no longer on disk - a defect this repository has
+    # already hit once (session 33: a stale page describing a superseded artifact).  The writer is
+    # the only place that knows the hash, so the writer updates the file.
+    sidecar = sub_path.with_name("submission.sha256")
+    sidecar.write_text(f"{sha256_file(sub_path)}  {sub_path}\n")
 
     # Two-sided conformance evidence, in the same schema scripts/sanitize_submission.py writes for
     # the deep-ensemble artifact: the union field is 0.0 (finite) wherever a member raster was NaN
@@ -323,7 +489,39 @@ def main(argv=None) -> int:
         partition=partition,
         selection=dict(fold=args.fold, population="proxy (new-fault-like) pixels only",
                        scope=f"blocks of fold {args.fold}",
-                       ranking_key="proxy_dti desc, then narrower dilation, then lower k",
+                       ranking_key=("proxy_dti_selection desc (new-fault-population DTI on the "
+                                    "SELECTION fold's blocks), then narrower dilation, then lower k"),
+                       selection_key="proxy_dti_selection",
+                       # COMPUTED, NOT ASSERTED (session 34).  The earlier text of this block said
+                       # folds 0+1 were "the two folds the NFF members never trained on".  That is
+                       # true of the members run with --fold 0 --eval-fold 1 and FALSE for the two
+                       # members run with --fold 2 --eval-fold 3: `newfault_detector.py` trains on
+                       # `valid & ~(held_out_mask(fold) | held_out_mask(eval_fold))`, so for those
+                       # members folds 0 and 1 are TRAINING geography.  The member list below is
+                       # read from each member's own report.json, so the disclosure cannot drift
+                       # from the bytes it describes.
+                       fold_discipline=_fold_discipline(members, args.fold, args.eval_fold),
+                       scopes_explained={
+                           "proxy_dti_selection": (
+                               f"DTI on the blocks of fold {args.fold} - the ONLY key that selects. "
+                               + _in_sample_note(members, args.fold, args.eval_fold, "selection")),
+                           "proxy_dti_measurement": (
+                               f"DTI on the blocks of fold {args.eval_fold} - the number to quote, "
+                               "never a selection key. "
+                               + _in_sample_note(members, args.fold, args.eval_fold, "measurement")),
+                           "proxy_dti_pooled01": (
+                               f"DTI on the pooled disjoint blocks of folds {args.fold}+"
+                               f"{args.eval_fold}. "
+                               + _in_sample_note(members, args.fold, args.eval_fold, "either")
+                               + " Fold "
+                               f"{args.fold} is also a selection fold, so the pooled number is not "
+                               "pristine even for a member that held both folds out."),
+                           "proxy_dti_whole": (
+                               "whole-grid DTI - REPORTED, NEVER USED TO SELECT: it mixes folds the "
+                               "members held out with folds they trained on, for every member that "
+                               "has a fold protocol at all, so it cannot select anything.")},
+                       k_votes_swept=[int(x) for x in str(args.votes).split(",") if x != ""],
+                       n_members=len(members),
                        winner=winner, candidates=rows),
         measurement=dict(fold=args.eval_fold,
                          scope=(f"blocks of fold {args.eval_fold}: never used by the sweep"),

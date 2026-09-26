@@ -71,17 +71,87 @@ than a comparison of numbers produced by different code paths.</p>
 <h3>The shipped combination</h3>
 <table><thead><tr><th>rule</th><th>new-fault (proxy) DTI</th><th>catalogue DTI</th>
 <th>emitted px</th></tr></thead><tbody>
-<tr><td>union k=2 of 5 members; probability members floored at t0=0.180482 and dilated 0 px</td><td class="num">0.2294</td><td class="num">0.1401</td><td class="num">335,054</td></tr>
+<tr><td>union k=3 of 5 members; probability members floored at t0=0.124344 and dilated 0 px</td><td class="num">0.2213</td><td class="num">0.1114</td><td class="num">264,247</td></tr>
 </tbody></table>
-<p><b>Selected</b> on fold 0 by the proxy DTI (0.2294); <b>measured</b> on fold 1, which the sweep
-never scored, at proxy DTI 0.1996 and catalogue DTI 0.1836. The whole-grid numbers above are the ones the
+<p><b>Selected</b> on fold 0 by the proxy DTI (0.2213); <b>measured</b> on fold 1, which the sweep
+never scored, at proxy DTI 0.2221 and catalogue DTI 0.1439. The whole-grid numbers above are the ones the
 artifact carries.</p>
 <div class="note warn"><b>What this section cannot show.</b> OUT-OF-SAMPLE STATUS IS PER MEMBER, not per union: the deep-ensemble member was trained over the whole grid (so its contribution to a held-out fold is NOT out-of-sample), while each NFF member holds out its own folds - recorded per member under 'members' above, read from that member's own report.json.  A fold on which a member is in-sample is disclosed here rather than described as held out. The union is therefore an ensemble of differently-biased detectors, not a set of independent out-of-sample measurements; the only per-member out-of-sample numbers in this repository are the ones in each member's own report. The proxy population is a stand-in for the private expert labels, not the scored set.  The public leaderboard is the only unbiased test of the transfer. The catalogue DTI is reported for context only - rules SS1.1/SS3.2 score the new faults in both prize phases.</div>
 <p>Reproduce it: <code>python scripts/combine_newfault.py --member deep11=... --member classical=...
 --member nff42=...:prob --member nff43=...:prob --fold 0 --eval-fold 1</code> &mdash; the full
 command, the hashes of every member and the whole candidate sweep are in
 <code>data/evidence/combined/report.json</code>.</p>
-<div class="note ok"><b>Current shipped bytes, measured at build time:</b> <code>data/evidence/combined/submission.tif</code> — 534.3 KB, sha256 <span class='mono small'>c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4</span>. The run tables below are <i>historical records</i> of what each run wrote <i>then</i>: the 2026-09-25 template-conformance sanitation re-wrote the shipped file, so pre-fix blend hashes no longer match it (the pixels it scored on are unchanged — see <a href='how_to_submit.html#rejection'>How to submit &sect;6b</a>).</div>
+<h3 id="selection-scope">The selection scope, and why it changes the answer</h3>
+<p>Each candidate is now scored on four scopes. Exactly one of them selects the policy - the
+<b>selection fold</b>, whose blocks the members never trained on. The others are context, and the
+report names them in <code>selection.scopes_explained</code>. The table shows, per agreement
+threshold k, the best eligible candidate <i>on the selection fold</i>:</p>
+<table><thead><tr><th>rule (best eligible candidate per k)</th><th>selection fold (SELECTS)</th>
+<th>measurement fold</th><th>pooled folds 0+1</th><th>whole grid (context)</th><th>emitted px</th>
+<th>FP/|G| on the selection fold</th></tr></thead><tbody><tr><td>k = 1 of 5</td><td class="num">0.2228</td><td class="num">0.1762</td><td class="num">0.2028</td><td class="num">0.2044</td><td class="num">680,403</td><td class="num">7.953</td></tr><tr><td>k = 2 of 5</td><td class="num">0.2831</td><td class="num">0.1990</td><td class="num">0.2468</td><td class="num">0.2294</td><td class="num">316,616</td><td class="num">4.447</td></tr><tr><td>k = 3 of 5 <b>(shipped)</b></td><td class="num">0.2856</td><td class="num">0.2221</td><td class="num">0.2603</td><td class="num">0.2213</td><td class="num">264,247</td><td class="num">3.870</td></tr><tr><td>k = 4 of 5</td><td class="num">0.2152</td><td class="num">0.1356</td><td class="num">0.1838</td><td class="num">0.1726</td><td class="num">112,976</td><td class="num">1.605</td></tr><tr><td>k = 5 of 5</td><td class="num">0.0098</td><td class="num">0.0064</td><td class="num">0.0084</td><td class="num">0.0098</td><td class="num">3,557</td><td class="num">0.041</td></tr></tbody></table>
+<p class="small"><b>Why the whole grid is not a substitute.</b> The whole grid mixes geography that
+every member has seen with geography that none has: the members were run with different folds
+(<code>--fold 0 --eval-fold 1</code> for some, <code>2/3</code> for others), so a whole-grid score
+is partly a measurement of memorisation no matter which member you look at. Scoring every candidate
+on the selection fold at least matches the two folds the measured members held out - and the next
+block is the audit of exactly that claim, per member, from each member's own report. Fixing the
+scope changed the shipped rule: the k = 2 family was the only one the old <code>--votes</code>
+default could express, and k = 3 measures better on both the selection fold and (in the same run)
+the fold the sweep never scored.</p>
+<h3 id="fold-discipline">Is the union's holdout a holdout for <i>every</i> member?</h3>
+<p>A union inherits the coverage of its members and the discipline of its weakest one. This table is
+generated from each member's own committed <code>report.json</code> by
+<code>scripts/audit_fold_discipline.py</code>, with every member scored at the SAME policy on the
+SAME truth, so the only thing that varies between rows is which geography it was fitted on:</p>
+<table><thead><tr><th>member</th><th>folds its own run held out</th>
+<th>proxy DTI by fold (0, 1, 2, 3)</th><th>union's folds 0+1</th>
+<th>union folds &minus; other folds</th></tr></thead><tbody><tr><td>proxy_only46</td><td class="num">0, 1</td><td class="num">0.0085, 0.0094, 0.1623, 0.2126</td><td><span class="pill ok">held out</span></td><td class="num">-0.1785</td></tr><tr><td>seed42</td><td class="num">0, 1</td><td class="num">0.0071, 0.0095, 0.0239, 0.0326</td><td><span class="pill ok">held out</span></td><td class="num">-0.0199</td></tr><tr><td>seed43</td><td class="num">2, 3</td><td class="num">0.0233, 0.0501, 0.0222, 0.0080</td><td><span class="pill bad">IN-SAMPLE</span></td><td class="num">+0.0216</td></tr><tr><td>seed44</td><td class="num">0, 1</td><td class="num">0.0240, 0.0613, 0.1017, 0.1556</td><td><span class="pill ok">held out</span></td><td class="num">-0.0860</td></tr><tr><td>seed45</td><td class="num">2, 3</td><td class="num">0.0083, 0.0167, 0.0104, 0.0027</td><td><span class="pill bad">IN-SAMPLE</span></td><td class="num">+0.0060</td></tr></tbody></table>
+<p><b>2 of 5 members were fitted on the geography the union selects and measures on (seed43, seed45); every number the union reports on those folds is an in-sample number for them. Clean members: proxy_only46, seed42, seed44</b></p>
+<p class="small">mean over treated members of [score on the union&#x27;s folds - score on the rest] minus the same mean over controls, halved.  Halving is only exact if the in-sample boost is the same kind of boost on both fold sets (B_01 = B_23); the two groups are built so the fold-difficulty term cancels exactly, and the residual is exposure - with that symmetry assumption as its only gap, stated here rather than hidden.  A harsh COMMON floor inflates the magnitude: the honest side of the contrast can be near zero Treated members average
+<b>0.0138</b>, controls <b>-0.0948</b>, so the
+in-sample exposure is <b>0.0543</b>. A policy selected on a scope that is in-sample for part of the member pool is selected on a mixture the sweep cannot claim. The clean pool is the set of members whose holdout IS the union&#x27;s scope; see data/evidence/combined_clean/report.json.</p>
+<p class="small"><b>Caveat, stated here rather than left to the reader.</b>
+In-sample-ness does not make a member a bad detector - the private scored set is a different population of faults, not different geography. It makes the MEASUREMENT optimistic, and therefore any policy chosen with it.</p>
+<h3 id="emission-budget">The emission budget: what a higher score actually costs</h3>
+<p>The official metric collapses to a two-term identity, verified numerically against
+<code>src.metrics.GtContext</code> on every scope below (max relative error
+<b>2.1e-16</b>):</p>
+<p class="mono">DTI = TP_w / (alpha*(TP_w + FP_w) + beta*|G| + eps)</p>
+<p class="small">the prediction enters only through the weighted coverage TP_w and the weighted false-positive mass FP_w; one unit of coverage is worth beta/alpha = 4 units of false-positive mass - with
+&beta;/&alpha; = 4.0, one more unit of coverage is worth four units of
+false-positive mass. The prediction enters through exactly two numbers, so this is the whole design
+space:</p>
+<table><thead><tr><th>scope</th><th>proxy DTI</th><th>coverage TP<sub>w</sub>/|G|</th>
+<th>FP price FP<sub>w</sub>/|G|</th><th>ceiling at this FP price</th></tr></thead>
+<tbody><tr><td>selection fold</td><td class="num">0.2856</td><td class="num">47.7%</td><td class="num">3.87</td><td class="num">0.564</td></tr><tr><td>measurement fold</td><td class="num">0.2221</td><td class="num">35.2%</td><td class="num">3.58</td><td class="num">0.583</td></tr><tr><td>pooled folds 0 1</td><td class="num">0.2603</td><td class="num">42.6%</td><td class="num">3.75</td><td class="num">0.571</td></tr><tr><td>whole grid</td><td class="num">0.2213</td><td class="num">35.0%</td><td class="num">3.55</td><td class="num">0.585</td></tr></tbody></table>
+<p>What the leader's current public number (0.3049) would cost on this
+surrogate, on each axis independently:</p>
+<table><thead><tr><th>scope</th><th>coverage needed at the current FP price</th>
+<th>FP price allowed at the current coverage</th></tr></thead><tbody><tr><td>selection fold</td><td class="num">51.1% (+3.4 points)</td><td class="num">3.34 (14% less)</td></tr><tr><td>measurement fold</td><td class="num">49.2% (+14.0 points)</td><td class="num">1.42 (60% less)</td></tr><tr><td>pooled folds 0 1</td><td class="num">50.3% (+7.8 points)</td><td class="num">2.55 (32% less)</td></tr><tr><td>whole grid</td><td class="num">49.0% (+14.1 points)</td><td class="num">1.39 (61% less)</td></tr></tbody></table>
+<p class="small">Arithmetic on the surrogate truth (the SGMC proxy compilation), not a leaderboard
+prediction. It is the honest form of "how do we get to the top": the coverage axis is the binding
+one, and no amount of post-processing substitutes for detection.</p>
+<h3 id="clean-pool">The control arm: the same search with no in-sample members at all</h3>
+<p>The audit above says the shipped pool contains two members that trained on the folds it selects and
+measures on. That cannot be fixed by re-scoring - it is fixed by re-running those members (queued), or
+by <em>excluding</em> them and repeating the whole search. The second is what this arm does: four
+members (<code>classical</code>, <code>nff42</code>, <code>nff44</code>, <code>po46</code>), every one
+of which held out both union folds, 200 candidates, the same pre-registered grid. Its report is
+<code>data/evidence/combined_clean/report.json</code> and its bytes
+<code>1b52d633a6478029&hellip;</code> (474736 B) are committed
+too - an adopted artifact must never be the only artifact on disk.</p>
+<table><thead><tr><th>best eligible rule per k (clean pool)</th><th>t0</th>
+<th>selection fold (SELECTS)</th><th>measurement fold</th><th>emitted px</th></tr></thead>
+<tbody><tr><td>k = 1</td><td class="num">0.407751</td><td class="num">0.1839</td><td class="num">0.1455</td><td class="num">382,599</td></tr><tr><td>k = 2</td><td class="num">0.184735</td><td class="num">0.1759</td><td class="num">0.1651</td><td class="num">745,534</td></tr><tr><td>k = 3</td><td class="num">0.124344</td><td class="num">0.1749</td><td class="num">0.1674</td><td class="num">628,375</td></tr><tr><td>k = 4</td><td class="num">0.0171793</td><td class="num">0.1883</td><td class="num">0.0732</td><td class="num">93,413</td></tr></tbody></table>
+<p class="small"><b>Two things this arm teaches, and neither is flattering.</b> (1) Every level is
+lower: the best <em>measured</em> rule here reads 0.167 on the untouched fold against 0.222 for the
+shipped pool - so "the union scores 0.22 on fold 1" is a number that only exists because two of its
+members were fitted there. (2) The selection-fold argmax (`k = 4`, 0.1883) measures 0.0732 on the
+untouched fold - a 2.6x miss - while the k = 3 and k = 2 families measure 0.167 and 0.165. A single
+argmax over a 200-row grid is a noisy selector, and this is the measurement that shows it rather than
+an argument that says it. Queued in <code>SUGGESTIONS.md</code>: select on a pooled scope or a
+1-standard-error band, pre-registered, and re-run this control.</p>
+<div class="note ok"><b>Current shipped bytes, measured at build time:</b> <code>data/evidence/combined/submission.tif</code> — 494.0 KB, sha256 <span class='mono small'>237f0063a440b2c6c4b822bcb0f74e5203586313b3b5ed6c5cabe70fa046f63f</span>. The run tables below are <i>historical records</i> of what each run wrote <i>then</i>: the 2026-09-25 template-conformance sanitation re-wrote the shipped file, so pre-fix blend hashes no longer match it (the pixels it scored on are unchanged — see <a href='how_to_submit.html#rejection'>How to submit &sect;6b</a>).</div>
 <h3>Run <code>?</code></h3>
 <table class="kv"><tbody>
 <tr><th>Profile</th><td>—</td></tr>
@@ -323,7 +393,7 @@ number is quoted.</p>
 </ol>
 </main>
 <footer><div class="wrap">
-  <p>Generated by <code>scripts/build_site.py</code> from the evidence JSON in this repository · 2026-09-26 01:40 UTC</p>
+  <p>Generated by <code>scripts/build_site.py</code> from the evidence JSON in this repository · 2026-09-26 05:38 UTC</p>
   <p>Unofficial working notes. Authoritative sources: <a href="https://www.drivendata.org/competitions/306/competition-doe-gems/">competition</a> ·
      <a href="https://www.drivendata.org/competitions/306/competition-doe-gems/page/967/">problem description</a> · <a href="https://docs.nlr.gov/docs/fy26osti/96647.pdf">official rules</a> ·
      <a href="https://github.com/buffedlizard55-lab/GEMSDOE">repository</a></p>

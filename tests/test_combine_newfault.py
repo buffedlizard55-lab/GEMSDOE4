@@ -158,6 +158,19 @@ def test_main_rc_and_the_artifact_is_template_conformant(run):
     assert int(np.count_nonzero(a[finite])) > 0
 
 
+def test_the_hash_sidecar_follows_the_bytes(run):
+    """REGRESSION (session 34).  A stale `submission.sha256` next to a freshly written artifact is a
+    a record of bytes that no longer exist: `scripts/package_submission.py`,
+    `scripts/check_submission_readiness.py` and the packaging test all read that file as the
+    artifact's identity.  The writer is the only place that knows the hash, so it must update it.
+    """
+    sidecar = run["out_dir"] / "submission.sha256"
+    assert sidecar.exists(), "the combiner must leave a hash sidecar beside the artifact"
+    recorded = sidecar.read_text().split()[0]
+    live = hashlib.sha256((run["out_dir"] / "submission.tif").read_bytes()).hexdigest()
+    assert recorded == live, "the sidecar must name the bytes on disk, not a previous run's"
+
+
 def test_the_conformance_change_is_recorded_two_sided(run):
     ev = json.loads((run["out_dir"] / "sanitize.json").read_text())
     live = hashlib.sha256((run["out_dir"] / "submission.tif").read_bytes()).hexdigest()
@@ -189,11 +202,52 @@ def test_the_winner_is_the_argmax_over_eligible_rows_only(run):
     eligible = [r for r in sel["candidates"] if r["eligible"]]
     assert eligible
     assert sel["winner"] in eligible
-    assert sel["winner"]["proxy_dti"] == max(r["proxy_dti"] for r in eligible), \
+    key = sel["selection_key"]
+    assert key == "proxy_dti_selection", \
+        "the selection key must be the SELECTION fold's scope, not the whole grid"
+    assert sel["winner"][key] == max(r[key] for r in eligible), \
         "the winner must be the argmax of the statistic the report says it ranked on"
     for row in sel["candidates"]:
         if not row["eligible"]:
             assert "cap" in row["eligibility_reason"] or "floor" in row["eligibility_reason"]
+
+
+def test_the_selection_key_is_the_selection_fold_and_not_the_whole_grid(run):
+    """REGRESSION (session 34).  Every candidate is scored on four scopes, and only ONE of them may
+    pick the policy.  Until this session the picker read `proxy_dti` - the WHOLE-GRID score - while
+    the report and the docstring both claimed the selection fold.  The whole grid is not a noisier
+    version of the selection fold: the NFF members train on everything except folds 0 and 1, so
+    folds 2/3 are in-sample and a whole-grid score is partly a measurement of memorisation.
+    """
+    sel = run["report"]["selection"]
+    rows = sel["candidates"]
+    for r in rows:
+        for k in ("proxy_dti_selection", "proxy_dti_measurement", "proxy_dti_pooled01",
+                  "proxy_dti_whole", "proxy_dti"):
+            assert k in r, f"every candidate must carry {k} so each scope is auditable"
+        assert r["proxy_dti"] == r["proxy_dti_whole"], \
+            "the back-compatible name must still be the whole-grid number, labelled as context"
+    assert set(sel["scopes_explained"]) >= {"proxy_dti_selection", "proxy_dti_measurement",
+                                            "proxy_dti_pooled01", "proxy_dti_whole"}
+    # the module's own rule, exercised directly on rows where the two keys disagree
+    mod = run["mod"]
+    disagreeing = [dict(proxy_dti_selection=0.10, proxy_dti=0.30, dilate=0, vote=1, eligible=True),
+                   dict(proxy_dti_selection=0.20, proxy_dti=0.25, dilate=0, vote=2, eligible=True)]
+    picked = mod.select_winner(disagreeing)
+    assert picked["proxy_dti_selection"] == 0.20 and picked["vote"] == 2, \
+        "the picker followed the whole-grid score to the row with the higher proxy_dti"
+    assert mod.SELECTION_KEY == "proxy_dti_selection"
+
+
+def test_an_unmeasurable_selection_scope_is_refused_not_scored_zero(run):
+    """A fold with no truth pixels has no DTI.  `None` must stop the run: silently reading it as 0
+    would rank a policy on a scope it cannot be measured on."""
+    mod = run["mod"]
+    with pytest.raises(SystemExit):
+        mod.select_winner([dict(proxy_dti_selection=None, proxy_dti=0.9, dilate=0, vote=1,
+                                eligible=True)])
+    with pytest.raises(SystemExit):
+        mod.select_winner([])
 
 
 def test_the_support_window_can_exclude_a_candidate(run, tmp_path):
@@ -216,6 +270,27 @@ def test_the_measurement_fold_is_not_the_selection_fold(run):
     assert rep["measurement"]["scope"].startswith("blocks of fold")
     for pop, m in rep["measurement"]["by_scope"]["measurement"].items():
         assert m["n_gt"] > 0, f"the measurement fold must contain {pop} truth"
+
+
+def test_the_vote_axis_spans_k_1_to_n_and_refuses_k_above_n(run, tmp_path):
+    """Session 34: the search only ever swept k = 1 and k = 2, and the k = 3 family is the one that
+    generalises best out of sample on the real grid.  A search that cannot express k = 3 cannot find
+    it, so the default now spans k = 1..5 - and an impossible k must be refused by name rather than
+    silently emitting an empty field."""
+    fx, mod = run["fx"], run["mod"]
+    out = tmp_path / "votes"
+    mod.main(["--labels", str(fx["labels"]), "--template", str(fx["template"]),
+              "--proxy", str(fx["proxy"]), "--out-dir", str(out),
+              "--member", f"a={fx['a']}", "--member", f"b={fx['b']}",
+              "--member", f"c={fx['c']}:prob",
+              "--block-px", "64", "--folds", "4", "--floors", "3", "--dilates", "0",
+              "--votes", "1,2,3,4,5", "--max-emitted-fraction", "0.30"])
+    rep = json.loads((out / "report.json").read_text())
+    votes = sorted({r["vote"] for r in rep["selection"]["candidates"]})
+    assert votes == [1, 2, 3], f"3 members admit k <= 3, got {votes}"
+    assert rep["selection"]["k_votes_swept"] == [1, 2, 3, 4, 5], \
+        "the report must record what was ASKED for as well as what was runnable"
+    assert rep["selection"]["n_members"] == 3
 
 
 def test_member_provenance_is_carried_not_invented(run):

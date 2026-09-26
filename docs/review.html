@@ -25,6 +25,42 @@
 were fetched and read on that date. The table below maps each load-bearing statement to the official
 page where it can be checked manually; the repository's generated evidence and the official rules PDF
 remain authoritative over any summary here.</p>
+<h2>Defects found and fixed, with the measurement that shows it</h2>
+<p>Two selection-scope defects were found by reading the code against its own documentation on
+2026-09-26, and both are now fixed, tested and re-run. They are on this page rather than in a commit
+message because a reader deciding how much to trust the numbers below needs to know how they were
+wrong first.</p>
+<table class="wide"><thead><tr><th>defect</th><th>what it was</th><th>what it is now</th>
+<th>evidence</th></tr></thead><tbody>
+<tr><td><b>Selection scope</b></td>
+<td><code>scripts/combine_newfault.py</code> ranked candidates by the <b>whole-grid</b> proxy DTI while
+its docstring, its report field <code>selection.scope</code> and <code>docs/FIELD_SELECTION_RULE.md</code>
+all said the <b>selection fold</b>. The two disagree about which rule wins, so the shipped rule had
+been chosen on a number the report did not claim to use.
+<code>scripts/newfault_detector.py</code> had the same defect in its own sweep.</td>
+<td>Each candidate carries four scopes (<code>selection</code>, <code>measurement</code>,
+<code>pooled01</code>, <code>whole</code>); exactly one - <code>proxy_dti_selection</code> - selects,
+and an unmeasurable scope returns <code>None</code> and stops the run instead of scoring zero.</td>
+<td><code>data/evidence/combined/report.json</code> · <code>tests/test_combine_newfault.py</code> ·
+<code>tests/test_newfault_detector.py</code> · <code>docs/SESSION32_PROTOCOL.md</code></td></tr>
+<tr><td><b>Union holdout</b></td>
+<td>2 of 5 members were fitted on the geography the union selects and measures on (seed43, seed45); every number the union reports on those folds is an in-sample number for them. Clean members: proxy_only46, seed42, seed44 Their training geography includes the folds the union uses to select
+and measure, so every number the union reports on those folds is optimistic for those members.</td>
+<td>Disclosed per member in every report (<code>selection.fold_discipline</code>) and quantified by
+<code>scripts/audit_fold_discipline.py</code>; a clean-pool control run
+(<code>data/evidence/combined_clean/</code>) repeats the whole search with only members that held
+<em>both</em> folds out.</td>
+<td><code>data/evidence/fold_discipline.json</code> · <code>tests/test_fold_discipline.py</code></td>
+</tr>
+<tr><td><b>Vote axis</b></td>
+<td>The sweep could only express k = 1 and k = 2 (<code>--votes</code> default <code>1,2</code>), so
+the k = 3 family - the one that generalises best on the untouched fold - was not in the search space
+at all, and its absence was never reported.</td>
+<td>The default spans k = 1..5, an impossible k is refused by name, and the report records what was
+asked for (<code>k_votes_swept</code>) as well as what ran.</td>
+<td><code>data/evidence/combined/report.json</code> ·
+<code>tests/test_combine_newfault.py::test_the_vote_axis_spans_k_1_to_n_and_refuses_k_above_n</code></td></tr>
+</tbody></table>
 <table class="wide"><thead><tr><th>topic</th><th>review result</th><th>manual check</th></tr></thead>
 <tbody><tr><td><b>Task</b></td><td>develop models that identify geological faults</td><td><a href="https://www.drivendata.org/competitions/306/competition-doe-gems/page/967/">official source</a></td></tr><tr><td><b>Scored target</b></td><td>new expert-labelled faults; final round uses the expanded labels</td><td><a href="https://www.drivendata.org/competitions/306/competition-doe-gems/page/967/#competition-structure">official source</a></td></tr><tr><td><b>Format</b></td><td>EPSG:32611, 100 m, one float32 probability layer</td><td><a href="https://www.drivendata.org/competitions/306/competition-doe-gems/page/967/#submission-format">official source</a></td></tr><tr><td><b>Metric</b></td><td>distance-weighted Tversky; 300 m support; alpha 0.2, beta 0.8</td><td><a href="https://www.drivendata.org/competitions/306/competition-doe-gems/page/967/#performance-metric">official source</a></td></tr><tr><td><b>Data context</b></td><td>GeoDAWN, USGS/INGENIOUS labels and 1 m DEM links</td><td><a href="https://www.drivendata.org/competitions/306/competition-doe-gems/page/967/#datasets">official source</a></td></tr><tr><td><b>Deadline / prize</b></td><td>Dec. 3, 2026 at 11:59 p.m. UTC; $300,000 total</td><td><a href="https://www.drivendata.org/competitions/306/competition-doe-gems/">official source</a></td></tr><tr><td><b>External data</b></td><td>allowed when licensing permits challenge use and sponsor sharing</td><td><a href="https://www.drivendata.org/competitions/306/competition-doe-gems/#use-of-external-data">official source</a></td></tr><tr><td><b>Scientific references</b></td><td>automatic fault mapping and Western USA fault mapping</td><td><a href="https://www.drivendata.org/competitions/306/competition-doe-gems/page/968/#additional-information">official source</a></td></tr></tbody></table>
 <h2>What changed in the code</h2>
@@ -47,7 +83,7 @@ private score.</div>
 <a href="reproduce.html">Reproduce</a> for commands.</p>
 </main>
 <footer><div class="wrap">
-  <p>Generated by <code>scripts/build_site.py</code> from the evidence JSON in this repository · 2026-09-26 01:40 UTC</p>
+  <p>Generated by <code>scripts/build_site.py</code> from the evidence JSON in this repository · 2026-09-26 05:38 UTC</p>
   <p>Unofficial working notes. Authoritative sources: <a href="https://www.drivendata.org/competitions/306/competition-doe-gems/">competition</a> ·
      <a href="https://www.drivendata.org/competitions/306/competition-doe-gems/page/967/">problem description</a> · <a href="https://docs.nlr.gov/docs/fy26osti/96647.pdf">official rules</a> ·
      <a href="https://github.com/buffedlizard55-lab/GEMSDOE">repository</a></p>

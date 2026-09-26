@@ -1,10 +1,10 @@
 {
- "generated_utc": "2026-09-26T01:40:41Z",
+ "generated_utc": "2026-09-26T05:35:28Z",
  "script": "scripts/check_submission_readiness.py",
  "purpose": "every gate on docs/how_to_submit.html is a measurement from this checkout",
  "root": "/home/user/GEMSDOE4",
  "data_dir": "data",
- "seconds": 15.21,
+ "seconds": 13.97,
  "checks": [
   {
    "id": "data_placed",
@@ -63,9 +63,9 @@
    "status": "PASS",
    "measured": {
     "path": "data/evidence/combined/submission.tif",
-    "sha256": "c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4",
-    "bytes": 547082,
-    "recorded_sha256": "c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4",
+    "sha256": "237f0063a440b2c6c4b822bcb0f74e5203586313b3b5ed6c5cabe70fa046f63f",
+    "bytes": 505882,
+    "recorded_sha256": "237f0063a440b2c6c4b822bcb0f74e5203586313b3b5ed6c5cabe70fa046f63f",
     "recorded_in": "data/evidence/combined/submission.sha256"
    },
    "source": "data/evidence/combined/submission.sha256",
@@ -160,8 +160,8 @@
      "variant: whole grid in one strip"
     ],
     "failed": [],
-    "generated_utc": "2026-09-26T01:40:33Z",
-    "seconds": 8.44,
+    "generated_utc": "2026-09-26T05:35:19Z",
+    "seconds": 8.7,
     "container_note": "generated, artifact and template all declare nan since the 2026-09-25 template-conformance fix"
    },
    "source": "scripts/check_site_generator.py -> data/evidence/site_generator.json",
@@ -211,8 +211,8 @@
      {
       "path": "data/evidence/combined/submission.tif",
       "kind": "deep ensemble (11-fold blend, adopted policy)",
-      "sha256": "c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4",
-      "bytes": 547082
+      "sha256": "237f0063a440b2c6c4b822bcb0f74e5203586313b3b5ed6c5cabe70fa046f63f",
+      "bytes": 505882
      },
      {
       "path": "data/evidence/baseline/submission.tif",

@@ -20,13 +20,13 @@ asserted.
 | # | The ask | Status |
 |---|---|---|
 | 1 | Copy the entire repo and site from GEMSDOE (the site that scored 0.1563) into this repo, because more sites are being created for more submissions. | ✅ Done — the full GEMSDOE tree (413 files) is here; `buffedlizard55-lab/GEMSDOE` remains the source of record for the deep line. |
-| 2 | Generate a **different, unique** submission — not `extradr19` (0.1563) — via a unique approach that can score **higher than 0.3049**. | ✅ Built and measured (sessions 32–33) — the "New-Fault-First" union now includes a **proxy_only** member (SGMC code-2 positives only, never a catalogue fault). Shipped sha `c1da7dd9…`, validator PASSED 10/10 here. Out-of-sample proxy DTI **0.1996** on the clean fold 1 and **0.247454** on the 17-block out-of-sample pool vs the prior union's 0.233098 (**+0.014356, P = 1.0, CI95 [+0.0080, +0.0202]**). Unscored on the real board (see §0.5) — the upload is the one remaining human step. |
+| 2 | Generate a **different, unique** submission — not `extradr19` (0.1563) — via a unique approach that can score **higher than 0.3049**. | ✅ Built and measured (sessions 32–34). Session 34 fixed two selection-scope defects (see §0.2 and `docs/SESSION34_PROTOCOL.md`) and re-selected the union under the fixed rule. Shipped sha `237f0063…` (505,882 B), validator PASSED. Fold-1 proxy DTI **0.2221** vs the superseded k = 2 artifact's 0.1996 (**+0.0225, P = 0.965, CI95 [−0.0026, +0.0420]**), pooled folds 0+1 **0.2603 vs 0.2475** (**+0.0128, P = 0.954, CI95 [−0.0028, +0.0274]**). Unscored on the real board (see §0.5) — the upload is the one remaining human step. |
 | 3 | Put the full prompt in the README and read it every time work starts, so there is a strong base to keep improving something useful for everyday use — it must remove the need to check everything by hand and give an up-to-date current feed. | ✅ This section is that list. The site is the "current feed": it is rebuilt by CI from the measured evidence, so the numbers on the page are the numbers in the repository. |
 | 4 | Keep the Arena core values — **Maximize P(Win)** and **Own the Outcome** — as the focal point when building, developing, researching, suggesting upgrades and implementing. | ✅ §0.4, and the reason every claim here is measured rather than argued. |
 | 5 | Work line by line verifying from official verified trusted sources, with links for manual review. No manual input. Work autonomously. Flag irregularities for review. No hallucinations. Verify line by line. | ✅ §8 and `scripts/verify_rules_quotes.py` (29/29 quoted sentences exact-matched against the rules PDF). Session 33's line-by-line pass found four irregularities and fixed all four: the stale submission page on `main` (CI run 36209417841), the readiness record a weaker checkout could silently overwrite, `n_scoreable_blocks: 0` reported for the winning arm of the adoption contrast, and the fact that folds 2/3 are *in-sample* for the members (which is why the honest pool is folds 0+1, not 2+3). Each is written down in `STATUS.md` §Session 33 with the measurement that proved it. |
 | 6 | The site must generate the submission TIF as easily as "download a file to click into the competition", obvious at the very beginning of the site / executive summary. | ✅ Both the landing page and the executive summary open with the in-browser builder; `scripts/check_site_generator.py` re-runs the browser's own pipeline headless and is gate 9 of the readiness check. |
 | 7 | Fix the platform rejection `Predicted values must be in range [0, 1]`. | ✅ Root-caused (NaN inside the valid region, finite outside) and fixed by `scripts/sanitize_submission.py` + `conform_to_template()`; validator checks 16–17; two-sided evidence committed. |
-| 8 | Provide a unique name and a short comment (e.g. "clustering with k=25") to tell submissions apart. | ✅ The download carries a unique per-build file name and the suggested Note `nff-po-drop-nff42 · proxy_only diversity · union k=2 of 5 (t0=0.18, w=0)`. |
+| 8 | Provide a unique name and a short comment (e.g. "clustering with k=25") to tell submissions apart. | ✅ The download carries a unique per-build file name and the suggested Note `nff-k3-fold0-selected · union k=3 of 5 members (t0=0.124, w=0)`. |
 | 9 | Create an executive-summary subpage explaining exactly how to make a submission into the contest. | ✅ `docs/how_to_submit.html`, a subpage of the executive summary. |
 | 10 | Work the next steps from previous sessions first. | ✅ Each session opens with the previous session's open items; `SUGGESTIONS.md` and `LIMITATIONS.md` carry the queue. |
 | 11 | Goal: top of the leaderboard. Understand the problem, collect all data, organise it into a clean, easily auditable table with official verified links. | ✅ §3 is that table (every row: source, link, licence, what it is used for); §1 is the problem summary. |
@@ -59,36 +59,52 @@ submission form's Note field):
 | `smrtdoog5` | buffedlizard55-lab/GEMSDOE3 | pindrop nodes | 0.1193 |
 | `SDCF9` | buffedlizard55-lab/GEMSDOE3 | dense ridge control | 0.1152 |
 | `wbg1` | buffedlizard55-lab/GEMSDOE3 | catalogue-gap target | 0.0830 |
-| `nff-po-drop-nff42` | **this repo (GEMSDOE4)** | new-fault-first union, k = 2 of 5, `proxy_only` member | **not yet uploaded** |
+| `nff-k3-fold0-selected` | **this repo (GEMSDOE4)** | new-fault-first union, **k = 3 of 5**, fold-scoped selection | **not yet uploaded** |
 | **best on the board** | — | — | **0.3049** |
 
 Our best scored line is ~half the leading score. The task for this repository is therefore not
 "ship another variant of the same model" but **a different strategy, researched and measured,
 that can score above 0.3049**. The file this repository ships today
-(`data/evidence/combined/submission.tif`, sha256 `c1da7dd9…`, 547,082 B, `validate_submission.py`
-PASSED 10/10 in this sandbox) is that line's current candidate: the adopted **k = 2 of 5** union
-(`deep11 ∪ classical ∪ nff43 ∪ nff45 ∪ po46`), where `po46` is the first member supervised on
-**SGMC code-2 only** (never a catalogue fault).
+(`data/evidence/combined/submission.tif`, sha256 `237f0063a440b2c6…`, 505,882 B, `validate_submission.py`
+PASSED in this sandbox — 3292×3730, float32, 264,247 px at 1.0, NaN on exactly the template's
+7,111,787 outside pixels) is that line's current candidate: the **k = 3 of 5** union
+(`deep11 ∪ classical ∪ nff43 ∪ nff45 ∪ po46`), selected on the **selection fold** (fold 0) and
+measured on fold 1, which the sweep never scored.
 
-Its evidence, on the SGMC proxy population (R = 3, α = 0.2, β = 0.8), against the 5-member union
-it replaced (`19de9950…`):
+**Session 34 changed two things about how that rule was chosen, and both were defects found by
+reading the code against its own documentation** (`docs/SESSION34_PROTOCOL.md`):
 
-| scope | ref | cand | Δ | blocks | P(cand>ref) |
-|---|---:|---:|---:|---:|---:|
-| fold 1 — clean (out-of-sample, never swept) | 0.189714 | 0.199605 | +0.009890 | 9 (COARSE) | 1.0 |
-| **pooled folds 0+1 — out-of-sample pool** | **0.233098** | **0.247454** | **+0.014356** | **17 (adequate)** | **1.0** |
-| pooled folds 2+3 — *in-sample for the members, upper bound only* | 0.177017 | 0.203354 | +0.026337 | 17 | 1.0 |
+1. **The sweep selected on the whole grid while its report said "the selection fold's blocks".**
+   Each candidate now carries four scopes; exactly one — `proxy_dti_selection` — selects, and an
+   unmeasurable scope returns `None` and stops the run. `scripts/newfault_detector.py` had the same
+   defect in its own sweep and is fixed the same way.
+2. **The union's folds were not a holdout for every member.** `nff43` and `nff45` were run with
+   `--fold 2 --eval-fold 3`, i.e. they *trained* on folds 0 and 1 — the folds the union selects and
+   measures on. `scripts/audit_fold_discipline.py` measures the consequence at one common policy:
+   `proxy_only46` scores **0.187** on the folds it trained on and **0.009** on the folds it held out.
+   The disclosure is now generated per member in every report (`selection.fold_discipline`), and a
+   control arm (`data/evidence/combined_clean/`) repeats the search with only members that held out
+   *both* folds.
 
-Session 33 added the pooled read (`--fold 0,1` in `scripts/paired_union_contrast.py`,
-`data/evidence/union_po_loo/contrasts/drop_nff42_vs_committed_pooled01.json`): **17 resampling
-units, above this repository's 12-block readable-CI bar, CI95 [+0.0080, +0.0202] excluding zero**.
-Folds 0 and 1 are the only two folds `scripts/newfault_detector.py` excludes from the members'
-training, so they are the only honest pool; fold 0 is also the fold the emission-policy sweep
-selected on, so the pooled number sits between a clean read and a biased one, and folds 2/3 are
-in-sample (+0.0263) and committed only as an upper bound. The transfer to the real leaderboard is
-still untested until a human uploads it; every number here is the SGMC surrogate, not the scored
-set. Suggested submission Note:
-`nff-po-drop-nff42 · proxy_only diversity · union k=2 of 5 (t0=0.18, w=0)`.
+Its evidence, on the SGMC proxy population (R = 3, α = 0.2, β = 0.8), against the artifact it
+replaced (`c1da7dd9…`, the k = 2 rule), paired block bootstrap
+(`data/evidence/union_po_loo/contrasts/k3_vs_k2_*.json`):
+
+| scope | ref | cand | Δ | blocks | P(cand>ref) | CI95 |
+|---|---:|---:|---:|---:|---:|---|
+| fold 1 only — never swept, out-of-sample for every member that has a fold protocol | 0.199605 | 0.222076 | **+0.022471** | 9 (coarse) | 0.965 | [−0.0026, +0.0420] |
+| **pooled folds 0+1 — the 17-block honest pool** | **0.247454** | **0.260266** | **+0.012812** | **17 (adequate)** | **0.954** | [−0.0028, +0.0274] |
+
+**Stated plainly, because it is the honest reading:** both intervals include zero by ~0.003, so the
+adoption rests on (a) the pre-registered selection key, (b) a same-signed clean-fold measurement, and
+(c) the k = 3 family beating k = 2 across the whole floor grid — **not** on a decisive interval. The
+pooled interval's power comes partly from fold 0, which is the fold the sweep maximised over. The
+control arm makes the level explicit: with only members that held out both folds, the best *measured*
+rule reads 0.167 on the untouched fold, against 0.222 for the shipped pool.
+
+The transfer to the real leaderboard is still untested until a human uploads it; every number here is
+the SGMC surrogate, not the scored set. Suggested submission Note:
+`nff-k3-fold0-selected · union k=3 of 5 members (t0=0.124, w=0)`.
 
 ### 0.3 The strategy this repository is built on (GEMSDOE4, "New-Fault-First")
 

@@ -1,0 +1,274 @@
+{
+ "generated_utc": "2026-09-26T05:24:05Z",
+ "script": "scripts/emission_budget.py",
+ "purpose": "derive, from the official metric, the coverage/false-positive price of a target DTI, and locate the shipped artifact in that space",
+ "identity": {
+  "formula": "DTI = TP_w / (alpha*(TP_w + FP_w) + beta*|G| + eps)",
+  "eps": 1e-07,
+  "derivation": "FN_w = sum_g (1 - credit_g) = |G| - TP_w for any prediction in [0,1] because credit_g <= k(0) = 1; substituting into DTI = TP_w/(TP_w + alpha*FP_w + beta*FN_w) gives the two-term form",
+  "alpha": 0.2,
+  "beta": 0.8,
+  "beta_over_alpha": 4.0,
+  "consequence": "the prediction enters only through the weighted coverage TP_w and the weighted false-positive mass FP_w; one unit of coverage is worth beta/alpha = 4 units of false-positive mass"
+ },
+ "targets": [
+  0.25,
+  0.3049,
+  0.35,
+  0.4
+ ],
+ "pred": {
+  "path": "data/evidence/combined/submission.tif",
+  "sha256": "237f0063a440b2c6c4b822bcb0f74e5203586313b3b5ed6c5cabe70fa046f63f",
+  "bytes": 505882,
+  "finite_px": 5167373,
+  "nonzero_px": 264247
+ },
+ "truth": {
+  "path": "data/evidence/proxy/proxy_catalogue.tif",
+  "pixels": 61664,
+  "population": "SGMC proxy compilation (code 2) - a stand-in, not the scored set"
+ },
+ "scopes": {
+  "selection_fold": {
+   "dti": 0.2856359442268184,
+   "TP_w": 9627.830363342384,
+   "FP_w": 78141.41200178048,
+   "FN_w": 10563.169636657616,
+   "n_gt": 20191,
+   "pred_px": 99210,
+   "coverage": 0.4768377179605955,
+   "fp_price": 3.8701110396602685,
+   "identity_rhs": 0.2856359442268184,
+   "identity_rel_err": 0.0,
+   "identity_holds": true,
+   "ceiling_at_this_fp_price": 0.5636908013489201,
+   "budget": [
+    {
+     "target": 0.25,
+     "coverage_axis_reachable": true,
+     "coverage_needed": 0.41421637050843524,
+     "coverage_gap": -0.06262134745216025,
+     "fp_axis_reachable": true,
+     "fp_price_allowed": 5.059916641251314,
+     "fp_price_reduction": -1.1898056015910452,
+     "fp_price_reduction_frac": -0.30743448686565084,
+     "already_met": true
+    },
+    {
+     "target": 0.3049,
+     "coverage_axis_reachable": true,
+     "coverage_needed": 0.5110853562208294,
+     "coverage_gap": 0.034247638260233915,
+     "fp_axis_reachable": true,
+     "fp_price_allowed": 3.3427378471524816,
+     "fp_price_reduction": 0.5273731925077869,
+     "fp_price_reduction_frac": 0.1362682329016796,
+     "already_met": false
+    },
+    {
+     "target": 0.35,
+     "coverage_axis_reachable": true,
+     "coverage_needed": 0.5923739492217407,
+     "coverage_gap": 0.1155362312611452,
+     "fp_axis_reachable": true,
+     "fp_price_allowed": 2.3351296814764835,
+     "fp_price_reduction": 1.534981358183785,
+     "fp_price_reduction_frac": 0.396624629746678,
+     "already_met": false
+    },
+    {
+     "target": 0.4,
+     "coverage_axis_reachable": true,
+     "coverage_needed": 0.6843574817095888,
+     "coverage_gap": 0.20751976374899328,
+     "fp_axis_reachable": true,
+     "fp_price_allowed": 1.4836337565468465,
+     "fp_price_reduction": 2.3864772831134218,
+     "fp_price_reduction_frac": 0.6166431036880313,
+     "already_met": false
+    }
+   ]
+  },
+  "measurement_fold": {
+   "dti": 0.2220756819264156,
+   "TP_w": 4972.63520922689,
+   "FP_w": 50517.48569057419,
+   "FN_w": 9144.36479077311,
+   "n_gt": 14117,
+   "pred_px": 61205,
+   "coverage": 0.3522444718585315,
+   "fp_price": 3.578485917020202,
+   "identity_rhs": 0.2220756819264156,
+   "identity_rel_err": 0.0,
+   "identity_holds": true,
+   "ceiling_at_this_fp_price": 0.5828534368844409,
+   "budget": [
+    {
+     "target": 0.25,
+     "coverage_axis_reachable": true,
+     "coverage_needed": 0.39886767984316857,
+     "coverage_gap": 0.04662320798463704,
+     "fp_axis_reachable": true,
+     "fp_price_allowed": 2.6926449653120987,
+     "fp_price_reduction": 0.8858409517081034,
+     "fp_price_reduction_frac": 0.2475463009354921,
+     "already_met": false
+    },
+    {
+     "target": 0.3049,
+     "coverage_axis_reachable": true,
+     "coverage_needed": 0.4921472079613767,
+     "coverage_gap": 0.13990273610284515,
+     "fp_axis_reachable": true,
+     "fp_price_allowed": 1.424148966293838,
+     "fp_price_reduction": 2.154336950726364,
+     "fp_price_reduction_frac": 0.6020247111997232,
+     "already_met": false
+    },
+    {
+     "target": 0.35,
+     "coverage_axis_reachable": true,
+     "coverage_needed": 0.5704236711735636,
+     "coverage_gap": 0.2181791993150321,
+     "fp_axis_reachable": true,
+     "fp_price_allowed": 0.6798194118347765,
+     "fp_price_reduction": 2.8986665051854255,
+     "fp_price_reduction_frac": 0.8100259641650732,
+     "already_met": false
+    },
+    {
+     "target": 0.4,
+     "coverage_axis_reachable": true,
+     "coverage_needed": 0.6589987753930612,
+     "coverage_gap": 0.30675430353452965,
+     "fp_axis_reachable": true,
+     "fp_price_allowed": 0.05081142637311172,
+     "fp_price_reduction": 3.5276744906470903,
+     "fp_price_reduction_frac": 0.9858008589243178,
+     "already_met": false
+    }
+   ]
+  },
+  "pooled_folds_0_1": {
+   "dti": 0.26026586705903515,
+   "TP_w": 14600.465572569274,
+   "FP_w": 128658.89769235469,
+   "FN_w": 19707.534427430728,
+   "n_gt": 34308,
+   "pred_px": 160415,
+   "coverage": 0.42557029184357215,
+   "fp_price": 3.7501136088479274,
+   "identity_rhs": 0.2602658670590351,
+   "identity_rel_err": 2.1328632854751728e-16,
+   "identity_holds": true,
+   "ceiling_at_this_fp_price": 0.571421152171568,
+   "budget": [
+    {
+     "target": 0.25,
+     "coverage_axis_reachable": true,
+     "coverage_needed": 0.4079007162551541,
+     "coverage_gap": -0.01766957558841803,
+     "fp_axis_reachable": true,
+     "fp_price_allowed": 4.08583554502787,
+     "fp_price_reduction": -0.33572193617994284,
+     "fp_price_reduction_frac": -0.08952313748251482,
+     "already_met": true
+    },
+    {
+     "target": 0.3049,
+     "coverage_axis_reachable": true,
+     "coverage_needed": 0.5032927177989251,
+     "coverage_gap": 0.077722425955353,
+     "fp_axis_reachable": true,
+     "fp_price_allowed": 2.5532800171687615,
+     "fp_price_reduction": 1.196833591679166,
+     "fp_price_reduction_frac": 0.3191459556999515,
+     "already_met": false
+    },
+    {
+     "target": 0.35,
+     "coverage_axis_reachable": true,
+     "coverage_needed": 0.5833418845369407,
+     "coverage_gap": 0.15777159269336855,
+     "fp_axis_reachable": true,
+     "fp_price_allowed": 1.654005305921745,
+     "fp_price_reduction": 2.0961083029261824,
+     "fp_price_reduction_frac": 0.55894528047915,
+     "already_met": false
+    },
+    {
+     "target": 0.4,
+     "coverage_axis_reachable": true,
+     "coverage_needed": 0.6739229225085156,
+     "coverage_gap": 0.24835263066494345,
+     "fp_axis_reachable": true,
+     "fp_price_allowed": 0.8940583562010785,
+     "fp_price_reduction": 2.856055252646849,
+     "fp_price_reduction_frac": 0.7615916610921709,
+     "already_met": false
+    }
+   ]
+  },
+  "whole_grid": {
+   "dti": 0.2213438151366177,
+   "TP_w": 21565.206312652306,
+   "FP_w": 218921.52905855537,
+   "FN_w": 40098.793687347694,
+   "n_gt": 61664,
+   "pred_px": 264247,
+   "coverage": 0.3497211713909624,
+   "fp_price": 3.550232373160278,
+   "identity_rhs": 0.2213438151366177,
+   "identity_rel_err": 0.0,
+   "identity_holds": true,
+   "ceiling_at_this_fp_price": 0.5847794284159243,
+   "budget": [
+    {
+     "target": 0.25,
+     "coverage_axis_reachable": true,
+     "coverage_needed": 0.39738065121896204,
+     "coverage_gap": 0.04765947982799962,
+     "fp_axis_reachable": true,
+     "fp_price_allowed": 2.644702256428285,
+     "fp_price_reduction": 0.9055301167319931,
+     "fp_price_reduction_frac": 0.25506221045636107,
+     "already_met": false
+    },
+    {
+     "target": 0.3049,
+     "coverage_axis_reachable": true,
+     "coverage_needed": 0.49031242158347405,
+     "coverage_gap": 0.14059125019251162,
+     "fp_axis_reachable": true,
+     "fp_price_allowed": 1.3852931183919561,
+     "fp_price_reduction": 2.164939254768322,
+     "fp_price_reduction_frac": 0.6098021276396558,
+     "already_met": false
+    },
+    {
+     "target": 0.35,
+     "coverage_axis_reachable": true,
+     "coverage_needed": 0.5682970603453973,
+     "coverage_gap": 0.21857588895443486,
+     "fp_axis_reachable": true,
+     "fp_price_allowed": 0.6462955627656444,
+     "fp_price_reduction": 2.903936810394634,
+     "fp_price_reduction_frac": 0.8179568279384661,
+     "already_met": false
+    },
+    {
+     "target": 0.4,
+     "coverage_axis_reachable": true,
+     "coverage_needed": 0.6565419454921982,
+     "coverage_gap": 0.3068207741012358,
+     "fp_axis_reachable": true,
+     "fp_price_allowed": 0.021793470996066957,
+     "fp_price_reduction": 3.5284389021642113,
+     "fp_price_reduction_frac": 0.9938613959016246,
+     "already_met": false
+    }
+   ]
+  }
+ }
+}

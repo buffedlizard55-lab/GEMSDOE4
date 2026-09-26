@@ -1,3 +1,32 @@
+## Session 34 (2026-09-26) — implemented first, queued second
+
+| # | Suggestion | Status |
+|---|---|---|
+| 1 | **A sweep must select on the scope it claims to select on.** `combine_newfault.py` ranked by the whole-grid proxy DTI while its own report said "the selection fold's blocks"; `newfault_detector.py`'s `sweep(scope_mask, …)` accepted a scope mask and never used it. | ✅ Fixed in both. Four scopes per candidate, `SELECTION_KEY = "proxy_dti_selection"` is the only key that picks, `None` stops the run instead of ranking as zero, report names each scope. 12 + 16 tests. |
+| 2 | **A search must be able to express the winning hypothesis.** `--votes` defaulted to `1,2`, so the k = 3 family (best generalising family on the untouched fold) was outside the search space. | ✅ Default `1,2,3,4,5`; an impossible k is refused by name; the report records what was ASKED for (`k_votes_swept`) separately from what ran. New test. |
+| 3 | **Disclose the union's fold discipline per member, from each member's own report, instead of asserting it.** Session 33's report text said folds 0+1 were "the two folds the NFF members never trained on"; that is false for the two members run with `--fold 2 --eval-fold 3`. | ✅ `selection.fold_discipline` is computed from each member's `report.json` (clean / in-sample / no-protocol), the site renders it, and `summary`/`scope_message` no longer type the claim. |
+| 4 | **Quantify the in-sample exposure, with a control.** A raw fold comparison proves nothing because folds differ in difficulty. | ✅ `scripts/audit_fold_discipline.py`: common policy, difference-in-differences, control group = members whose own holdout IS the union's folds. +0.0543 DTI estimated exposure; the symmetry assumption is written into the JSON. 2 tests. |
+| 5 | **Keep a control arm where no member is in-sample, and commit its artifact too.** | ✅ `data/evidence/combined_clean/` (4 clean members, 200 candidates, validator-passing raster). It shows every level is lower AND that the selection-fold argmax can miss the untouched fold by 2.6×. |
+| 6 | **Turn the metric into a budget.** The metric collapses to `DTI = TP_w / (α(TP_w + FP_w) + β\|G\| + ε)`, so "what would a higher target cost" is arithmetic. | ✅ `scripts/emission_budget.py` + `tests/test_emission_budget.py` (6 tests); `data/evidence/emission_budget.json`; rendered on `results.html`. |
+| 7 | **Train on the metric's own tolerance region.** The scorer credits any prediction within R = 3 px, so the target is "a fault within 300 m of this pixel", not "this pixel is a fault". | ✅ `--corridor PX` on the detector, using `src.metrics.kernel_offsets` as the structuring element (a 3-iteration default dilation is a diamond: it credits 300 m but not 283 m). 2 tests pin the disk geometry. |
+| 8 | **Commit the reference raster a contrast is paired against.** `data/evidence/union_po_loo/prev_committed_*.tif` was gitignored, so a fresh clone could not re-run the contrast it cites. | ✅ `.gitignore` exception added; this session's reference (`c1da7dd9…`, the k = 2 artifact) is now committed. |
+| 9 | Render the pooled adoption contrast on the site (session 33 item 10). | ✅ Done — plus the selection-scope table, the fold-discipline audit, the clean-pool control and the emission budget, all read from evidence JSON at build time, with the pre-fix state rendering an explicit "this report predates the fix" note instead of a column of zeros. |
+| 10 | Upload the artifact and record a real score. `main` now ships `237f0063…` (k = 3 of 5, clean-fold proxy 0.2221). | ⏳ **HUMAN — the highest-value action available.** Note: `nff-k3-fold0-selected · union k=3 of 5 members (t0=0.124, w=0)`. |
+| 11 | **Re-run `nff43` and `nff45` under the fixed detector path** (`--fold 0 --eval-fold 1`), so the 5-member pool has no in-sample member. Their `prob_raw.tif` fields are unchanged and committed; only the policy sweep changed. | ⏳ **QUEUED, next session, cheap: ~5 min of fit + ~4.5 min of grid prediction each on 2 vCPU.** Then re-run `combine_newfault.py` and the audit — this is the falsifier that would promote the clean pool from control to shipped. |
+| 12 | Alternatively / additionally: a `proxy_only` member on folds 2/3, so BOTH fold pairs have a proxy-only member and the pool can be swapped rather than rebuilt. | ⏳ Queued. Pre-register first; session 31 measured that extra members of the same supervision make the union *worse*. |
+| 13 | **Select on a less noisy statistic.** The clean-pool arm's single-fold argmax (k = 4) missed the untouched fold by 2.6× while the k = 2/k = 3 families were within 0.002 of their selection value. | ⏳ Queued, pre-register before running: argmax over `proxy_dti_pooled01`, or a 1-standard-error band on the selection fold, with the choice frozen in advance. |
+| 14 | A third partition seed. Every committed run uses seed 42, so the partition-dependence falsifier in `docs/SESSION34_PROTOCOL.md` §4 has never been exercised. | ⏳ Queued — `--seed` is already plumbed through the combiner, the detector and the audit. |
+
+**Next session queue (priority order):**
+1. **Upload `237f0063…` and record the real score** (human, 1 of 3 this week) — file
+   `data/evidence/combined/submission.tif` (505,882 B; the browser-built copy is verifiable against
+   `docs/submission_meta.json`), Note `nff-k3-fold0-selected · union k=3 of 5 members (t0=0.124, w=0)`.
+2. Re-run `nff43` / `nff45` with `--fold 0 --eval-fold 1` (item 11) and re-audit; if the pool's clean
+   members then support k = 3 as well, the shipped artifact's measurement stops being in-sample for
+   anyone.
+3. Pre-register and run the less-noisy selector (item 13) on the clean pool.
+4. Everything still standing from session 33's queue (upload, DriveData account, GPU training).
+
 ## Session 33 (2026-09-26) — main unbroken, the adoption's interval made readable, and two silent-overwrite defects closed
 
 | # | Suggestion | Status |

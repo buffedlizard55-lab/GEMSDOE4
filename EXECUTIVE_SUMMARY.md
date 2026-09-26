@@ -27,10 +27,10 @@
 | **Grid Dimensions** | **3,292 columns × 3,730 rows** | Total raster area = 12,279,160 pixels |
 | **Raster Data Type** | **Single-band 32-bit float (`float32`)** | Values in `[0.0, 1.0]` representing fault presence probability |
 | **NoData Mask** | **NaN / null** outside GeoDAWN survey footprint | **57.92% NaN**; finite values strictly inside valid survey area |
-| **Shipped Winning Policy** | **Floor 0.180482, k = 2 of 5, width 0 px** | Pre-registered decision rule (session 32); LOO drop of seed-correlated `nff42`, keep structurally different `po46` (proxy_only supervision) — see `docs/SESSION32_PROTOCOL.md` |
-| **Shipped Raster Artifact (GEMSDOE4)** | `data/evidence/combined/submission.tif` | sha256 `c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4` (547.1 KB; new-fault-first union of 5 detectors incl. proxy_only member, k = 2 — see `report.json`, `sanitize.json`) |
-| **Suggested submission Note** | `nff-po-drop-nff42 · proxy_only diversity · union k=2 of 5 (t0=0.18, w=0)` | Unique per the dialog's "clustering with k=25" example; tells this build apart from `extradr19` / prior unions |
-| **Previous artifacts (kept as evidence)** | session-31 union sha256 `19de9950ceffbdf7a7163b645984353965ab7d61dca07dfe8b9b68856edb853b` (548,834 B); 4-member union `932c2f30…` (793,704 B, in git history); deep ensemble `7f00890a…` (570.9 KB, member `deep11`) |
+| **Shipped Winning Policy** | **Floor 0.124344, k = 3 of 5, width 0 px** | Pre-registered decision rule, **fold-scoped** since session 34: argmax of the new-fault DTI over the SELECTION fold's blocks (`docs/SESSION32_PROTOCOL.md`, `docs/SESSION34_PROTOCOL.md`). Members: `deep11`, `classical`, `nff43`, `nff45`, `po46` |
+| **Shipped Raster Artifact (GEMSDOE4)** | `data/evidence/combined/submission.tif` | sha256 `237f0063a440b2c6c4b822bcb0f74e5203586313b3b5ed6c5cabe70fa046f63f` (505,882 B; new-fault-first union of 5 detectors incl. the proxy_only member, **k = 3**, selected on the selection fold — see `report.json`, `sanitize.json`). Validator PASSED; the browser-built copy is verified pixel-identical by `docs/submission_meta.json` |
+| **Suggested submission Note** | `nff-k3-fold0-selected · union k=3 of 5 members (t0=0.124, w=0)` | Unique per the dialog's "clustering with k=25" example; tells this build apart from `extradr19` and from this repo's earlier k = 2 union |
+| **Previous artifacts (kept as evidence)** | session-33 union sha256 `c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4` (547,082 B, k = 2; committed as `data/evidence/union_po_loo/prev_committed_nff_k2_t0.18.tif`); session-31 union `19de9950…` (548,834 B); 4-member union `932c2f30…` (793,704 B); deep ensemble `7f89090a…` (member `deep11`). The clean-pool CONTROL artifact `1b52d633a6478029…` (474,736 B) is committed at `data/evidence/combined_clean/` |
 
 ---
 
@@ -46,10 +46,11 @@ python scripts/validate_submission.py --pred data/evidence/combined/submission.t
 # → ✅ Validation PASSED — upload the .tif below
 ```
 
-**Pre-computed, validated submission artifact (GEMSDOE4 new-fault-first union — 11-fold deep ensemble ∪ classical raw-band GBM ∪ three lineament NFF detectors, emitted where ≥ 2 of the 5 agree; rule selected on held-out geography, adopted 2026-09-25 session 31):**
+**Pre-computed, validated submission artifact (GEMSDOE4 new-fault-first union — 11-fold deep ensemble ∪ classical raw-band GBM ∪ three lineament NFF detectors, emitted where ≥ 3 of the 5 agree; rule selected on the **selection fold's** blocks only, re-selected 2026-09-26 session 34):**
 - **Path:** `data/evidence/combined/submission.tif`
-- **sha256:** `19de9950ceffbdf7a7163b645984353965ab7d61dca07dfe8b9b68856edb853b` (548,834 bytes)
-- **Policy:** union k = 2 of 5 members (`deep11`, `classical`, `nff42`, `nff43`, `nff45`); probability members floored at t0 = 0.180482, no dilation; 332,544 px at 1.0
+- **sha256:** `237f0063a440b2c6c4b822bcb0f74e5203586313b3b5ed6c5cabe70fa046f63f` (505,882 bytes)
+- **Policy:** union k = **3** of 5 members (`deep11`, `classical`, `nff43`, `nff45`, `po46`); probability members floored at t0 = 0.124344, no dilation; 264,247 px at 1.0
+- **Note for the submission dialog:** `nff-k3-fold0-selected · union k=3 of 5 members (t0=0.124, w=0)`
 - **Format:** 3292×3730, single-band float32, EPSG:32611, 100 m, NaN outside GeoDAWN footprint (57.92%), values in [0,1], finite on **every** pixel of the sample submission's valid region (template conformance, enforced by `scripts/validate_submission.py` since 2026-09-25)
 
 **Then on DrivenData (requires account + enrollment):**
@@ -428,17 +429,22 @@ independent SGMC-derived proxy compilation in `data/evidence/proxy/proxy_catalog
 | 11-fold deep ensemble (previous artifact) | 0.0999 | **0.2298** | 172,974 |
 | classical raw-band GBM | 0.1191 | 0.0611 | 155,889 |
 | lineament NFF, seed 42 (folds 0/1 held out) | 0.1351 | 0.1184 | 218,688 |
-| lineament NFF, seed 43 (folds 2/3 held out) | 0.1553 | 0.1312 | 215,449 |
+| lineament NFF, seed 43 (folds 2/3 held out) — **in-sample on folds 0+1** | 0.1553 | 0.1312 | 215,449 |
 | 4-member union (previous artifact, k = 1) | 0.1864 | 0.1977 | 547,862 |
-| **shipped union (k = 2 of 5)** | **0.2096** | 0.1713 | 332,544 |
+| session-33 union (previous artifact, k = 2 of 5) | 0.2294 | 0.1401 | 316,616 |
+| **shipped union (k = 3 of 5, selected on the selection fold)** | **0.2213** | 0.1114 | 264,247 |
 
 The deep ensemble is the best *catalogue* detector here and the worst *new-fault* detector — that
 asymmetry is the argument for a different strategy rather than another variant of the same model.
-The shipped union's measurement-fold (fold 1, never used by any sweep) proxy DTI is **0.1897 vs
-the 4-member union's 0.1747** (+0.0150; paired block bootstrap P(cand > ref) = 0.957 over the
-fold's 9 blocks — a COARSE interval, disclosed as such in
-`data/evidence/union6/paired_contrast.json`); the catalogue DTI falls, and the catalogue is not
-what the rules score (§1.1 above).
+Read the whole-grid column as context only: session 34 established that no whole-grid number is a
+clean measurement for this pool, because the members were run with different held-out folds
+(`docs/SESSION34_PROTOCOL.md`, `data/evidence/fold_discipline.json`). The numbers that decide the
+shipped rule are **fold-scoped**: selection fold (fold 0) proxy DTI 0.2856, measurement fold
+(fold 1, never scored by the sweep) **0.2221**, pooled folds 0+1 **0.2603**. Against the artifact
+this replaced (`c1da7dd9…`, k = 2): fold 1 **+0.0225** (P = 0.965, CI95 [−0.0026, +0.0420]) and
+pooled 0+1 **+0.0128** (P = 0.954, CI95 [−0.0028, +0.0274]) — same sign on both reads, intervals
+including zero by ~0.003, which is stated rather than hidden. The catalogue DTI falls, and the
+catalogue is not what the rules score (§1.1 above).
 
 **Reproduce it:**
 
