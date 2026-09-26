@@ -1,15 +1,15 @@
 {
  "artifact": {
-  "bytes": 793704,
+  "bytes": 548834,
   "hash_matches": true,
   "path": "data/evidence/combined/submission.tif",
   "recorded_in": "data/evidence/combined/submission.sha256",
-  "recorded_sha256": "932c2f3069a428634f101ea2705d2624ff7ee565dba5e9aa3126a9b8e9020860",
-  "sha256": "932c2f3069a428634f101ea2705d2624ff7ee565dba5e9aa3126a9b8e9020860"
+  "recorded_sha256": "19de9950ceffbdf7a7163b645984353965ab7d61dca07dfe8b9b68856edb853b",
+  "sha256": "19de9950ceffbdf7a7163b645984353965ab7d61dca07dfe8b9b68856edb853b"
  },
  "blob": {
-  "bytes": 1064445,
-  "sha256": "a66b802f11cab9b6a86aa9a13fa054ac431474a81b7e5bc3896b29ab6c78a369"
+  "bytes": 377795,
+  "sha256": "8712163e93a4793c6347964f4d4f678e320a6bbdc3b69ccee6da7c5c5f1630e4"
  },
  "checks": {
   "sample_submission": {
@@ -39,7 +39,7 @@
   }
  },
  "encoding": {
-  "bytes": 1064445,
+  "bytes": 377795,
   "codes": {
    "0": "float32 0.0",
    "1": "float32 1.0",
@@ -49,19 +49,19 @@
   "file": "docs/submission_field.bin",
   "format": "gems-rle-v1",
   "layout": "row-major runs: uleb128(length), u8(code)",
-  "n_runs": 529453
+  "n_runs": 181041
  },
  "field": {
   "float32_bytes": 49116640,
-  "float32_sha256": "72affd1a88b583d3443cc5080ce4210bbdd6a28ac338808bfb47f5b0c08b46e4",
+  "float32_sha256": "3f7fc9b1f1c85d78da538b1ad5f5dda73f46332e9f0efb0a3b835d67a9b08ed9",
   "max": 1.0,
   "min": 0.0,
   "nan_px": 7111787,
-  "one_px": 547862,
+  "one_px": 332544,
   "pixels": 12279160,
-  "zero_px": 4619511
+  "zero_px": 4834829
  },
- "generated_utc": "2026-09-25T19:30:25Z",
+ "generated_utc": "2026-09-26T00:00:30Z",
  "generator": "scripts/build_submission_payload.py",
  "grid": {
   "band_description": "fault probability",
@@ -134,23 +134,24 @@
     "deep11",
     "classical",
     "nff42",
-    "nff43"
+    "nff43",
+    "nff45"
    ],
-   "policy": "union k=1 of 4 members; probability members floored at t0=0.288378 and dilated 0 px",
+   "policy": "union k=2 of 5 members; probability members floored at t0=0.180482 and dilated 0 px",
    "report_schema": "combine_newfault",
    "scores": {
-    "catalogue": 0.1977359820748084,
-    "proxy": 0.18641173089046878
+    "catalogue": 0.17132751597229492,
+    "proxy": 0.2095756661875899
    },
    "script": "scripts/combine_newfault.py",
    "shaping": {
     "dilate": 0,
-    "t0": 0.288378,
-    "vote": 1
+    "t0": 0.180482,
+    "vote": 2
    }
   },
   "kind": "detector-union",
-  "policy": "union k=1 of 4 members; probability members floored at t0=0.288378 and dilated 0 px",
+  "policy": "union k=2 of 5 members; probability members floored at t0=0.180482 and dilated 0 px",
   "script": "scripts/combine_newfault.py"
  },
  "purpose": "lets docs/how_to_submit.html rebuild the shippable GeoTIFF in a browser with no install and no server; every pin below is measured from the artifact",

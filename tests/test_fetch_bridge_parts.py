@@ -17,6 +17,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -135,16 +136,22 @@ def test_the_recorded_mirror_is_pinned_to_a_commit_sha():
 
 # --------------------------------------------------------------------------- the real repository
 def test_the_committed_bridge_really_is_incomplete_here():
-    """Documenting the state this script exists for, so the gap cannot be forgotten."""
+    """Documenting the state this script exists for, so the gap cannot be forgotten.
+
+    The property that matters lives in git's INDEX, not on this checkout's disk: a checkout may
+    legitimately have restored the parts locally (`fetch_bridge_parts.py` does exactly that, and
+    this repository's own dev sandbox now runs with them in place), and the fetcher must stay in
+    the workflows regardless.  What must never happen is the ~418 MB travelling by commit - that
+    is what breaks the platform's ~128 MB patchset cap.
+    """
     b = ROOT / "data/bridge"
     manifest = json.loads((b / "manifest.json").read_text())
     parts = [p for f in manifest["files"] for p in f.get("parts", [])]
     assert parts, "the manifest must list parts"
-    present = [p for p in parts if (b / p["name"]).exists()]
-    # The small rasters ARE committed; the ~418 MB of feature-stack parts are not.  Assert the
-    # property that matters (at least one part missing) rather than an exact count, so adding the
-    # parts back later does not fail this test for the wrong reason.
-    assert len(present) < len(parts), (
+    tracked = set(subprocess.run(["git", "ls-files", "--", "data/bridge"], cwd=ROOT,
+                                 capture_output=True, text=True).stdout.split())
+    tracked_parts = [p for p in parts if f"data/bridge/{p['name']}" in tracked]
+    assert len(tracked_parts) < len(parts), (
         "every part is now committed - re-check whether the workflows still need "
         "fetch_bridge_parts.py, and update this test's docstring")
 

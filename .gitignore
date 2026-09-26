@@ -27,6 +27,10 @@ data/*
 # rejects blobs >= 100 MB) - see scripts/assemble_data_bridge.py
 !data/bridge/
 !data/bridge/**
+# GEMSDOE4 (2026-09-25): the ~418 MB of *.part-* blobs are restored locally by
+# scripts/fetch_bridge_parts.py and are never committed here - this platform caps a
+# turn's patchset at ~128 MB.  The manifest and the mirror record stay tracked.
+data/bridge/*.part-*
 !data/*.md
 outputs/
 outputs_recon/
@@ -44,6 +48,10 @@ outputs_*/
 !data/evidence/newfault/*/prob_raw.tif
 !data/evidence/newfault/*/submission.tif
 !data/evidence/combined/submission.tif
+# GEMSDOE4 session 31 (2026-09-25): the rejected 6-member / leave-one-out candidate rasters and
+# the adopted contrast measurement are evidence - they record how the shipping decision was made
+!data/evidence/union6/submission.tif
+!data/evidence/union6_loo/**/submission.tif
 *.zip
 *.gdb
 *.grd

@@ -16,8 +16,13 @@
 
   If someone later flips Settings -> Pages -> Source to "GitHub Actions", the workflow
   publishes docs/ directly at the root and this redirect becomes harmless.
+
+  2026-09-25 (session 31): the canonical URL pointed at the GEMSDOE repository - a leftover
+  from the tree copy, telling search engines this site is the other repository. Fixed to
+  GEMSDOE4. The page now also carries the standing "build it here" link (session-30 open
+  item 5): the submission builder is one click away even from this redirect screen.
 -->
-<link rel="canonical" href="https://buffedlizard55-lab.github.io/GEMSDOE/docs/index.html">
+<link rel="canonical" href="https://buffedlizard55-lab.github.io/GEMSDOE4/docs/index.html">
 <meta http-equiv="refresh" content="0; url=./docs/index.html">
 <script>location.replace("./docs/index.html");</script>
 <style>
@@ -25,12 +30,18 @@
     font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif}
   .box{text-align:center;padding:32px}
   a{color:#b45309}
+  .build{display:inline-block;margin-top:14px;padding:10px 18px;border:1px solid #d6d3d1;border-radius:8px;
+    background:#fff;font-weight:600;text-decoration:none}
+  .small{color:#57534e;font-size:.85rem;margin-top:10px}
 </style>
 </head>
 <body>
   <div class="box">
     <p>Redirecting to the GEMS Prize working notes…</p>
     <p><a href="./docs/index.html">Continue to the site</a></p>
+    <p><a class="build" href="./docs/how_to_submit.html#generate-here">▸ Build the submission .tif here (in your browser)</a></p>
+    <p class="small">No install, no GPU, nothing uploaded — the builder writes and self-checks the
+      exact single-band float32 GeoTIFF the DrivenData dialog asks for.</p>
   </div>
 </body>
 </html>

@@ -1,0 +1,28 @@
+{
+ "generated_utc": "2026-09-25T23:16:44Z",
+ "script": "scripts/newfault_detector.py (via src/submission_io.conform_to_template)",
+ "why": "the shaping step maps NaN -> 0.0 outside the survey footprint; conform_to_template restores the template's mask (finite inside, NaN outside, nodata=nan)",
+ "template": {
+  "path": "data/sample_submission.tif",
+  "sha256": "2176d08e485aa2cd2860ce8df539db4faf4d76163b38a4dd8c30a40454d35cbc"
+ },
+ "after": {
+  "path": "data/evidence/newfault/seed44/submission.tif",
+  "sha256": "2873f2f8190b28db1c896fb838f22053aecf9748dc17192373149caa628f5ec6",
+  "bytes": 514448,
+  "findings": {
+   "conformant": true,
+   "nan_px": 7111787,
+   "finite_px": 5167373
+  }
+ },
+ "changes": {
+  "pixels": 12279160,
+  "template_valid_px": 5167373,
+  "filled_inside": 0,
+  "masked_outside": 7111787,
+  "clipped": 0,
+  "unchanged": 5167373
+ },
+ "scoring_impact": "none by construction: src/metrics.py scores through np.nan_to_num(..., nan=0.0) and every scored population is a subset of the template's valid region"
+}

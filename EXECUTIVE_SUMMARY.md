@@ -27,9 +27,9 @@
 | **Grid Dimensions** | **3,292 columns × 3,730 rows** | Total raster area = 12,279,160 pixels |
 | **Raster Data Type** | **Single-band 32-bit float (`float32`)** | Values in `[0.0, 1.0]` representing fault presence probability |
 | **NoData Mask** | **NaN / null** outside GeoDAWN survey footprint | **57.92% NaN**; finite values strictly inside valid survey area |
-| **Shipped Winning Policy** | **Floor 0.1, thin, width 0 px** | Pre-registered decision rule; Rank 1 of 132 candidates (the deep-ensemble axis) |
-| **Shipped Raster Artifact (GEMSDOE4)** | `data/evidence/combined/submission.tif` | sha256 `932c2f3069a428634f101ea2705d2624ff7ee565dba5e9aa3126a9b8e9020860` (793.7 KB; the new-fault-first union of 4 detectors — see `report.json`, `sanitize.json`) |
-| **Previous artifact (kept as evidence)** | `data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif` | sha256 `7f00890a62878d612fb5eef67a9a364a2df819433dde74b6762ce4fc0fc4fe15` (570.9 KB; 11-fold deep ensemble, combination member `deep11`) |
+| **Shipped Winning Policy** | **Floor 0.180482, k = 2 of 5, width 0 px** | Pre-registered decision rule; Rank 1 of 14 eligible candidates (76 swept) in the session-31 sweep, on the new-fault population |
+| **Shipped Raster Artifact (GEMSDOE4)** | `data/evidence/combined/submission.tif` | sha256 `19de9950ceffbdf7a7163b645984353965ab7d61dca07dfe8b9b68856edb853b` (548.8 KB; the new-fault-first union of 5 detectors, k = 2 agreement — see `report.json`, `sanitize.json`) |
+| **Previous artifacts (kept as evidence)** | 4-member union sha256 `932c2f3069a428634f101ea2705d2624ff7ee565dba5e9aa3126a9b8e9020860` (793,704 B, in git history); deep ensemble `data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif` sha256 `7f00890a62878d612fb5eef67a9a364a2df819433dde74b6762ce4fc0fc4fe15` (570.9 KB, combination member `deep11`) |
 
 ---
 
@@ -45,10 +45,10 @@ python scripts/validate_submission.py --pred data/evidence/combined/submission.t
 # → ✅ Validation PASSED — upload the .tif below
 ```
 
-**Pre-computed, validated submission artifact (GEMSDOE4 new-fault-first union — 11-fold deep ensemble ∪ classical raw-band GBM ∪ two lineament NFF detectors; rule selected on held-out geography):**
+**Pre-computed, validated submission artifact (GEMSDOE4 new-fault-first union — 11-fold deep ensemble ∪ classical raw-band GBM ∪ three lineament NFF detectors, emitted where ≥ 2 of the 5 agree; rule selected on held-out geography, adopted 2026-09-25 session 31):**
 - **Path:** `data/evidence/combined/submission.tif`
-- **sha256:** `932c2f3069a428634f101ea2705d2624ff7ee565dba5e9aa3126a9b8e9020860` (793,704 bytes)
-- **Policy:** union k = 1 of 4 members; probability members floored at t0 = 0.288378, no dilation; 547,862 px at 1.0
+- **sha256:** `19de9950ceffbdf7a7163b645984353965ab7d61dca07dfe8b9b68856edb853b` (548,834 bytes)
+- **Policy:** union k = 2 of 5 members (`deep11`, `classical`, `nff42`, `nff43`, `nff45`); probability members floored at t0 = 0.180482, no dilation; 332,544 px at 1.0
 - **Format:** 3292×3730, single-band float32, EPSG:32611, 100 m, NaN outside GeoDAWN footprint (57.92%), values in [0,1], finite on **every** pixel of the sample submission's valid region (template conformance, enforced by `scripts/validate_submission.py` since 2026-09-25)
 
 **Then on DrivenData (requires account + enrollment):**
@@ -428,22 +428,31 @@ independent SGMC-derived proxy compilation in `data/evidence/proxy/proxy_catalog
 | classical raw-band GBM | 0.1191 | 0.0611 | 155,889 |
 | lineament NFF, seed 42 (folds 0/1 held out) | 0.1351 | 0.1184 | 218,688 |
 | lineament NFF, seed 43 (folds 2/3 held out) | 0.1553 | 0.1312 | 215,449 |
-| **shipped union (k = 1 of 4)** | **0.1864** | 0.1977 | 547,862 |
+| 4-member union (previous artifact, k = 1) | 0.1864 | 0.1977 | 547,862 |
+| **shipped union (k = 2 of 5)** | **0.2096** | 0.1713 | 332,544 |
 
 The deep ensemble is the best *catalogue* detector here and the worst *new-fault* detector — that
 asymmetry is the argument for a different strategy rather than another variant of the same model.
+The shipped union's measurement-fold (fold 1, never used by any sweep) proxy DTI is **0.1897 vs
+the 4-member union's 0.1747** (+0.0150; paired block bootstrap P(cand > ref) = 0.957 over the
+fold's 9 blocks — a COARSE interval, disclosed as such in
+`data/evidence/union6/paired_contrast.json`); the catalogue DTI falls, and the catalogue is not
+what the rules score (§1.1 above).
 
 **Reproduce it:**
 
 ```bash
 python scripts/newfault_detector.py --seed 42 --fold 0 --eval-fold 1     --out-dir data/evidence/newfault/seed42        # ~15 min, 2 vCPU
 python scripts/newfault_detector.py --seed 43 --fold 2 --eval-fold 3     --out-dir data/evidence/newfault/seed43        # ~15 min, 2 vCPU
+python scripts/newfault_detector.py --seed 44 --fold 0 --eval-fold 1 --neg-ratio 5  --out-dir data/evidence/newfault/seed44   # ~14 min (member dropped by the LOO below)
+python scripts/newfault_detector.py --seed 45 --fold 2 --eval-fold 3 --neg-ratio 20 --out-dir data/evidence/newfault/seed45   # ~17 min
 python scripts/combine_newfault.py \
     --member deep11=data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif \
     --member classical=data/evidence/baseline/submission.tif \
     --member nff42=data/evidence/newfault/seed42/prob_raw.tif:prob \
     --member nff43=data/evidence/newfault/seed43/prob_raw.tif:prob \
-    --fold 0 --eval-fold 1 --out-dir data/evidence/combined
+    --member nff45=data/evidence/newfault/seed45/prob_raw.tif:prob \
+    --fold 0 --eval-fold 1 --floors 18 --votes 1,2 --name nff-union-5 --out-dir data/evidence/combined
 ```
 
 **What this cannot show:** the proxy is a stand-in for the private expert labels, not the scored

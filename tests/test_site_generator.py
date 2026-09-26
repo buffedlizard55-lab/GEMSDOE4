@@ -275,10 +275,27 @@ def test_writer_refuses_a_field_blob_of_the_wrong_length(tmp_path):
 
 def test_writer_refuses_a_same_length_tamper_via_the_pinned_hash(tmp_path):
     """Flipping one byte inside the run stream keeps the size correct, so only the sha256 pin can
-    catch it - which is why the manifest carries one for the blob as well as for the field."""
+    catch it - which is why the manifest carries one for the blob as well as for the field.
+
+    The tampered byte must be a VALUE byte, not a length byte, and the tamper must produce
+    another *valid* stream: flipping a length byte (or a code byte, to an invalid code) can make
+    decode fail before the pins are ever consulted, which passes off a decoder crash as the
+    security property.  gems-rle-v1 runs are (ULEB128 length, 1-byte code 0|1|2), so the test
+    walks to the FIRST run's code byte and swaps it for a different *valid* code - decode then
+    succeeds on every payload layout, the field differs from its pin, and only the pinned hash
+    can refuse it.  (The pre-session-31 version flipped `blob[len//2]`, which silently changed
+    meaning when the payload changed and hit a length byte - caught by exactly this test.)
+    """
     node = _node()
     bad = bytearray(BLOB.read_bytes())
-    bad[len(bad) // 2] ^= 0x01
+    pos = 0
+    while pos < len(bad) and bad[pos] & 0x80:   # ULEB128 continuation bytes of the first length
+        pos += 1
+    assert pos + 1 < len(bad), "blob too short to contain one run"
+    code_off = pos + 1
+    code = bad[code_off]
+    assert code in (0, 1, 2), f"blob is not gems-rle-v1 at byte {code_off}: code {code}"
+    bad[code_off] = {0: 1, 1: 0, 2: 1}[code]    # a different, VALID code: decode must succeed
     blob = tmp_path / "field.bin"
     blob.write_bytes(bytes(bad))
     out = tmp_path / "x.tif"
