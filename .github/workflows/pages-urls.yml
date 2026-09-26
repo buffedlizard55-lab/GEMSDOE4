@@ -1,0 +1,115 @@
+name: Probe the published site URLs (which form is live)
+
+# =============================================================================
+# This repository has TWO GitHub Pages publish mechanisms configured at once:
+#
+#   * the legacy Jekyll build (source main:/)      -> pages live at .../GEMSDOE4/docs/<page>.html
+#   * .github/workflows/pages.yml (uploads docs/)  -> pages live at .../GEMSDOE4/<page>.html
+#
+# Measured 2026-09-26: the two answered DIFFERENTLY (the /docs/ copy of one page was a
+# pre-merge build and intermittently 404'd) while both reported success.  A reader who
+# follows the wrong link sees an old page or a 404 - and the page in question is the one
+# that says "download this file and upload it".
+#
+# The fix is a repository SETTING (Pages -> Source), which only a human with admin rights
+# can change.  What this job can do is refuse to let the answer be a matter of opinion: it
+# probes both URL forms for every published page from a runner (the dev sandbox cannot reach
+# github.io at all), records the result, and commits it.  The site renders that record, so
+# the page a human reads says which link is currently live.
+#
+# Outputs (committed):
+#   data/evidence/pages_urls.json
+# =============================================================================
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+  schedule:
+    - cron: "41 6 * * *"        # daily: a Pages setting can change, and this must not go stale
+
+permissions:
+  contents: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Wait for the deployment that this push triggered
+        run: |
+          set -euo pipefail
+          # A probe that races the deploy would report the PREVIOUS build as "not live" and
+          # commit a false finding.  Give Pages time to swap, then confirm the site answers at
+          # all before measuring which form it answers on.
+          for i in $(seq 1 30); do
+            if curl -fsS -o /dev/null --max-time 20 \
+                 "https://buffedlizard55-lab.github.io/GEMSDOE4/docs/index.html" \
+               || curl -fsS -o /dev/null --max-time 20 \
+                 "https://buffedlizard55-lab.github.io/GEMSDOE4/index.html"; then
+              echo "site is answering (attempt $i)"; break
+            fi
+            echo "attempt $i: not answering yet"; sleep 20
+          done
+
+      - name: Probe both URL forms of every published page
+        run: |
+          set -euo pipefail
+          python scripts/check_pages_urls.py | tee /tmp/probe.log
+
+      - name: Record the verdict in the job summary
+        if: always()
+        run: |
+          set -euo pipefail
+          {
+            echo "### Published-URL probe"
+            echo '```'
+            cat /tmp/probe.log 2>/dev/null || echo "(probe produced no output)"
+            echo '```'
+            python - <<'PY'
+          import json, pathlib
+          p = pathlib.Path("data/evidence/pages_urls.json")
+          if p.exists():
+              d = json.loads(p.read_text())
+              print(f"live form: **{d.get('live_form')}** · forms agree: **{d.get('agree')}**")
+              for form, v in (d.get("per_form") or {}).items():
+                  print(f"- `{form}`: {v['live']}/{v['probed']} live")
+              print(f"\n{d.get('consequence','')}")
+          else:
+              print("no evidence file was written")
+          PY
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Rebuild the site so the committed pages carry the new record
+        run: |
+          set -euo pipefail
+          # The verification page renders this record, and `tests/test_site_pages.py` fails if the
+          # committed pages do not reproduce from a rebuild.  Committing the evidence without the
+          # rebuild would therefore turn this job into a red CI on main - the exact failure mode
+          # session 33 had to fix after PR #7.
+          python scripts/build_site.py | tail -3
+
+      - name: Commit the evidence (and the rebuilt pages)
+        run: |
+          set -euo pipefail
+          git config user.name  "gems-prize-bot"
+          git config user.email "gems-prize-bot@users.noreply.github.com"
+          if [ -z "$(git status --porcelain data/evidence/pages_urls.json docs/)" ]; then
+            echo "no change in the probe record"; exit 0
+          fi
+          git add data/evidence/pages_urls.json docs/
+          # `[skip ci]`: a push by the workflow token does not re-trigger Actions anyway, and the
+          # marker makes that explicit rather than relying on it.  The LEGACY Pages builder still
+          # rebuilds on this push (it is not an Actions workflow), so the /docs/ URLs pick the change
+          # up immediately; the Actions-uploaded copy follows on the next human push, which the
+          # probe record itself will show as a difference - that is the irregularity being measured.
+          git commit -m "Published-URL probe: which form of the site is live [skip ci]"
+          git push origin HEAD:main

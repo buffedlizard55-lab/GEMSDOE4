@@ -1381,6 +1381,55 @@ private score.</div>
 <a href="reproduce.html">Reproduce</a> for commands.</p>"""
 
 
+def _published_urls(ev: dict) -> str:
+    """Where this site is actually being served from, measured rather than assumed.
+
+    Two Pages mechanisms are configured on this repository at once (a legacy build whose source is
+    the repository root, and the Actions upload of `docs/`), and on 2026-09-26 they answered
+    differently: one form served a pre-merge copy of a page and intermittently 404'd while the other
+    served the current build. The probe runs on a runner, so the page can report which form a reader
+    is getting instead of picking one and hoping.
+    """
+    d = ev.get("pages_urls") or {}
+    if not d.get("per_form"):
+        return ("""<h2>Where this site is served from</h2>"""
+                + note("warn", "<b>Not measured yet.</b> The probe "
+                               "(<code>scripts/check_pages_urls.py</code>, run by "
+                               "<code>.github/workflows/pages-urls.yml</code>) has not recorded a "
+                               "result in this checkout. Both URL forms are published by this "
+                               "repository; until the probe reports, treat the form you arrived by as "
+                               "the only one that works and use the links on the page itself."))
+    rows = []
+    for form, label in (("prefixed", "…/GEMSDOE4/docs/&lt;page&gt;.html (legacy build, source: repository root)"),
+                        ("root", "…/GEMSDOE4/&lt;page&gt;.html (Actions upload of <code>docs/</code>)")):
+        v = d["per_form"].get(form) or {}
+        rows.append('<tr><td class="small">%s</td><td class="num">%s / %s</td><td class="small mono">%s'
+                    '</td></tr>' % (label, v.get("live"), v.get("probed"),
+                                    e(", ".join(v.get("missing") or []) or "—")))
+    live = d.get("live_form")
+    state = ("both forms serve the same build" if live == "both" else
+             f"only <b>{e(str(live))}</b> serves every page" if live else
+             "NEITHER form served every page in the last probe")
+    return f"""<h2>Where this site is served from</h2>
+<p>This repository has <b>two</b> GitHub Pages publish mechanisms configured at the same time: a
+legacy build whose source is the repository root (pages under <code>/docs/</code>) and
+<code>.github/workflows/pages.yml</code>, which uploads <code>docs/</code> as the site (pages at the
+root). Measured 2026-09-26, the two answered differently — one form served a <em>pre-merge</em> copy of
+a page and intermittently returned 404 while the other served the current build. That is an
+irregularity in the deployment configuration, not in the pages, and it is flagged here rather than
+left for a reader to discover: {state}.</p>
+<table><thead><tr><th>URL form</th><th>pages answering with their own title</th>
+<th>not answered</th></tr></thead><tbody>{''.join(rows)}</tbody></table>
+<p class="small">Probe record: <code>data/evidence/pages_urls.json</code>, written
+{e(str(d.get('generated_utc'))) } by <code>scripts/check_pages_urls.py</code> on a GitHub runner (this
+sandbox cannot reach <code>github.io</code>, so a probe run here would report every page as
+unreachable — which is why the probe is a workflow, not a build step). The remedy is one setting:
+<b>repository Settings → Pages → Build and deployment → Source</b>. Choosing <i>GitHub Actions</i>
+makes the root form canonical and retires the legacy build; choosing <i>Deploy from a branch</i> with
+<code>/docs</code> makes the prefixed form canonical. Either is fine; having both is not.</p>
+<p class="small">{e(str(d.get('consequence'))) }</p>"""
+
+
 def build_verification(ev: dict) -> str:
     """The verification page - and the one that has to go through `page()` like all the others.
 
@@ -1423,6 +1472,7 @@ why every bulk file in this repository arrives through a GitHub Actions runner.<
     body.append(note("info", "Every row above names the URL and how it was reached, so a reader can "
                              "repeat it. Where a claim could not be checked, the row says so instead "
                              "of being omitted — an empty row is a finding."))
+    body.append(_published_urls(ev))
     return page("Verification", "verification.html", "\n".join(body),
                 "Independent re-checks of every load-bearing external claim, with the method that "
                 "established each one.")
@@ -4691,6 +4741,9 @@ def main(argv=None) -> int:
         # session 34: is the union's holdout a holdout for every member?  (per-member, read from
         # each member's own report by scripts/audit_fold_discipline.py)
         "fold_discipline": load(ROOT / "data/evidence/fold_discipline.json"),
+        # which URL form actually serves this site (two Pages mechanisms are configured at once;
+        # probed from a runner because the sandbox cannot reach github.io)
+        "pages_urls": load(ROOT / "data/evidence/pages_urls.json"),
         # the CLEAN-POOL control arm: the same search restricted to members that held out both
         # union folds.  Rendered next to the shipped artifact because it is the number that can be
         # quoted without qualification, and it is lower.
