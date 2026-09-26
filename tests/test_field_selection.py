@@ -37,6 +37,27 @@ PROXY_DIR = ROOT / "data" / "evidence" / "proxy"
 # on the deep-ensemble raster, which is what the rule's own evidence files were measured against.
 DEEP_ENSEMBLE_SUBMISSION = (ROOT / "data" / "evidence" / "runs"
                             / "ens12-adopted-floor0.1-w0" / "submission.tif")
+
+
+def test_the_raster_the_rule_is_measured_against_is_in_the_index():
+    """tests/test_field_selection.py scores against the deep-ensemble raster, so a fresh
+    checkout must be able to open it.  From before session 31's fix until then this file was
+    deliberately untracked, and the cost was invisible-but-real: on EVERY CI run the three
+    tests that use the `synthetic` fixture ERRORed at setup (fresh clones do not have the
+    file), so the field-selection rule - the exact guard that keeps the field axis honest -
+    was never actually exercised by CI.  The raster is 571 KB of sha-pinned evidence
+    (7f00890a... in data/evidence/combined/report.json and in its own sidecar), so the fix is
+    that it travels in git.  This test pins that decision: if someone re-ignores the file, the
+    suite fails HERE with the reason, instead of eroding coverage three errors at a time."""
+    import subprocess
+    r = subprocess.run(["git", "ls-files", "--error-unmatch",
+                        "data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif"],
+                       cwd=ROOT, capture_output=True, text=True)
+    assert r.returncode == 0, (
+        "data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif is not tracked: the "
+        "field-selection tests would error at setup on every fresh checkout (this exact CI "
+        "failure ran unnoticed through PRs #2-#4). Track it or move the rule's measurements "
+        "onto a raster that is tracked.")
 BLOCK_REPORT = ROOT / "data" / "evidence" / "block_holdout" / "block_stratified.json"
 FIELDX = "fieldx"
 

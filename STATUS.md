@@ -76,6 +76,19 @@ repository) and fixed to GEMSDOE4.
    new) canonical artifact - i.e. the file contrasted with **itself**, P = 0.0. The script now
    refuses that case outright (same-bytes guard), and the committed contrast was regenerated
    against the previous artifact recovered from git at `932c2f30…` (sha-verified before use).
+6. **Post-merge CI finding (PR #5 merged 2026-09-26): the Tests workflow has been RED on main
+   through PRs #2-#5 with "3 errors" - pre-existing, and now fixed.** The three errors are
+   `tests/test_field_selection.py`'s fixture reading
+   `data/evidence/runs/ens12-adopted-floor0.1-w0/submission.tif`, a raster `.gitignore`
+   deliberately keeps untracked - so on every fresh checkout (i.e. every CI run) they ERROR at
+   setup and the field-selection rule, the guard that keeps the field axis honest, was never
+   exercised by CI at all. Found by refusing to accept the red: a fresh-clone run of the suite
+   reproduced the 3 errors exactly, the traceback named the file. Fix: the 571 KB raster is
+   sha-pinned evidence (7f00890a… in `data/evidence/combined/report.json` and its own sidecar),
+   so it now travels in git like the other identity rasters, and a new test
+   (`test_the_raster_the_rule_is_measured_against_is_in_the_index`) pins that decision with the
+   reason in its failure message. CI count on the fixed tree: 557 passed, 4 skipped, 0 errors
+   expected; verified locally in a fresh shallow clone before pushing.
 
 ---
 
