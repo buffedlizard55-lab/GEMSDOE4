@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-09-26T00:01:04Z",
+ "generated_utc": "2026-09-26T01:40:33Z",
  "script": "scripts/check_site_generator.py",
  "purpose": "the in-browser generator on docs/how_to_submit.html is executed here under node and its output is judged by rasterio and by the repository's own validator",
  "artifact": "data/evidence/combined/submission.tif",
@@ -15,7 +15,7 @@
    "status": "PASS",
    "measured": {
     "exit_code": 0,
-    "stdout": "OK \u2014 docs/submission_meta.json + docs/submission_field.bin reproduce data/evidence/combined/submission.tif (181,041 runs, 332,544 px at 1.0, float32 bits identical after a decode round trip)\nINFO \u2014 the `checks` block (this checkout's data/, the validator log) differs from the committed one because this machine has a different environment; the payload pins above are what a submission depends on",
+    "stdout": "OK \u2014 docs/submission_meta.json + docs/submission_field.bin reproduce data/evidence/combined/submission.tif (181,656 runs, 335,054 px at 1.0, float32 bits identical after a decode round trip)",
     "stderr": ""
    },
    "source": "scripts/build_submission_payload.py --check",
@@ -29,8 +29,8 @@
     "ok": true,
     "failed_checks": [],
     "self_checks": 17,
-    "bytes": 299708,
-    "sha256": "16c864cc8ff023a054583ff82da8e41ccb8f31f7907fcf1626ef32bcfdb45031",
+    "bytes": 298364,
+    "sha256": "c97bf2657129104105d4028e52917c14cc54ebaa1d04fc317af74ebea844d93d",
     "compression": "deflate (zlib-wrapped, per strip \u2014 tag 8, as GDAL writes)",
     "layout": {
      "width": 3292,
@@ -43,17 +43,17 @@
      "ifdBytes": 222,
      "extrasBytes": 670,
      "dataStart": 900,
-     "totalBytes": 299708,
+     "totalBytes": 298364,
      "rawFieldBytes": 49116640,
-     "containerBytes": 299708,
-     "strippedBytes": 298722
+     "containerBytes": 298364,
+     "strippedBytes": 297381
     },
     "node": "v22.22.3",
     "reported_field_counts": {
-     "one_px": 332544,
-     "zero_px": 4834829,
+     "one_px": 335054,
+     "zero_px": 4832319,
      "nan_px": 7111787,
-     "runs": 181041
+     "runs": 181656
     }
    },
    "source": "docs/geotiff_writer.js (the file the page loads)",
@@ -88,7 +88,7 @@
     "tiled": false
    },
    "source": "rasterio",
-   "note": "generated 299,708 B vs artifact 548,834 B (container differs; pixels do not)"
+   "note": "generated 298,364 B vs artifact 547,082 B (container differs; pixels do not)"
   },
   {
    "name": "rasterio reads it; pixels are the artifact's",
@@ -146,7 +146,7 @@
     "float32_bits_identical": true,
     "uint32_px_differing": 0,
     "pixels": 12279160,
-    "one_px": 332544,
+    "one_px": 335054,
     "nan_px": 7111787,
     "container_note": "generated NODATA='nan', artifact NODATA='nan' (matches the template since the 2026-09-25 conformance fix)",
     "container_vs_sample": {
@@ -221,8 +221,8 @@
      "submission.tif"
     ],
     "member_equals_tif": true,
-    "zip_bytes": 299834,
-    "tif_bytes": 299708
+    "zip_bytes": 298490,
+    "tif_bytes": 298364
    },
    "source": "zipfile.testzip() + byte comparison",
    "note": ""
@@ -236,7 +236,7 @@
      "--no-deflate"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-47s9iuys/variant_0.tif",
+    "path": "/tmp/gems-gen-9574mv05/variant_0.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
@@ -257,11 +257,11 @@
      "1"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-47s9iuys/variant_1.tif",
+    "path": "/tmp/gems-gen-9574mv05/variant_1.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
-    "bytes": 492696,
+    "bytes": 490812,
     "container_ok": true,
     "self_reported_ok": true
    },
@@ -278,11 +278,11 @@
      "3730"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-47s9iuys/variant_2.tif",
+    "path": "/tmp/gems-gen-9574mv05/variant_2.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
-    "bytes": 297520,
+    "bytes": 296140,
     "container_ok": true,
     "self_reported_ok": true
    },
@@ -296,11 +296,11 @@
   "passed": 8,
   "failed": 0,
   "node": "v22.22.3",
-  "payload_meta_sha256": "d3817bb5016eef724e0c98d001dff4a0dc603f7d0dab871757a4fb9d1551e36f",
-  "payload_blob_sha256": "8712163e93a4793c6347964f4d4f678e320a6bbdc3b69ccee6da7c5c5f1630e4",
-  "blob_bytes": 377795,
+  "payload_meta_sha256": "b83d8a78fc0e1ba93d0809af5104f103818642731fb7eaeaf4deddddb192bf68",
+  "payload_blob_sha256": "ffeb39e161a17af7202a6844df68ded219f23151ff4b759974270e80eaa507a0",
+  "blob_bytes": 378964,
   "encoding": {
-   "bytes": 377795,
+   "bytes": 378964,
    "codes": {
     "0": "float32 0.0",
     "1": "float32 1.0",
@@ -310,10 +310,10 @@
    "file": "docs/submission_field.bin",
    "format": "gems-rle-v1",
    "layout": "row-major runs: uleb128(length), u8(code)",
-   "n_runs": 181041
+   "n_runs": 181656
   },
-  "artifact_sha256": "19de9950ceffbdf7a7163b645984353965ab7d61dca07dfe8b9b68856edb853b",
-  "artifact_bytes": 548834,
+  "artifact_sha256": "c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4",
+  "artifact_bytes": 547082,
   "variants": [
    {
     "name": "uncompressed strips",
@@ -321,7 +321,7 @@
      "--no-deflate"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-47s9iuys/variant_0.tif",
+    "path": "/tmp/gems-gen-9574mv05/variant_0.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
@@ -336,11 +336,11 @@
      "1"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-47s9iuys/variant_1.tif",
+    "path": "/tmp/gems-gen-9574mv05/variant_1.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
-    "bytes": 492696,
+    "bytes": 490812,
     "container_ok": true,
     "self_reported_ok": true
    },
@@ -351,15 +351,15 @@
      "3730"
     ],
     "exit_code": 0,
-    "path": "/tmp/gems-gen-47s9iuys/variant_2.tif",
+    "path": "/tmp/gems-gen-9574mv05/variant_2.tif",
     "readable": true,
     "bits_identical": true,
     "grid_ok": true,
-    "bytes": 297520,
+    "bytes": 296140,
     "container_ok": true,
     "self_reported_ok": true
    }
   ]
  },
- "seconds": 8.97
+ "seconds": 8.44
 }

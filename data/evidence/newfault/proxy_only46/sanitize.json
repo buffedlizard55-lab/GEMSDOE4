@@ -1,0 +1,27 @@
+{
+ "generated_utc": "2026-09-26T01:31:07Z",
+ "script": "session32 finish_proxy_only46 (via conform_to_template)",
+ "why": "shaping maps NaN->0.0 outside footprint; conform restores template mask",
+ "template": {
+  "path": "data/sample_submission.tif",
+  "sha256": "2176d08e485aa2cd2860ce8df539db4faf4d76163b38a4dd8c30a40454d35cbc"
+ },
+ "after": {
+  "path": "data/evidence/newfault/proxy_only46/submission.tif",
+  "sha256": "5de1380c0a6984fd1491faab8f495b98c13ea8d02916fc930c8e613f9dfe231e",
+  "bytes": 580094,
+  "findings": {
+   "conformant": true,
+   "nan_px": 7111787,
+   "finite_px": 5167373
+  }
+ },
+ "changes": {
+  "pixels": 12279160,
+  "template_valid_px": 5167373,
+  "filled_inside": 0,
+  "masked_outside": 7111787,
+  "clipped": 0,
+  "unchanged": 5167373
+ }
+}

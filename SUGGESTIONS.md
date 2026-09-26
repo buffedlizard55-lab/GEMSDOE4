@@ -1,3 +1,24 @@
+## Session 32 (2026-09-26) — diversity from supervision, not seeds: adopted
+
+| # | Suggestion | Status |
+|---|---|---|
+| 1 | **A third truth source for member diversity** (session-31 queue item 2). QFaults refused. | ✅ **Done via proxy_only** — `--supervision proxy_only` trains on SGMC code-2 only. LOO adopts drop-nff42 (keep po46): meas 0.1996, P=1.0 vs committed 0.1897. |
+| 2 | Recover classical baseline so the union is clone-reproducible. | ✅ sha `9f2577cf…` restored from GEMSDOE via gh api; now git-tracked. |
+| 3 | Place competition data in this sandbox. | ✅ bridge parts via `gh api` (raw.githubusercontent.com still TLS-blocked); prepare_data PASS. |
+| 4 | Unique submission name + Note. | ✅ `nff-po-drop-nff42 · proxy_only diversity · union k=2 of 5 (t0=0.18, w=0)`. |
+| 5 | Leaderboard upload of the adopted union. | ⏳ HUMAN — 1 of 3 this week. Turns the one-point surrogate calibration into two. |
+| 6 | DEM derivatives. | ⏳ unchanged (needs unrestricted egress + ~50 GB). |
+| 7 | GPU full-config. | ⏳ unchanged. |
+| 8 | Second proxy_only member on a different fold pair (e.g. folds 2/3, seed 47) for further diversity. | ⏳ next-session candidate; pre-register before training. |
+| 9 | Pooled 4-fold paired contrast of the adoption (cross the 12-block readable-CI bar). | ⏳ next session; needs scoring on folds 0/2/3 of both fields. |
+
+**Next session queue (priority order):**
+1. **Upload `nff-po-drop-nff42` and record the real score** (human, 1 of 3 this week) — file `data/evidence/combined/submission.tif` (or the browser-built copy), Note `nff-po-drop-nff42 · proxy_only diversity · union k=2 of 5 (t0=0.18, w=0)`.
+2. **Second proxy_only member** on folds 2/3 (seed 47), then re-run LOO + adoption unchanged.
+3. **Pooled multi-fold paired contrast** of the adopted vs previous field (≥12 blocks).
+4. **DEM derivatives** — unchanged (needs unrestricted egress + ~50 GB).
+5. **GPU full-config** — unchanged.
+
 ## Session 31 (2026-09-25) — member diversity measured honestly: two members in, one better member set out
 
 | # | Suggestion | Status |

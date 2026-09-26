@@ -44,7 +44,7 @@ means no program here can do it.</p>
 <tr><td><b>Path in this repository</b></td><td class="mono small">data/evidence/combined/submission.tif</td>
 <td class="small">the only artifact whose format validation and emission policy are both committed</td></tr>
 <tr><td><b>Bytes / sha256</b></td>
-<td class="mono small">548,834 bytes<br>19de9950ceffbdf7a7163b645984353965ab7d61dca07dfe8b9b68856edb853b</td>
+<td class="mono small">547,082 bytes<br>c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4</td>
 <td class="small">re-hashed by <code>scripts/build_site.py</code> while rendering this page</td></tr>
 <tr><td><b>Grid / type</b></td><td class="mono small">3292 × 3730 · EPSG:32611 · 100 m · float32 · [0,1] · NaN outside the footprint</td>
 <td class="small">the committed validator log: 11 checks ✓,
@@ -63,19 +63,19 @@ pixel field into this site as a run-length stream; <code>geotiff_writer.js</code
 a single-band float32 GeoTIFF with the grid and CRS the platform asks for, and <b>re-reads its own
 bytes</b> against 12,279,160 pinned pixels before it lets the download
 button appear. No network request leaves the page except the two same-origin files it starts from.
-<span class="pill ok">IN SYNC</span> <span class="small">payload pins <code>19de9950ceffbdf7…</code> · this checkout's
-artifact hashes to <code>19de9950ceffbdf7…</code> · both re-hashed at build time</span></p>
+<span class="pill ok">IN SYNC</span> <span class="small">payload pins <code>c1da7dd9c44e0538…</code> · this checkout's
+artifact hashes to <code>c1da7dd9c44e0538…</code> · both re-hashed at build time</span></p>
 
 <div id="tif-generator" data-meta="submission_meta.json" data-blob="submission_field.bin"
-     data-artifact="data/evidence/combined/submission.tif" data-sha256="19de9950ceffbdf7a7163b645984353965ab7d61dca07dfe8b9b68856edb853b"></div>
+     data-artifact="data/evidence/combined/submission.tif" data-sha256="c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4"></div>
 
 <table><thead><tr><th>What the page ships for this</th><th>Bytes</th><th>sha256</th></tr></thead><tbody>
-<tr><td class="mono small">docs/geotiff_writer.js</td><td class="num">31,180</td><td class="mono small">7c7b26901c2145b866c5f807b79137be382280a651639b7d96a69b429181c8f3</td></tr><tr><td class="mono small">docs/generate_submission.js</td><td class="num">15,200</td><td class="mono small">6505f94e40908799dccbfbc904c45ec9ce85c76550b932fac4a9c4ea97b5c0b4</td></tr><tr><td class="mono small">docs/submission_meta.json</td><td class="num">3,543</td><td class="mono small">d3817bb5016eef724e0c98d001dff4a0dc603f7d0dab871757a4fb9d1551e36f</td></tr><tr><td class="mono small">docs/submission_field.bin</td><td class="num">377,795</td><td class="mono small">8712163e93a4793c6347964f4d4f678e320a6bbdc3b69ccee6da7c5c5f1630e4</td></tr>
+<tr><td class="mono small">docs/geotiff_writer.js</td><td class="num">31,180</td><td class="mono small">7c7b26901c2145b866c5f807b79137be382280a651639b7d96a69b429181c8f3</td></tr><tr><td class="mono small">docs/generate_submission.js</td><td class="num">15,200</td><td class="mono small">6505f94e40908799dccbfbc904c45ec9ce85c76550b932fac4a9c4ea97b5c0b4</td></tr><tr><td class="mono small">docs/submission_meta.json</td><td class="num">3,543</td><td class="mono small">b83d8a78fc0e1ba93d0809af5104f103818642731fb7eaeaf4deddddb192bf68</td></tr><tr><td class="mono small">docs/submission_field.bin</td><td class="num">378,964</td><td class="mono small">ffeb39e161a17af7202a6844df68ded219f23151ff4b759974270e80eaa507a0</td></tr>
 </tbody></table>
-<p class="small">Payload: gems-rle-v1 · 181,041 runs ·
-377,795 B (sha256 <code>8712163e93a4793c…</code>) ·
+<p class="small">Payload: gems-rle-v1 · 181,656 runs ·
+378,964 B (sha256 <code>ffeb39e161a17af7…</code>) ·
 grid 3,292 × 3,730 · EPSG:32611 ·
-float32 · 332,544 px at 1.0, 7,111,787 px NaN.
+float32 · 335,054 px at 1.0, 7,111,787 px NaN.
 Encoder round trip in the builder: float32 buffers identical = <b>True</b>.</p>
 
 <h3>3.1 How the claim is checked, not asserted</h3>
@@ -88,7 +88,7 @@ compares its float32 buffer with the artifact's, all 46.8 MB
 of it. The container is deliberately <em>not</em> byte-identical — deflate (zlib-wrapped, per strip — tag 8, as GDAL writes) strips of
 292.7 KB against the artifact's lzw
 256×256 tiles of
-536.0 KB — which is why the sentence above is about pixels, not bytes.</p>
+534.3 KB — which is why the sentence above is about pixels, not bytes.</p>
 <table><thead><tr><th>Step</th><th>Status</th><th>Measured</th></tr></thead><tbody><tr><td class="small">payload matches the artifact</td><td><span class="pill ok">PASS</span></td><td class="small mono">{&quot;exit_code&quot;: 0, &quot;stderr&quot;: &quot;&quot;, &quot;stdout&quot;: &quot;OK \u2014 docs/submission_meta.json + docs/submission_field.bin reproduce data/evidence/combined/submission.…</td></tr><tr><td class="small">node ran the page&#x27;s writer</td><td><span class="pill ok">PASS</span></td><td class="small mono">{&quot;bytes&quot;: 299708, &quot;compression&quot;: &quot;deflate (zlib-wrapped, per strip \u2014 tag 8, as GDAL writes)&quot;, &quot;exit_code&quot;: 0, &quot;failed_checks&quot;: [], &quot;layout&quot;: {&quot;co…</td></tr><tr><td class="small">rasterio profile of the generated file</td><td><span class="pill warn">INFO</span></td><td class="small mono">{&quot;compression&quot;: &quot;Compression.deflate&quot;, &quot;count&quot;: 1, &quot;dtype&quot;: &quot;float32&quot;, &quot;epsg&quot;: 32611, &quot;height&quot;: 3730, &quot;nodata&quot;: &quot;nan&quot;, &quot;res&quot;: [100.0, 100.0], &quot;tiled&quot;:…</td></tr><tr><td class="small">rasterio reads it; pixels are the artifact&#x27;s</td><td><span class="pill ok">PASS</span></td><td class="small mono">{&quot;artifact&quot;: {&quot;count&quot;: 1, &quot;dtype&quot;: &quot;float32&quot;, &quot;epsg&quot;: 32611, &quot;height&quot;: 3730, &quot;nodata&quot;: &quot;nan&quot;, &quot;res&quot;: [100.0, 100.0], &quot;transform&quot;: [100.0, 0.0, 243350.…</td></tr><tr><td class="small">NODATA tag: artifact vs the official template</td><td><span class="pill warn">INFO</span></td><td class="small mono">{&quot;artifact&quot;: &quot;nan&quot;, &quot;generated&quot;: &quot;nan&quot;, &quot;sample&quot;: &quot;nan&quot;}</td></tr><tr><td class="small">scripts/validate_submission.py on the generated bytes</td><td><span class="pill ok">PASS</span></td><td class="small mono">{&quot;exit_code&quot;: 0, &quot;lines&quot;: 17, &quot;tail&quot;: &quot;Next: Upload to https://www.drivendata.org/competitions/306/competition-doe-gems/ via &#x27;Submit&#x27; button&quot;, &quot;ticks&quot;…</td></tr><tr><td class="small">the zipped route is a single-member zip of that file</td><td><span class="pill ok">PASS</span></td><td class="small mono">{&quot;member_equals_tif&quot;: true, &quot;namelist&quot;: [&quot;submission.tif&quot;], &quot;tif_bytes&quot;: 299708, &quot;zip_bytes&quot;: 299834}</td></tr><tr><td class="small">variant: uncompressed strips</td><td><span class="pill ok">PASS</span></td><td class="small mono">{&quot;args&quot;: [&quot;--no-deflate&quot;], &quot;bits_identical&quot;: true, &quot;bytes&quot;: 49117540, &quot;container_ok&quot;: true, &quot;exit_code&quot;: 0, &quot;grid_ok&quot;: true, &quot;name&quot;: &quot;uncompressed str…</td></tr><tr><td class="small">variant: one row per strip</td><td><span class="pill ok">PASS</span></td><td class="small mono">{&quot;args&quot;: [&quot;--rows-per-strip&quot;, &quot;1&quot;], &quot;bits_identical&quot;: true, &quot;bytes&quot;: 492696, &quot;container_ok&quot;: true, &quot;exit_code&quot;: 0, &quot;grid_ok&quot;: true, &quot;name&quot;: &quot;one row p…</td></tr><tr><td class="small">variant: whole grid in one strip</td><td><span class="pill ok">PASS</span></td><td class="small mono">{&quot;args&quot;: [&quot;--rows-per-strip&quot;, &quot;3730&quot;], &quot;bits_identical&quot;: true, &quot;bytes&quot;: 297520, &quot;container_ok&quot;: true, &quot;exit_code&quot;: 0, &quot;grid_ok&quot;: true, &quot;name&quot;: &quot;whole …</td></tr></tbody></table>
 <div class="note warn"><b>What this file is and is not.</b> It is the adopted artifact's prediction, bit-for-bit, in a container your browser wrote — so it passes the format gate, and it is the same field whose surrogate scores are on <a href="results.html">results</a>. It is not a competition score: nothing in this repository can know how the platform's hidden new-fault labels will score it, and a file built here is only worth uploading after the <a href="#validate">validation step</a> below is run on the bytes you actually hold.</div>
 
@@ -188,7 +188,7 @@ True, max |Δ|
 
 </main>
 <footer><div class="wrap">
-  <p>Generated by <code>scripts/build_site.py</code> from the evidence JSON in this repository · 2026-09-26 00:15 UTC</p>
+  <p>Generated by <code>scripts/build_site.py</code> from the evidence JSON in this repository · 2026-09-26 01:40 UTC</p>
   <p>Unofficial working notes. Authoritative sources: <a href="https://www.drivendata.org/competitions/306/competition-doe-gems/">competition</a> ·
      <a href="https://www.drivendata.org/competitions/306/competition-doe-gems/page/967/">problem description</a> · <a href="https://docs.nlr.gov/docs/fy26osti/96647.pdf">official rules</a> ·
      <a href="https://github.com/buffedlizard55-lab/GEMSDOE">repository</a></p>

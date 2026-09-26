@@ -1,0 +1,61 @@
+{
+ "generated_by": "scripts/paired_union_contrast.py",
+ "population": "proxy",
+ "population_note": "SGMC proxy compilation (code 2), the stand-in for the privately withheld expert-mapped new faults - not the scored set (rules SS1.1/SS3.2)",
+ "fold": 1,
+ "partition": {
+  "block_px": 512,
+  "folds": 4,
+  "seed": 42,
+  "mode": "balanced"
+ },
+ "reference": {
+  "path": "data/evidence/combined/submission.tif",
+  "sha256": "19de9950ceffbdf7a7163b645984353965ab7d61dca07dfe8b9b68856edb853b",
+  "scalar_dti": 0.189714
+ },
+ "candidate": {
+  "path": "data/evidence/union_po_loo/drop_nff42/submission.tif",
+  "sha256": "c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4",
+  "scalar_dti": 0.199605
+ },
+ "identity_max_abs_error": {
+  "reference": 2.7755575615628914e-16,
+  "candidate": 3.608224830031759e-16
+ },
+ "n_blocks_kept": 9,
+ "n_boot": 2000,
+ "reliability": "COARSE - 9 resampling units is below this repository's readable-CI threshold (12): the interval cannot separate a regional preference from block-level noise, so treat P as suggestive and say so when quoting it",
+ "bootstrap": {
+  "reference": {
+   "dti_p50": 0.187575,
+   "dti_ci95": [
+    0.107673,
+    0.249541
+   ],
+   "contrast_vs_reference_p50": 0.0,
+   "contrast_vs_reference_ci95": [
+    0.0,
+    0.0
+   ],
+   "prob_beats_reference": null,
+   "n_blocks": 9,
+   "n_scoreable_blocks": 9
+  },
+  "candidate": {
+   "dti_p50": 0.197163,
+   "dti_ci95": [
+    0.121263,
+    0.256417
+   ],
+   "contrast_vs_reference_p50": 0.009172,
+   "contrast_vs_reference_ci95": [
+    0.003324,
+    0.018862
+   ],
+   "prob_beats_reference": 1.0,
+   "n_blocks": 9,
+   "n_scoreable_blocks": 0
+  }
+ }
+}

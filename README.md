@@ -20,20 +20,20 @@ asserted.
 | # | The ask | Status |
 |---|---|---|
 | 1 | Copy the entire repo and site from GEMSDOE (the site that scored 0.1563) into this repo, because more sites are being created for more submissions. | ✅ Done — the full GEMSDOE tree (413 files) is here; `buffedlizard55-lab/GEMSDOE` remains the source of record for the deep line. |
-| 2 | Generate a **different, unique** submission — not `extradr19` (0.1563) — via a unique approach that can score **higher than 0.3049**. | ✅ Built and measured — the "New-Fault-First" union, proxy DTI **0.1864** vs the deep ensemble's 0.0999 (+87%). Unscored on the real board (see §0.5). |
+| 2 | Generate a **different, unique** submission — not `extradr19` (0.1563) — via a unique approach that can score **higher than 0.3049**. | ✅ Built and measured (session 32) — the "New-Fault-First" union now includes a **proxy_only** member (SGMC code-2 positives only, never a catalogue fault). Shipped sha `c1da7dd9…`, measurement-fold proxy DTI **0.1996** (P = 1.0 vs the prior 0.1897 union). Unscored on the real board (see §0.5). |
 | 3 | Put the full prompt in the README and read it every time work starts, so there is a strong base to keep improving something useful for everyday use — it must remove the need to check everything by hand and give an up-to-date current feed. | ✅ This section is that list. The site is the "current feed": it is rebuilt by CI from the measured evidence, so the numbers on the page are the numbers in the repository. |
 | 4 | Keep the Arena core values — **Maximize P(Win)** and **Own the Outcome** — as the focal point when building, developing, researching, suggesting upgrades and implementing. | ✅ §0.4, and the reason every claim here is measured rather than argued. |
 | 5 | Work line by line verifying from official verified trusted sources, with links for manual review. No manual input. Work autonomously. Flag irregularities for review. No hallucinations. Verify line by line. | ✅ §8 and `scripts/verify_rules_quotes.py` (29/29 quoted sentences exact-matched against the rules PDF); every irregularity this session found is written down, including the ones that were mine. |
 | 6 | The site must generate the submission TIF as easily as "download a file to click into the competition", obvious at the very beginning of the site / executive summary. | ✅ Both the landing page and the executive summary open with the in-browser builder; `scripts/check_site_generator.py` re-runs the browser's own pipeline headless and is gate 9 of the readiness check. |
 | 7 | Fix the platform rejection `Predicted values must be in range [0, 1]`. | ✅ Root-caused (NaN inside the valid region, finite outside) and fixed by `scripts/sanitize_submission.py` + `conform_to_template()`; validator checks 16–17; two-sided evidence committed. |
-| 8 | Provide a unique name and a short comment (e.g. "clustering with k=25") to tell submissions apart. | ✅ The download carries a unique per-build file name and the suggested Note `nff-union-5 · union k=2 of 5 members (t0=0.18, w=0)`. |
+| 8 | Provide a unique name and a short comment (e.g. "clustering with k=25") to tell submissions apart. | ✅ The download carries a unique per-build file name and the suggested Note `nff-po-drop-nff42 · proxy_only diversity · union k=2 of 5 (t0=0.18, w=0)`. |
 | 9 | Create an executive-summary subpage explaining exactly how to make a submission into the contest. | ✅ `docs/how_to_submit.html`, a subpage of the executive summary. |
 | 10 | Work the next steps from previous sessions first. | ✅ Each session opens with the previous session's open items; `SUGGESTIONS.md` and `LIMITATIONS.md` carry the queue. |
 | 11 | Goal: top of the leaderboard. Understand the problem, collect all data, organise it into a clean, easily auditable table with official verified links. | ✅ §3 is that table (every row: source, link, licence, what it is used for); §1 is the problem summary. |
 | 12 | Tell the user my limitations and what access is needed; use only free publicly available official/verified sources for third-party or external data. | ✅ §2 and `LIMITATIONS.md` — and the honest headline is that the score itself needs a DrivenData login this sandbox does not have. |
 | 13 | Do own research (deep research, scientific literature research), organise knowledge for critical thinking, autonomously, constantly reviewed and improved; provide and implement suggestions. | ✅ `docs/literature.md`, `docs/references.md`, `docs/DISCOVERY_PLAN.md`; suggestions are implemented and re-measured in `SUGGESTIONS.md`. |
 | 14 | Run through multiple passes: pass 1 implement completely + verify; pass 2 review for bugs/missing requirements/incorrect assumptions/edge cases and fix; pass 3 re-check the entire implementation against the original request and improve accuracy, reliability, completeness, code quality. | ✅ This table *is* the pass-3 re-check against the original request; pass 2 found the two real defects recorded in `STATUS.md` (chunk-boundary row duplication, unconformed 0.0 outside the footprint). |
-| 15 | Create a pull request and merge it onto main; then make suggestions for remaining work and limitations blocking success, to be worked on next session. | ✅ PRs #1–#4 merged onto `main`; `SUGGESTIONS.md` §Session 30 and `LIMITATIONS.md` §Session 30 are the remaining-work and blocking-limitation lists. |
+| 15 | Create a pull request and merge it onto main; then make suggestions for remaining work and limitations blocking success, to be worked on next session. | ✅ PRs #1–#6 merged onto `main`; this session opens PR #7 (proxy_only diversity adoption). `SUGGESTIONS.md` §Session 32 and `LIMITATIONS.md` §Session 32 are the remaining-work and blocking-limitation lists. |
 | 16 | GitHub Pages site: clean UI, user friendly, simple, organised; all relevant information easy to read, with official verified links as sources. | ✅ Live at <https://buffedlizard55-lab.github.io/GEMSDOE4/> (Pages status `built`); `scripts/audit_docs.py` re-checks every link on every run and PASSes. |
 
 ### 0.1 What we are trying to do
@@ -59,11 +59,14 @@ Place **top of the leaderboard** in the DOE GEMS Prize Challenge on DrivenData �
 Our best line is ~half the leading score. The task for this repository is therefore not "ship
 another variant of the same model" but **a different strategy, researched and measured, that can
 score above 0.3049**. The file this repository ships today (`data/evidence/combined/submission.tif`,
-sha256 `19de9950…`, 548,834 B) is that line's current candidate: the adopted **k = 2 of 5** union,
-proxy DTI **0.1897** on the measurement fold nothing scored during selection (+0.0150 over the
-4-member union it replaces; paired block bootstrap P = 0.957, 9 blocks — a COARSE interval, see
-`data/evidence/union6/paired_contrast.json`). The transfer to the real leaderboard is untested
-until a human uploads it; every number here is the SGMC surrogate, not the scored set.
+sha256 `c1da7dd9…`, 547,082 B) is that line's current candidate: the adopted **k = 2 of 5** union
+(`deep11 ∪ classical ∪ nff43 ∪ nff45 ∪ po46`), where `po46` is the first member supervised on
+**SGMC code-2 only** (never a catalogue fault). Measurement-fold proxy DTI **0.1996** vs the prior
+union's 0.1897 (+0.0099; paired block bootstrap P = 1.0, 9 blocks — a COARSE interval, see
+`data/evidence/union_po_loo/contrasts/drop_nff42_vs_committed.json` and
+`docs/SESSION32_PROTOCOL.md`). The transfer to the real leaderboard is untested until a human
+uploads it; every number here is the SGMC surrogate, not the scored set. Suggested submission
+Note: `nff-po-drop-nff42 · proxy_only diversity · union k=2 of 5 (t0=0.18, w=0)`.
 
 ### 0.3 The strategy this repository is built on (GEMSDOE4, "New-Fault-First")
 

@@ -1,0 +1,38 @@
+{
+ "generated_utc": "2026-09-26T01:34:21Z",
+ "script": "scripts/combine_newfault.py (via src/submission_io.conform_to_template)",
+ "command": "python scripts/combine_newfault.py --out-dir data/evidence/union_po_loo/drop_classical --fold 0 --eval-fold 1",
+ "why": "every member raster is read through nan_to_num, so the union field is finite (0.0) outside the template's valid region; conform_to_template masks those back to NaN before the writer sees the array - the placement rule the platform enforces with 'Predicted values must be in range [0, 1]'",
+ "template": {
+  "path": "data/sample_submission.tif",
+  "sha256": "2176d08e485aa2cd2860ce8df539db4faf4d76163b38a4dd8c30a40454d35cbc"
+ },
+ "before": {
+  "path": "(in-memory union field, before conform_to_template)",
+  "sha256_pixels": "f5e94ab780abec7e1a944bb64b34caa322df4a2e7822639a767aa7a99a8e85d8",
+  "finite_px": 12279160,
+  "findings": {
+   "finite_outside_px": 7111787
+  }
+ },
+ "after": {
+  "path": "data/evidence/union_po_loo/drop_classical/submission.tif",
+  "sha256": "60e39a01b81e94fd5f12cc23f6010bb6d1c0effddf9378866d6f2774c7d78dd9",
+  "sha256_pixels": "14064adb5844d58ae9fe9305134472704332f838e01135e58d60b14f2f406aac",
+  "bytes": 575784,
+  "findings": {
+   "conformant": true,
+   "nan_px": 7111787,
+   "finite_px": 5167373
+  }
+ },
+ "changes": {
+  "pixels": 12279160,
+  "template_valid_px": 5167373,
+  "filled_inside": 0,
+  "masked_outside": 7111787,
+  "clipped": 0,
+  "unchanged": 5167373
+ },
+ "scoring_impact": "none by construction: src/metrics.py scores through np.nan_to_num(..., nan=0.0) and every scored population is a subset of the template's valid region"
+}

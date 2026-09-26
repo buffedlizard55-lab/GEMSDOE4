@@ -1,3 +1,21 @@
+## Session 32 (2026-09-26) — measured limitations of the proxy_only adoption
+
+- **Adoption rests on 9 resampling units (COARSE).** Fold 1 has 9 scoreable blocks; the paired
+  bootstrap P = 1.0 and CI95 [+0.0033, +0.0189] are disclosed as COARSE everywhere they appear.
+  A pooled multi-fold contrast is the version that can clear the repository's own 12-unit bar.
+- **Margin branch of the pre-registered rule did not clear.** Δ = +0.0099 is 0.0001 under the
+  +0.010 bar; adoption is on the P ≥ 0.95 branch only. That is written in the decision record
+  rather than rounded.
+- **`proxy_only` is still a surrogate of a surrogate.** The member never sees catalogue faults,
+  which is the diversity we wanted, but its positives are still the public SGMC compilation —
+  not the private expert-mapped new faults rules §1.1 score. The only unbiased test is a
+  leaderboard upload.
+- **The deep-ensemble member is still whole-grid-trained.** Unchanged from session 26; recorded
+  per member in `data/evidence/combined/report.json`.
+- **No DrivenData login** → cannot upload or read the leaderboard from this sandbox.
+- **No GPU / no unrestricted egress** → DEM route and full-config U-Net still blocked.
+- **`raw.githubusercontent.com` still TLS-blocked here**; bridge restore goes through `gh api`.
+
 ## Session 31 (2026-09-25) — one more limitation measured, one more disclosed
 
 - **The adoption P-value rests on 9 resampling units.** Fold 1 has 9 scoreable blocks, so the
