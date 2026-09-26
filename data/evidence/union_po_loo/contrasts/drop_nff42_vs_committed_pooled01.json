@@ -1,0 +1,83 @@
+{
+ "generated_by": "scripts/paired_union_contrast.py",
+ "population": "proxy",
+ "population_note": "SGMC proxy compilation (code 2), the stand-in for the privately withheld expert-mapped new faults - not the scored set (rules SS1.1/SS3.2)",
+ "fold": null,
+ "folds": [
+  0,
+  1
+ ],
+ "fold_note": "POOLED over 2 folds: the bootstrap redraws the disjoint blocks of all of them, so the interval describes their union, not any one region",
+ "per_fold": [
+  {
+   "fold": 0,
+   "n_blocks": 8,
+   "reference_dti": 0.269654,
+   "candidate_dti": 0.283743,
+   "delta": 0.014088
+  },
+  {
+   "fold": 1,
+   "n_blocks": 9,
+   "reference_dti": 0.189714,
+   "candidate_dti": 0.199605,
+   "delta": 0.00989
+  }
+ ],
+ "note": "OUT-OF-SAMPLE POOL: folds 0 and 1 are the two folds scripts/newfault_detector.py excluded from every NFF member's training geography (trainable = valid & ~(fold0 | fold1)), so no member saw this ground. Caveat: fold 0 IS the fold the members' emission-policy sweep selected on, so its share of the gain is selection-biased upward; fold 1 alone is the clean read. Folds 2 and 3 are IN-SAMPLE for the members and are reported separately, never pooled here. Truth is the SGMC proxy compilation (code 2), the stand-in for the privately withheld expert-mapped new faults - not the scored set (rules SS1.1/SS3.2).",
+ "partition": {
+  "block_px": 512,
+  "folds": 4,
+  "seed": 42,
+  "mode": "balanced"
+ },
+ "reference": {
+  "path": "data/evidence/union_po_loo/prev_committed_nff_union5.tif",
+  "sha256": "19de9950ceffbdf7a7163b645984353965ab7d61dca07dfe8b9b68856edb853b",
+  "scalar_dti": 0.233098
+ },
+ "candidate": {
+  "path": "data/evidence/combined/submission.tif",
+  "sha256": "c1da7dd9c44e05382b67367a8eba1987fca5594e33bf23812d308f37112dadb4",
+  "scalar_dti": 0.247454
+ },
+ "identity_max_abs_error": {
+  "reference": 1.7208456881689926e-15,
+  "candidate": 1.9984014443252818e-15
+ },
+ "n_blocks_kept": 17,
+ "n_boot": 2000,
+ "reliability": "adequate - 17 resampling units",
+ "bootstrap": {
+  "reference": {
+   "dti_p50": 0.230304,
+   "dti_ci95": [
+    0.171426,
+    0.279579
+   ],
+   "contrast_vs_reference_p50": 0.0,
+   "contrast_vs_reference_ci95": [
+    0.0,
+    0.0
+   ],
+   "prob_beats_reference": null,
+   "n_blocks": 17,
+   "n_scoreable_blocks": 16
+  },
+  "candidate": {
+   "dti_p50": 0.244176,
+   "dti_ci95": [
+    0.184542,
+    0.29264
+   ],
+   "contrast_vs_reference_p50": 0.013936,
+   "contrast_vs_reference_ci95": [
+    0.008011,
+    0.020235
+   ],
+   "prob_beats_reference": 1.0,
+   "n_blocks": 17,
+   "n_scoreable_blocks": 16
+  }
+ }
+}

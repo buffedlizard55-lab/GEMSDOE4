@@ -1,4 +1,91 @@
-# Project status — 2026-09-26 (sessions 1–32)
+# Project status — 2026-09-26 (sessions 1–33)
+
+## Session 33 (2026-09-26) — main was red, the adoption's evidence was under-powered, and both are now fixed with measurements
+
+**What was broken on arrival, verified not assumed.** `main` was failing CI. Run
+[36209417841](https://github.com/buffedlizard55-lab/GEMSDOE4/actions/runs/36209417841)
+(`Merge pull request #7`, pushed 2026-09-26T01:44Z) failed at *Run the test suite* with
+`FAILED tests/test_site_pages.py::test_the_build_reproduces_the_committed_pages - AssertionError:
+the committed pages are stale against a rebuild: ['how_to_submit.html']`, and the workflow
+committed its own log as `663ac1e`. Reproduced locally in a fresh `.venv` before touching
+anything.
+
+**Root cause (a one-line diff, read line by line).** PR #7 adopted the new artifact
+(`c1da7dd9…`, 547,082 B) and re-ran `scripts/check_site_generator.py`
+(2026-09-26T01:40:33Z) but never re-ran `scripts/build_site.py`. So the committed
+`docs/how_to_submit.html` still rendered the *previous* artifact: gate row `artifact` said
+"548,834 bytes · sha256 19de9950ceffbdf7…" and the generator table said the browser writes
+299,708 B. The page a human reads to make a submission was describing a file that is no longer
+the file to submit. Rebuilt; the page now renders `c1da7dd9…` / 547,082 B and 298,364 B
+generated. `tests/test_site_pages.py` 4/4.
+
+**A second defect found by re-running the readiness check — and it is the same class.** Running
+`scripts/check_submission_readiness.py` in a checkout without the gitignored 418 MB feature
+stack silently **overwrote the committed PASS record** with `data_placed: MISSING` and
+`preflight: MISSING` (verified in the working tree, then reverted). Because `build_site.py`
+renders that file, a weaker checkout publishes a weaker page *and* breaks the rebuild gate on
+the next CI run. `scripts/verify_links.py` already refused to do exactly this to the link
+record; the same guard is now in `check_submission_readiness.py`: a run that measures less than
+the committed record **refuses to write and exits 3**, printing the per-gate comparison, with
+`--allow-degraded` as the explicit override. A genuine `FAIL` is never suppressed. Measured:
+this checkout now exits 3 naming both gates; `--allow-degraded --out /tmp/…` writes and exits 0.
+
+**The shipped file, re-verified end to end in this sandbox** (the upload is the one human step
+left, so the file it uploads is the thing that must not be in doubt):
+
+| check | result |
+|---|---|
+| `scripts/validate_submission.py --pred data/evidence/combined/submission.tif` | **PASSED** — 10/10, incl. `✓ Values in [0,1] (min 0.0000 max 1.0000)`, `✓ All 5,167,373 template-valid px are finite in [0,1]`, `✓ NaN exactly outside the template's valid region` — the three that guard the platform's `Predicted values must be in range [0, 1]` rejection |
+| `scripts/check_site_generator.py` (node runs the page's own writer) | **verdict PASS**, 8/10 steps (the 2 INFO are the container-size and NODATA notes); payload reproduces the artifact; generated 298,364 B; zip route single-member; all three strip layouts bit-identical |
+| `scripts/check_submission_readiness.py` | 6 PASS, 0 FAIL, 1 HUMAN, 2 MISSING (the two are this checkout's absent feature stack — now refused-by-guard rather than published) |
+
+**The session-32 adoption was resting on 9 resampling units. Queue item 3 (a pooled contrast) is now measured — and the honest pool is folds 0+1, not 2+3.**
+`scripts/paired_union_contrast.py` took `--fold <int>`; it now takes a comma-separated list and
+redraws the pooled, disjoint blocks, recording `folds`, `per_fold` and a verbatim `--note`.
+The catch, found by reading `scripts/newfault_detector.py:336-341`
+(`trainable = valid & ~(fold0 | fold1)`): **folds 2 and 3 are inside every NFF member's training
+geography**, so pooling them would publish a memorisation-contaminated number. The two folds the
+members never saw are 0 and 1.
+
+| scope (SGMC proxy population, R = 3, α = 0.2, β = 0.8) | ref `19de9950…` | cand `c1da7dd9…` | Δ | blocks | P(cand>ref) | CI95 |
+|---|---:|---:|---:|---:|---:|---|
+| fold 1 — clean (out-of-sample, never swept) | 0.189714 | 0.199605 | +0.009890 | 9 (COARSE) | 1.0 | [+0.0033, +0.0189] |
+| fold 0 — out-of-sample but **selection-biased** | 0.269654 | 0.283743 | +0.014088 | 8 (COARSE) | 0.99 | [+0.0032, +0.0215] |
+| **pooled folds 0+1 — out-of-sample pool** | **0.233098** | **0.247454** | **+0.014356** | **17 (adequate)** | **1.0** | **[+0.0080, +0.0202]** |
+| fold 2 — IN-SAMPLE for the members | 0.163935 | 0.192110 | +0.028174 | 9 (COARSE) | 1.0 | [+0.0198, +0.0416] |
+| fold 3 — IN-SAMPLE for the members | 0.188154 | 0.212795 | +0.024641 | 8 (COARSE) | 0.9995 | [+0.0103, +0.0424] |
+| pooled folds 2+3 — IN-SAMPLE upper bound | 0.177017 | 0.203354 | +0.026337 | 17 | 1.0 | [+0.0173, +0.0381] |
+
+Two things to hold on to. **(a)** The pooled out-of-sample interval now crosses this
+repository's own 12-unit readable-CI bar (17 blocks) and still excludes zero by a wide margin,
+so the adoption is no longer supported by a COARSE 9-block interval alone — and the clean fold-1
+pair (0.189714 / 0.199605) is reproduced **digit for digit** by the rewritten scope/rows code,
+which is a parity check on the rewrite itself. **(b)** The in-sample pool (+0.0263) is roughly
+**twice** the out-of-sample pool (+0.0144). That gap is the size of the memorisation component,
+and it is why the in-sample files carry `IN-SAMPLE` in their `note` field and are never pooled
+with the honest one.
+
+**A reporting defect in the file the adoption rests on.** The committed
+`drop_nff42_vs_committed.json` says `"n_scoreable_blocks": 0` for the **candidate** arm next to
+that arm's own 0.1996 DTI. Cause: the candidate's per-block rows were built without the truth's
+`scoreable` flag, so `bootstrap_from_blocks` counted `b.get("scoreable")` → `None` → 0.
+`scoreable` and `n_gt` are properties of the truth, not of the arm; the rows now carry them and
+`tests/test_paired_contrast.py` pins it. The DTIs, the CI and P were never affected (the
+bootstrap reads TP_w/FP_w/FN_w only) — what was wrong is a reported count that read as "no truth
+here" on the arm that won.
+
+**Tests.** `scripts/paired_union_contrast.py` had **no test at all** while its output was the
+only paired probability behind the shipped file. `tests/test_paired_contrast.py` adds 15: fold-list
+parsing (including the refusals — a doubled comma or an out-of-range fold would silently pool
+fewer blocks than asked for), the `scoreable` regression, the recomposition identity, the
+same-bytes refusal, pooled bookkeeping, per-fold deltas, the `--note` recording and the
+reliability wording flipping at 12 blocks. Suite in this sandbox: **564 passed, 8 failed + 1
+collection error, every one `ModuleNotFoundError: No module named 'torch'`** — the documented
+sandbox limitation (`download.pytorch.org` TLS-blocked here; CI installs the CPU wheel).
+
+**Still true, unchanged:** no DrivenData login (so the board score for `nff-po-drop-nff42` is
+still unread — that upload is the single highest-value action available), no GPU, no
+unrestricted egress, and every number above is the SGMC surrogate, not the scored set.
 
 ## Session 32 (2026-09-26) — proxy_only diversity member adopted; first structurally different supervision in the union
 

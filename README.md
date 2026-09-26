@@ -20,10 +20,10 @@ asserted.
 | # | The ask | Status |
 |---|---|---|
 | 1 | Copy the entire repo and site from GEMSDOE (the site that scored 0.1563) into this repo, because more sites are being created for more submissions. | ✅ Done — the full GEMSDOE tree (413 files) is here; `buffedlizard55-lab/GEMSDOE` remains the source of record for the deep line. |
-| 2 | Generate a **different, unique** submission — not `extradr19` (0.1563) — via a unique approach that can score **higher than 0.3049**. | ✅ Built and measured (session 32) — the "New-Fault-First" union now includes a **proxy_only** member (SGMC code-2 positives only, never a catalogue fault). Shipped sha `c1da7dd9…`, measurement-fold proxy DTI **0.1996** (P = 1.0 vs the prior 0.1897 union). Unscored on the real board (see §0.5). |
+| 2 | Generate a **different, unique** submission — not `extradr19` (0.1563) — via a unique approach that can score **higher than 0.3049**. | ✅ Built and measured (sessions 32–33) — the "New-Fault-First" union now includes a **proxy_only** member (SGMC code-2 positives only, never a catalogue fault). Shipped sha `c1da7dd9…`, validator PASSED 10/10 here. Out-of-sample proxy DTI **0.1996** on the clean fold 1 and **0.247454** on the 17-block out-of-sample pool vs the prior union's 0.233098 (**+0.014356, P = 1.0, CI95 [+0.0080, +0.0202]**). Unscored on the real board (see §0.5) — the upload is the one remaining human step. |
 | 3 | Put the full prompt in the README and read it every time work starts, so there is a strong base to keep improving something useful for everyday use — it must remove the need to check everything by hand and give an up-to-date current feed. | ✅ This section is that list. The site is the "current feed": it is rebuilt by CI from the measured evidence, so the numbers on the page are the numbers in the repository. |
 | 4 | Keep the Arena core values — **Maximize P(Win)** and **Own the Outcome** — as the focal point when building, developing, researching, suggesting upgrades and implementing. | ✅ §0.4, and the reason every claim here is measured rather than argued. |
-| 5 | Work line by line verifying from official verified trusted sources, with links for manual review. No manual input. Work autonomously. Flag irregularities for review. No hallucinations. Verify line by line. | ✅ §8 and `scripts/verify_rules_quotes.py` (29/29 quoted sentences exact-matched against the rules PDF); every irregularity this session found is written down, including the ones that were mine. |
+| 5 | Work line by line verifying from official verified trusted sources, with links for manual review. No manual input. Work autonomously. Flag irregularities for review. No hallucinations. Verify line by line. | ✅ §8 and `scripts/verify_rules_quotes.py` (29/29 quoted sentences exact-matched against the rules PDF). Session 33's line-by-line pass found four irregularities and fixed all four: the stale submission page on `main` (CI run 36209417841), the readiness record a weaker checkout could silently overwrite, `n_scoreable_blocks: 0` reported for the winning arm of the adoption contrast, and the fact that folds 2/3 are *in-sample* for the members (which is why the honest pool is folds 0+1, not 2+3). Each is written down in `STATUS.md` §Session 33 with the measurement that proved it. |
 | 6 | The site must generate the submission TIF as easily as "download a file to click into the competition", obvious at the very beginning of the site / executive summary. | ✅ Both the landing page and the executive summary open with the in-browser builder; `scripts/check_site_generator.py` re-runs the browser's own pipeline headless and is gate 9 of the readiness check. |
 | 7 | Fix the platform rejection `Predicted values must be in range [0, 1]`. | ✅ Root-caused (NaN inside the valid region, finite outside) and fixed by `scripts/sanitize_submission.py` + `conform_to_template()`; validator checks 16–17; two-sided evidence committed. |
 | 8 | Provide a unique name and a short comment (e.g. "clustering with k=25") to tell submissions apart. | ✅ The download carries a unique per-build file name and the suggested Note `nff-po-drop-nff42 · proxy_only diversity · union k=2 of 5 (t0=0.18, w=0)`. |
@@ -33,7 +33,7 @@ asserted.
 | 12 | Tell the user my limitations and what access is needed; use only free publicly available official/verified sources for third-party or external data. | ✅ §2 and `LIMITATIONS.md` — and the honest headline is that the score itself needs a DrivenData login this sandbox does not have. |
 | 13 | Do own research (deep research, scientific literature research), organise knowledge for critical thinking, autonomously, constantly reviewed and improved; provide and implement suggestions. | ✅ `docs/literature.md`, `docs/references.md`, `docs/DISCOVERY_PLAN.md`; suggestions are implemented and re-measured in `SUGGESTIONS.md`. |
 | 14 | Run through multiple passes: pass 1 implement completely + verify; pass 2 review for bugs/missing requirements/incorrect assumptions/edge cases and fix; pass 3 re-check the entire implementation against the original request and improve accuracy, reliability, completeness, code quality. | ✅ This table *is* the pass-3 re-check against the original request; pass 2 found the two real defects recorded in `STATUS.md` (chunk-boundary row duplication, unconformed 0.0 outside the footprint). |
-| 15 | Create a pull request and merge it onto main; then make suggestions for remaining work and limitations blocking success, to be worked on next session. | ✅ PRs #1–#6 merged onto `main`; this session opens PR #7 (proxy_only diversity adoption). `SUGGESTIONS.md` §Session 32 and `LIMITATIONS.md` §Session 32 are the remaining-work and blocking-limitation lists. |
+| 15 | Create a pull request and merge it onto main; then make suggestions for remaining work and limitations blocking success, to be worked on next session. | ✅ PRs #1–#7 merged onto `main`; this session opens PR #8 (fix the red site-page gate on `main`, the two silent-overwrite defects, and the pooled adoption contrast). `SUGGESTIONS.md` §Session 33 and `LIMITATIONS.md` §Session 33 are the remaining-work and blocking-limitation lists. |
 | 16 | GitHub Pages site: clean UI, user friendly, simple, organised; all relevant information easy to read, with official verified links as sources. | ✅ Live at <https://buffedlizard55-lab.github.io/GEMSDOE4/> (Pages status `built`); `scripts/audit_docs.py` re-checks every link on every run and PASSes. |
 
 ### 0.1 What we are trying to do
@@ -47,26 +47,48 @@ Place **top of the leaderboard** in the DOE GEMS Prize Challenge on DrivenData �
 <https://docs.nlr.gov/docs/fy26osti/96647.pdf> and the reference solution is
 <https://github.com/drivendataorg/gems-prize-reference-solution>.
 
-### 0.2 Where we stand (measured, 2026-09-25)
+### 0.2 Where we stand (measured, 2026-09-26)
 
-| Submission | Site | Public score |
-|---|---|---|
-| GEMSDOE (11-fold deep ensemble, `floor 0.1, thin, width 0`) | buffedlizard55-lab/GEMSDOE | **0.1563** |
-| GEMSDOE2 (dual-family union) | buffedlizard55-lab/GEMSDOE2 | 0.1560 |
-| GEMSDOE3 (pindrop nodes / catalogue-gap target / dense ridge control) | buffedlizard55-lab/GEMSDOE3 | 0.1193 / 0.0830 / 0.1152 |
-| **best on the board** | — | **0.3049** |
+Five submissions have been scored on the public board so far (names as they appear in the
+submission form's Note field):
 
-Our best line is ~half the leading score. The task for this repository is therefore not "ship
-another variant of the same model" but **a different strategy, researched and measured, that can
-score above 0.3049**. The file this repository ships today (`data/evidence/combined/submission.tif`,
-sha256 `c1da7dd9…`, 547,082 B) is that line's current candidate: the adopted **k = 2 of 5** union
+| Note on the board | Repo / site | Strategy | Public score |
+|---|---|---|---|
+| `extradr19` | buffedlizard55-lab/GEMSDOE | 11-fold deep ensemble, `floor 0.1, thin, width 0` | **0.1563** |
+| `smashi34` | buffedlizard55-lab/GEMSDOE2 | dual-family union | 0.1560 |
+| `smrtdoog5` | buffedlizard55-lab/GEMSDOE3 | pindrop nodes | 0.1193 |
+| `SDCF9` | buffedlizard55-lab/GEMSDOE3 | dense ridge control | 0.1152 |
+| `wbg1` | buffedlizard55-lab/GEMSDOE3 | catalogue-gap target | 0.0830 |
+| `nff-po-drop-nff42` | **this repo (GEMSDOE4)** | new-fault-first union, k = 2 of 5, `proxy_only` member | **not yet uploaded** |
+| **best on the board** | — | — | **0.3049** |
+
+Our best scored line is ~half the leading score. The task for this repository is therefore not
+"ship another variant of the same model" but **a different strategy, researched and measured,
+that can score above 0.3049**. The file this repository ships today
+(`data/evidence/combined/submission.tif`, sha256 `c1da7dd9…`, 547,082 B, `validate_submission.py`
+PASSED 10/10 in this sandbox) is that line's current candidate: the adopted **k = 2 of 5** union
 (`deep11 ∪ classical ∪ nff43 ∪ nff45 ∪ po46`), where `po46` is the first member supervised on
-**SGMC code-2 only** (never a catalogue fault). Measurement-fold proxy DTI **0.1996** vs the prior
-union's 0.1897 (+0.0099; paired block bootstrap P = 1.0, 9 blocks — a COARSE interval, see
-`data/evidence/union_po_loo/contrasts/drop_nff42_vs_committed.json` and
-`docs/SESSION32_PROTOCOL.md`). The transfer to the real leaderboard is untested until a human
-uploads it; every number here is the SGMC surrogate, not the scored set. Suggested submission
-Note: `nff-po-drop-nff42 · proxy_only diversity · union k=2 of 5 (t0=0.18, w=0)`.
+**SGMC code-2 only** (never a catalogue fault).
+
+Its evidence, on the SGMC proxy population (R = 3, α = 0.2, β = 0.8), against the 5-member union
+it replaced (`19de9950…`):
+
+| scope | ref | cand | Δ | blocks | P(cand>ref) |
+|---|---:|---:|---:|---:|---:|
+| fold 1 — clean (out-of-sample, never swept) | 0.189714 | 0.199605 | +0.009890 | 9 (COARSE) | 1.0 |
+| **pooled folds 0+1 — out-of-sample pool** | **0.233098** | **0.247454** | **+0.014356** | **17 (adequate)** | **1.0** |
+| pooled folds 2+3 — *in-sample for the members, upper bound only* | 0.177017 | 0.203354 | +0.026337 | 17 | 1.0 |
+
+Session 33 added the pooled read (`--fold 0,1` in `scripts/paired_union_contrast.py`,
+`data/evidence/union_po_loo/contrasts/drop_nff42_vs_committed_pooled01.json`): **17 resampling
+units, above this repository's 12-block readable-CI bar, CI95 [+0.0080, +0.0202] excluding zero**.
+Folds 0 and 1 are the only two folds `scripts/newfault_detector.py` excludes from the members'
+training, so they are the only honest pool; fold 0 is also the fold the emission-policy sweep
+selected on, so the pooled number sits between a clean read and a biased one, and folds 2/3 are
+in-sample (+0.0263) and committed only as an upper bound. The transfer to the real leaderboard is
+still untested until a human uploads it; every number here is the SGMC surrogate, not the scored
+set. Suggested submission Note:
+`nff-po-drop-nff42 · proxy_only diversity · union k=2 of 5 (t0=0.18, w=0)`.
 
 ### 0.3 The strategy this repository is built on (GEMSDOE4, "New-Fault-First")
 

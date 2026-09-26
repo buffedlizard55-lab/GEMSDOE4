@@ -1,3 +1,30 @@
+## Session 33 (2026-09-26) — measured limitations of the pooled contrast
+
+- **The pooled out-of-sample interval contains a selection-biased fold.** Folds 0 and 1 are the
+  only two folds excluded from the NFF members' training, so they are the only honest pool
+  available — but fold 0 is also the fold their emission-policy sweep selected on, and its
+  per-fold Δ (+0.014088) is larger than the clean fold-1 Δ (+0.009890). The pooled
+  **Δ +0.014356, CI95 [+0.0080, +0.0202] over 17 blocks** therefore sits between a clean read and
+  a biased one; the clean single-fold read remains **+0.0099 on 9 blocks (COARSE)**. Both are
+  committed; neither is the scored set.
+- **No honest measurement on folds 2/3 exists yet.** `newfault_detector.py:336-341` trains on
+  everything except folds 0 and 1, so the +0.026337 pooled 2+3 number is memorisation-contaminated
+  and is committed only as an upper bound with `IN-SAMPLE` in its `note`. Making it honest means
+  retraining the members with folds 2/3 held out — the bridge plus ~15 min CPU per member.
+- **The in-sample/out-of-sample gap is itself a finding worth ~0.012 DTI.** Members score roughly
+  twice as well on ground they trained on. Any future number quoted without saying which
+  geography it came from is uninterpretable at this effect size.
+- **`torch` cannot be installed in this sandbox** (`download.pytorch.org` TLS-blocked, verified
+  again this session), so 8 tests + 1 collection error stay red here and green on CI. Everything
+  else was run: **564 passed**.
+- **The 418 MB feature stack is not in this checkout**, so `data_placed` and `preflight` measure
+  MISSING here. That is now *refused* rather than published (`check_submission_readiness.py`
+  exit 3), which means the committed PASS record — measured 2026-09-26T01:40:41Z in a checkout
+  that had the bytes — is what the site renders, with its own timestamp.
+- Unchanged: **no DrivenData login** (no upload, no board read), **no GPU**, **no unrestricted
+  egress**, `raw.githubusercontent.com` TLS-blocked, and the private expert-mapped new faults
+  still do not exist locally — the SGMC compilation remains a surrogate of the scored population.
+
 ## Session 32 (2026-09-26) — measured limitations of the proxy_only adoption
 
 - **Adoption rests on 9 resampling units (COARSE).** Fold 1 has 9 scoreable blocks; the paired

@@ -1,3 +1,37 @@
+## Session 33 (2026-09-26) — main unbroken, the adoption's interval made readable, and two silent-overwrite defects closed
+
+| # | Suggestion | Status |
+|---|---|---|
+| 1 | **`main` must not be red.** CI run 36209417841 failed on `test_the_build_reproduces_the_committed_pages: ['how_to_submit.html']`; PR #7 re-ran the generator check but never rebuilt the site, so the page a human uses to submit still described the *previous* artifact (548,834 B / `19de9950…` / 299,708 B). | ✅ Site rebuilt; the page now renders `c1da7dd9…` / 547,082 B / 298,364 B. 4/4 site-page tests. |
+| 2 | **A weaker checkout must not be able to publish a weaker page.** `check_submission_readiness.py` overwrote the committed PASS record with `MISSING` for `data_placed` + `preflight` in a checkout without the gitignored 418 MB stack — the same failure `verify_links.py` already guards against. | ✅ Same guard: refuses and exits 3, prints the per-gate comparison, `--allow-degraded` overrides, a genuine `FAIL` always writes. Measured both paths. |
+| 3 | **Queue item 3 from session 32: pooled multi-fold paired contrast** (cross the 12-block readable-CI bar). | ✅ Done, with the trap found first: `newfault_detector.py:336-341` trains on everything except folds 0 and 1, so folds 2/3 are IN-SAMPLE. The honest pool is **folds 0+1: 0.233098 → 0.247454, Δ +0.014356, P = 1.0, CI95 [+0.0080, +0.0202] over 17 blocks** — vs the in-sample pool's +0.026337, which is committed as an upper bound only. |
+| 4 | **`--fold` should accept a list, and every pooled file should say which folds the sweep/training saw.** | ✅ `--fold 2,3` + `--note`; `folds`, `fold_note`, `per_fold` in the JSON; a doubled comma or an out-of-range fold is refused rather than silently dropped. |
+| 5 | **The adoption's own evidence file reported `n_scoreable_blocks: 0` for the winning arm.** | ✅ Candidate rows now carry the truth's `scoreable`/`n_gt`; pinned by a test. DTIs/CI/P were unaffected (the bootstrap reads TP_w/FP_w/FN_w only). |
+| 6 | **The script an adoption decision rests on had zero tests.** | ✅ `tests/test_paired_contrast.py`, 15 tests. |
+| 7 | **Re-verify the file to be uploaded before asking a human to spend one of 3 weekly submissions on it.** | ✅ Validator PASSED 10/10 (incl. the three range/NaN checks), generator verdict PASS 8/10, readiness 6 PASS / 0 FAIL / 1 HUMAN. |
+| 8 | Upload `nff-po-drop-nff42` and record the real score. | ⏳ HUMAN — unchanged, still the highest-value action available. |
+| 9 | `docs/submission.html` still renders a live reading of `data/` ("MATCHES THE PIN" vs "ABSENT"), so the published page states a fact about whichever machine built it. This session had to `git checkout` that one page to avoid publishing my sandbox's state. | ⏳ next session — render the committed `data/evidence/data_placement.json` as the primary column and keep the live check as an extra one; then the `LIVE_STATE_MARKERS` exception in `tests/test_site_pages.py` can shrink. |
+| 10 | Render the pooled adoption contrast on the site. `scripts/build_site.py` does not read `data/evidence/union_po_loo/contrasts/*` at all, so the strongest number in the repository is currently in a JSON file and not on any page. | ⏳ next session — one table on `docs/results.html` (per-fold rows + the honest pool + the in-sample pool labelled as such), pinned by a test like `tests/test_site.py`. |
+| 11 | Second `proxy_only` member on folds 2/3 (session-32 queue item 2). | ⏳ blocked here on the 418 MB bridge (`fetch_bridge_parts.py`; `raw.githubusercontent.com` is TLS-blocked in this sandbox, `gh api` is not). **Pre-register first**, and note the session-31 result: extra members of the same supervision made the union *worse*. |
+
+**Next session queue (priority order):**
+1. **Upload `nff-po-drop-nff42` and record the real score** (human, 1 of 3 this week) — file
+   `data/evidence/combined/submission.tif` (sha256 `c1da7dd9…`, 547,082 B; the browser-built copy
+   is pixel-identical), Note `nff-po-drop-nff42 · proxy_only diversity · union k=2 of 5
+   (t0=0.18, w=0)`. This is the second surrogate→board calibration point; without it every
+   number here stays a surrogate.
+2. **Publish the pooled contrast on `docs/results.html`** (item 10) — cheap, and it is the
+   difference between "we measured it" and "a reader can see we measured it".
+3. **Make `docs/submission.html` render the committed placement record** (item 9) so no future
+   session has to hand-restore a page.
+4. **An honest pooled contrast that includes genuinely untouched geography**: retrain the NFF
+   members holding out folds 2/3 (`--fold 2 --eval-fold 3`) so all four folds are out-of-sample
+   for *some* member set; needs the bridge + ~15 min CPU per member.
+5. **Second `proxy_only` member** (item 11), pre-registered, then re-run the LOO + adoption
+   protocol unchanged.
+6. **DEM derivatives** and **GPU full-config** — unchanged blockers (unrestricted egress + ~50 GB;
+   no GPU in any sandbox so far).
+
 ## Session 32 (2026-09-26) — diversity from supervision, not seeds: adopted
 
 | # | Suggestion | Status |
