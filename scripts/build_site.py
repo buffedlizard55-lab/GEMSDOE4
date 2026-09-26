@@ -2585,8 +2585,10 @@ variant of the same model:</p>
       never scored by the sweep. The catalogue DTI is reported next to it, never used to select.</li>
   <li><b>A union of structurally different detectors.</b> Coverage is cheap under this metric (FN
       carries &beta; = 0.8, FP only &alpha; = 0.2), so detectors whose errors differ are worth more
-      together than apart: the 11-fold deep ensemble, the classical raw-band GBM, and two lineament
-      NFF detectors trained on disjoint fold halves.</li>
+      together than apart: the 11-fold deep ensemble, the classical raw-band GBM, and three lineament
+      NFF detectors - two at different seeds on the same population and one supervised on the
+      independent compilation's own pixels only (<code>--supervision proxy_only</code>), whose errors
+      are structurally anti-correlated with every catalogue-trained member.</li>
 </ol>
 <h3>Measured, on the full grid, both populations</h3>
 <table><thead><tr><th>detector (a member of the union)</th><th>new-fault (proxy) DTI</th>
@@ -2605,10 +2607,12 @@ than a comparison of numbers produced by different code paths.</p>
 never scored, at proxy DTI %s and catalogue DTI %s. The whole-grid numbers above are the ones the
 artifact carries.</p>
 %s
-<p>Reproduce it: <code>python scripts/combine_newfault.py --member deep11=... --member classical=...
---member nff42=...:prob --member nff43=...:prob --fold 0 --eval-fold 1</code> &mdash; the full
-command, the hashes of every member and the whole candidate sweep are in
-<code>data/evidence/combined/report.json</code>.</p>""" % (
+<p>Reproduce it: <code>bash scripts/session34_union_reselection.sh</code> &mdash; it runs the
+fold-discipline audit, the union re-selection at the script's own pre-registered defaults, the
+clean-pool control arm, the paired contrasts and the emission budget, in that order. The full
+command, the hashes of every member and the whole 250-candidate sweep are in
+<code>data/evidence/combined/report.json</code>; the decision record is
+<code>docs/SESSION34_PROTOCOL.md</code>.</p>""" % (
         e(anchor),
         str(sel.get("fold")), str(comb.get("measurement", {}).get("fold")),
         tbl,
@@ -2620,7 +2624,10 @@ command, the hashes of every member and the whole candidate sweep are in
         e(str(sub.get("policy"))),
         "%.4f" % (scores.get("proxy") or 0.0), "%.4f" % (scores.get("catalogue") or 0.0),
         "{:,}".format(int(sub.get("nonzero_px") or 0)),
-        str(sel.get("fold")), "%.4f" % (win.get("proxy_dti") or 0.0),
+        str(sel.get("fold")), "%.4f" % (win.get(sel.get("selection_key") or "proxy_dti_selection")
+                                         if win.get(sel.get("selection_key")
+                                                    or "proxy_dti_selection") is not None
+                                         else (win.get("proxy_dti") or 0.0)),
         str(comb.get("measurement", {}).get("fold")),
         "%.4f" % ((m_meas.get("proxy") or {}).get("dti") or 0.0),
         "%.4f" % ((m_meas.get("catalogue") or {}).get("dti") or 0.0),
