@@ -1,20 +1,34 @@
 {
-  "generated_utc": "2026-10-05T14:47:36+00:00",
-  "generated_by": "scripts/verify_links.py on a host with live HTTP (72 of 84 URLs answered)",
-  "n_urls_reached": 72,
+  "generated_utc": "2026-10-12T15:34:26+00:00",
+  "generated_by": "scripts/verify_links.py on a host with live HTTP (70 of 84 URLs answered)",
+  "n_urls_reached": 70,
   "catalog": "docs/data_catalog.csv",
   "n_rows": 92,
   "n_unique_urls": 84,
   "summary_counts": {
     "BOT_BLOCKED_403": 10,
     "AUTH_REQUIRED": 1,
-    "OK_200": 61,
+    "OK_200": 59,
     "OK_REDIRECTED": 10,
     "OK_202": 1,
+    "UNREACHABLE": 2,
     "LOGIN_REQUIRED": 1
   },
-  "n_problems": 0,
-  "problems": [],
+  "n_problems": 2,
+  "problems": [
+    {
+      "url": "https://mrdata.usgs.gov/earthmri/",
+      "status": null,
+      "result": "UNREACHABLE",
+      "error": "TimeoutError('The read operation timed out')"
+    },
+    {
+      "url": "https://mrdata.usgs.gov/gravity/isostatic/",
+      "status": null,
+      "result": "UNREACHABLE",
+      "error": "TimeoutError('The read operation timed out')"
+    }
+  ],
   "n_expected_non_ok": 12,
   "expected_non_ok": [
     {
@@ -141,7 +155,7 @@
       "status": 200,
       "final_url": "https://community.drivendata.org/c/gems-prize-challenge/111",
       "content_type": "text/html",
-      "content_length": 32421,
+      "content_length": 36243,
       "title": "GEMS Prize Challenge - DrivenData Community",
       "redirected": false,
       "redirected_offsite": false,
@@ -449,25 +463,15 @@
     },
     {
       "url": "https://mrdata.usgs.gov/earthmri/",
-      "status": 200,
-      "final_url": "https://mrdata.usgs.gov/earthmri/",
-      "content_type": "text/html",
-      "content_length": null,
-      "title": "Earth Mapping Resource Initiative: Geoscience data",
-      "redirected": false,
-      "redirected_offsite": false,
-      "result": "OK_200"
+      "status": null,
+      "result": "UNREACHABLE",
+      "error": "TimeoutError('The read operation timed out')"
     },
     {
       "url": "https://mrdata.usgs.gov/gravity/isostatic/",
-      "status": 200,
-      "final_url": "https://mrdata.usgs.gov/gravity/isostatic/",
-      "content_type": "text/html",
-      "content_length": null,
-      "title": "Isostatic residual gravity anomaly grid for the conterminous US",
-      "redirected": false,
-      "redirected_offsite": false,
-      "result": "OK_200"
+      "status": null,
+      "result": "UNREACHABLE",
+      "error": "TimeoutError('The read operation timed out')"
     },
     {
       "url": "https://mrdata.usgs.gov/metadata/usgraviso.html",
@@ -527,8 +531,8 @@
       "status": 200,
       "final_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11834046/",
       "content_type": "text/html",
-      "content_length": null,
-      "title": "Checking your browser - reCAPTCHA",
+      "content_length": 149732,
+      "title": "Integrated structural analysis for geothermal exploration: A new protocol combining remote sensing and aeromagnetic geophysical data - PMC",
       "redirected": false,
       "redirected_offsite": false,
       "result": "OK_200"
@@ -755,7 +759,7 @@
       "status": 200,
       "final_url": "https://www.frontiersin.org/journals/earth-science/articles/10.3389/feart.2025.1635344/full",
       "content_type": "text/html",
-      "content_length": 601749,
+      "content_length": 601368,
       "title": "Frontiers | 3D fault detection method using TransVNet",
       "redirected": false,
       "redirected_offsite": false,
